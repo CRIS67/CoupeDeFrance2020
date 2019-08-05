@@ -1,0 +1,24 @@
+rayon_cercle_mm = 38
+
+hauteur_mm, largeur_mm = 485, 435  # hauteur et largeur de la zone redressee en mm
+decalage_redressement_robot = 476  # distance entre le debut de l'image redressee et la base du robot //modifier et mettre centre du robot
+resize_rate = 1  # Taux de compression de l'image : image_init * resize_rate=image_finale
+
+try:
+    haut_gauche, haut_droite, bas_gauche, bas_droite = ([int(i[0] * resize_rate), int(i[1] * resize_rate)] for i in
+                                                        ordoner_points(np.loadtxt('calibration.txt',
+                                                                                  dtype='int').tolist()))  # recuperation dans un fichier texte des 4 points necessaires pour redresser.#   /!\ IL S'AGIT DE POINTS PRIS SUR L'IMAGE DEJA REDRESSEE  /!\
+except:
+    haut_gauche, haut_droite, bas_gauche, bas_droite = ordoner_points([[int(0*resize_rate), int(resize_rate*2370)], [int(resize_rate*879), int(resize_rate*89)], [int(resize_rate*2312), int(resize_rate*101)], [int(resize_rate*3277), int(resize_rate*2327)]])
+
+rayon_cercle_px = rayon_cercle_mm * int(
+    np.sqrt(((bas_droite[0] - bas_gauche[0]) ** 2) + (
+            (bas_droite[1] - bas_gauche[1]) ** 2))) / largeur_mm  # rayon du cercle sur l'image redressee
+
+seuils_detection = [12, 12, 12]  # B,G,R plus c'est eleve plus la hough gradient transform va detecter de cercles
+
+aire_detection_contour = (
+    0.8 * 3.14 * rayon_cercle_px ** 2,
+    1.2 * 3.14 * rayon_cercle_px ** 2)  # Aire min, AireMax 0.75 coeff rectificateur, 0.8/1.2 : +- 20%
+
+seuil_thresh = 155  # seuil pour le thresh qui met 0 ou 255 pour chaque composante rgb

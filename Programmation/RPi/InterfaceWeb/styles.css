@@ -1,0 +1,182 @@
+/* Navigation */
+#tab-nav {
+	/* Suppression des marges internes et externes */
+	margin : 0px ;
+	padding : 0px ;
+	/* Décalage pour masquer la bordure du contenu */
+	position : relative ;
+	bottom : -1px ;
+}
+#tab-nav li {
+	/* Affichage des éléments du menu côte à côte */
+	display : inline-block ;
+}
+/* Aspect des onglets inactifs (par défaut) */
+#tab-nav a {
+	display : block ;
+	border : 1px solid #cccccc ;
+	border-width : 1px 1px 0 1px ;
+	padding : 10px 5px ;
+	border-radius : 5px 5px 0 0 ;
+	background-color : #cccccc ;
+	color : #000000;
+    text-decoration : none;
+}
+/* Effet de survol sur les onglets */
+#tab-nav a:hover {
+	background-color : #ffffff ;
+}
+/* Aspect des onglets actifs */
+#tab-nav .tab-nav-active {
+	background-color : #ffffff ;
+}
+
+
+/* Contenu des onglets */
+.tab {
+	/* Masquage des onglets*/
+     display : none ;
+     border : 1px solid #cccccc ;
+}
+/* Affichage du contenu actif */
+.tab-active {
+     display : block ;
+}
+
+
+
+#inputText {
+	width : 550px;
+}
+#chartContainer {
+	height : 600px;
+	width : 100%;
+}
+#chartPID1 {
+	height : 600px;
+	width : 100%;
+}
+#chartPID2 {
+	height : 600px;
+	width : 100%;
+}
+#chartPID3 {
+	height : 600px;
+	width : 100%;
+}
+#chartPID4 {
+	height : 600px;
+	width : 100%;
+}
+.output {
+	background-color : black;
+	color : #19D002;
+}
+
+.flexContainer{
+	display :flex;
+}
+.flexChild_Control{
+	border-style : solid;
+	border-color : lightgrey;
+	border-width : 1px;
+
+	margin : 10px 10px;
+}
+#flexChild_Actuators{
+	flex-direction : vertical;
+	text-align : center;
+	flex : 0 0 auto;
+}
+#FlexChild_Actuators_Title{
+	margin : 10px 0px 10px 0px;
+	font-size : 20px;
+	
+}
+
+.inputText_servoCustom{
+	width : 30px;
+}
+.inputText_motorCustom{
+	width : 30px;
+}
+#flexChild_Movement{
+	flex-direction : vertical;
+	text-align : center;
+	flex : 0 0 auto;
+}
+#flexChild_Movement_Title{
+	margin : 10px 0px 10px 0px;
+	font-size : 20px;
+}
+#flexChild_PlayingArea{
+	margin : auto;
+}
+#flexChild_Sensors{
+	flex-direction : vertical;
+	text-align : center;
+	flex : 0 0 auto;
+	margin : 10px 10px 10px auto;
+}
+#flexChild_Sensors_Title{
+	margin : 10px 0px 10px 0px;
+	font-size : 20px;
+}
+.outputText{
+	width : 50px;
+	border : none;
+	background-color : #fafafa;/*temporaire*/
+}
+.inputText{
+	width : 50px;
+}
+.led-green {
+  margin : 0 auto;
+  width : 20px;
+  height : 20px;
+  background-color : #ABFF00;
+  border-radius : 50%;
+  box-shadow : rgba(0, 0, 0, 0.2) 0 -1px 7px 1px, inset #304701 0 -1px 9px, #89FF00 0 2px 12px;
+}
+.led-red {
+  margin : 0 auto;
+  width : 20px;
+  height : 20px;
+  background-color : #F00;
+  border-radius : 50%;
+  box-shadow : rgba(0, 0, 0, 0.2) 0 -1px 7px 1px, inset #441313 0 -1px 9px, rgba(255, 0, 0, 0.5) 0 2px 12px;
+}
+.slidecontainer {
+    width: 100%;
+}
+
+.slider {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 25px;
+    background: #d3d3d3;
+    outline: none;
+    opacity: 0.7;
+    -webkit-transition: .2s;
+    transition: opacity .2s;
+}
+
+.slider:hover {
+    opacity: 1;
+}
+
+.slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 25px;
+    height: 25px;
+    background: #4CAF50;
+    cursor: pointer;
+}
+
+.slider::-moz-range-thumb {
+    width: 25px;
+    height: 25px;
+    background: #4CAF50;
+    cursor: pointer;
+}
