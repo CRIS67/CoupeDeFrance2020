@@ -14,6 +14,7 @@
 #include <math.h>
 #include <unistd.h>
 #include "dspic.hpp"
+#include "actuators.hpp"
 
 #define DEBUG_PID	0
 
@@ -27,7 +28,7 @@ std::string simulateResponse(double i);
 class Web
 {
     public:
-        Web(DsPIC *ds);
+        Web(DsPIC *ds, Actuators *a1, Actuators *a2);
         virtual ~Web();
         bool acceptClient();
 		void closeClient();
@@ -39,6 +40,8 @@ class Web
 		
         std::string s;
 		DsPIC *dspic;
+		Actuators *actFront;
+		Actuators *actBack;
 		bool waitingResponsePID = false;
 		
 		void addLidarPoints(float x, float y);

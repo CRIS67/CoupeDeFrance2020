@@ -1,7 +1,9 @@
 #include "web.hpp"
 
-Web::Web(DsPIC *ds){
+Web::Web(DsPIC *ds, Actuators *a1, Actuators *a2){
 	dspic = ds;
+	actFront = a1;
+	actBack = a2;
     s = "hello world !";
     struct sockaddr_in server;
 
@@ -295,7 +297,26 @@ void* thread_HandleConnnection(void *threadid){
 					if(n >= 0 && n <= 20000){
 						sendStr = "OK : command executed : servo " + std::to_string(id) + " " + std::to_string(n);
 						printf("command executed : servo %d %d\n",id,n);
-						w->dspic->servo(id,n);
+						//w->dspic->servo(id,n);
+						if(id > 0 && id < 4) {
+							if(n == 0) {
+								w->actFront->SetPump(id-1,0);
+							} else if(n == 1) {
+								w->actFront->SetPump(id-1,1);
+							}
+						} else if(id > 3) {
+							if(n == 0) {
+								w->actBack->SetPump(id-4,0);
+							} else if(n == 1) {
+								w->actBack->SetPump(id-4,1);
+							}
+						} else {
+							if(n == 0) {
+								w->dspic->motorVoltage(0,0);
+							} else if(n == 1) {
+								w->dspic->motorVoltage(0,10);;
+							}
+						}
 					}
 					else{
 						errorStr += "Error : servo range second token\n";
@@ -328,6 +349,25 @@ void* thread_HandleConnnection(void *threadid){
 					if(n >= 0 && n <= 2){
 						sendStr = "OK";
 						printf("command executed : servo %d preset %d\n",id,n);
+						if(id > 0 && id < 4) {
+							if(n == 0) {
+								w->actFront->MoveServo(id-1,SERVO_VALUE_HIGH);
+							} else if(n == 1) {
+								w->actFront->MoveServo(id-1,SERVO_VALUE_LOW);
+							}
+						} else if(id > 3) {
+							if(n == 0) {
+								w->actBack->MoveServo(id-4,SERVO_VALUE_HIGH);
+							} else if(n == 1) {
+								w->actBack->MoveServo(id-4,SERVO_VALUE_LOW);
+							}
+						} else {
+							if(n == 0) {
+								w->dspic->setMotLin(0);
+							} else if(n == 1) {
+								w->dspic->setMotLin(1);
+							}
+						}
 					}
 					else{
 						errorStr += "Error : servo preset value second token\n";

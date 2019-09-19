@@ -1,3 +1,4 @@
+
 var COEF_SCALE_COEF_DISSYMETRY = 10000;
 var COEF_SCALE_MM_PER_TICKS = 1000;
 var COEF_SCALE_DISTANCE_BETWEEN_ENCODER_WHEELS = 1000;
@@ -79,6 +80,21 @@ window.onload = function () {
 		var chartIntervalPID;
 		var canvasInterval;
 		var UIInterval;
+
+		var servo0 = 0;
+		var servo1 = 0;
+		var servo2 = 0;
+		var servo3 = 0;
+		var servo4 = 0;
+		var servo5 = 0;
+		var servo6 = 0;
+		var pump0 = 0;
+		var pump1 = 0;
+		var pump2 = 0;
+		var pump3 = 0;
+		var pump4 = 0;
+		var pump5 = 0;
+		var pump6 = 0;
 		
 		var ctx = document.getElementById('canvasPlayingArea').getContext('2d');
 		var img = new Image();
@@ -631,7 +647,118 @@ window.onload = function () {
 		  if(event.key == 32 || event.key === ' '){
 			  sendCmd('stop=1');
 			  alert('Emergency stop pressed');
-		  }
+		  } else if(event.key == 48 || event.key == '0'){
+			  servo0 = !servo0;
+			  if(servo0){
+			  	  sendCmd("sp:0=1");
+			  }else{
+				  sendCmd("sp:0=0");
+			  }
+		  } else if(event.key == 49 || event.key == '1'){
+                          servo1 = !servo1;
+                          if(servo1){
+                                  sendCmd("sp:1=1");
+                          }else{
+                                  sendCmd("sp:1=0");
+                          }
+                  } else if(event.key == 50 || event.key == '2'){
+                          servo2 = !servo2;
+                          if(servo2){
+                                  sendCmd("sp:2=1");
+                          }else{
+                                  sendCmd("sp:2=0");
+                          }
+                  } else if(event.key == 51 || event.key == '3'){
+                          servo3 = !servo3;
+                          if(servo3){
+                                  sendCmd("sp:3=1");
+                          }else{
+                                  sendCmd("sp:3=0");
+                          }
+                  } else if(event.key == 52 || event.key == '4'){
+                          servo4 = !servo4;
+                          if(servo4){
+                                  sendCmd("sp:4=1");
+                          }else{
+                                  sendCmd("sp:4=0");
+                          }
+                  } else if(event.key == 53 || event.key == '5'){
+                          servo5 = !servo5;
+                          if(servo5){
+                                  sendCmd("sp:5=1");
+                          }else{
+                                  sendCmd("sp:5=0");
+                          }
+                  } else if(event.key == 54 || event.key == '6'){
+                          servo6 = !servo6;
+                          if(servo6){
+                                  sendCmd("sp:6=1");
+                          }else{
+                                  sendCmd("sp:6=0");
+                          }
+                  } else if(event.key == 38 || event.key == '&'){
+                          pump1 = !pump1;
+                          if(pump1){
+                                  sendCmd("s:1=1");
+                          }else{
+                                  sendCmd("s:1=0");
+                          }
+                  } else if(event.key == 'Ã©'){
+                          pump2 = !pump2;
+                          if(pump2){
+                                  sendCmd("s:2=1");
+                          }else{
+                                  sendCmd("s:2=0");
+                          }
+                  } else if(event.key == '"'){
+                          pump3 = !pump3;
+                          if(pump3){
+                                  sendCmd("s:3=1");
+                          }else{
+                                  sendCmd("s:3=0");
+                          }
+                  } else if(event.key == '-'){
+                          pump4 = !pump4;
+                          if(pump4){
+                                  sendCmd("s:4=1");
+                          }else{
+                                  sendCmd("s:4=0");
+                          }
+                  } else if(event.key == '('){
+                          pump5 = !pump5;
+                          if(pump5){
+                                  sendCmd("s:5=1");
+                          }else{
+                                  sendCmd("s:5=0");
+                          }
+                  } else if(event.key == "'"){
+                          pump6 = !pump6;
+                          if(pump6){
+                                  sendCmd("s:6=1");
+                          }else{
+                                  sendCmd("s:6=0");
+                          }
+                  } else if(event.key == 'Ã '){
+                          pump0 = !pump0;
+                          if(pump0){
+                                  sendCmd("s:0=1");
+                          }else{
+                                  sendCmd("s:0=0");
+                          }
+                  } else if(event.key == 'z'){
+			  xRobot1 = xRobot1+20;
+                          sendCmd("x="+xRobot1+"&y="+yRobot1+"&go");
+                  } else if(event.key == 's'){
+			  xRobot1 = xRobot1-20;
+                          sendCmd("x="+xRobot1+"&y="+yRobot1+"&go");
+                  } else if(event.key == 'q'){
+			  yRobot1 = yRobot1+20;
+                          sendCmd("x="+xRobot1+"&y="+yRobot1+"&go");
+                  } else if(event.key == 'd'){
+			  yRobot1 = yRobot1-20;
+                          sendCmd("x="+xRobot1+"&y="+yRobot1+"&go");
+                  }
+		  drawRobot(ctx, xRobot1, yRobot1, 50, 50, tRobot1 + 180, "blue", "GR");
 		//alert('Évènement keypress\n\n' + 'touche : ' + nomTouche);
 
 		  
