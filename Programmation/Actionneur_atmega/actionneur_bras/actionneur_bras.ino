@@ -23,7 +23,7 @@
 #define TCS230_LOW_FREQ
 //#define TCS230_MEDIUM_FREQ
 //#define TCS230_HIGH_FREQ
-
+ 
 #ifdef TCS230_LOW_FREQ
   #define MAP_RED_MIN   20
   #define MAP_RED_MAX   3000
