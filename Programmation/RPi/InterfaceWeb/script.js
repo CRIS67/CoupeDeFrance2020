@@ -11,6 +11,35 @@ var lidarPointsCircular = [];
 var iLidar = 0;
 
 window.onload = function () {
+
+		// easal stuff goes hur
+  	var xCenter = 150;
+  	var yCenter = 150;
+  	var stage = new createjs.Stage('joystick');
+
+  	var psp = new createjs.Shape();
+  	var psp2 = new createjs.Shape();
+  	psp.graphics.beginFill('#000000').drawCircle(xCenter, yCenter, 50);
+  	psp2.graphics.beginStroke("#000000").drawCircle(xCenter, yCenter, 150);
+
+
+  	psp.alpha = 0.25;
+
+  	stage.addChild(psp);
+  	stage.addChild(psp2);
+  	createjs.Ticker.framerate = 60;
+  	createjs.Ticker.addEventListener('tick', stage);
+  	stage.update();
+
+  	var myElement = $('#joystick')[0];
+
+  	// create a simple instance
+  	// by default, it only adds horizontal recognizers
+  	var mc1 = new Hammer(myElement);
+
+
+
+
 		/*variables*/
 		var dps = [];   //dataPoints. 
 		var dps2 = [];
@@ -218,6 +247,41 @@ window.onload = function () {
 			]
 		});
 		
+		mc1.on("panstart", function(ev) {
+    			var pos = $('#joystick').position();
+    			xCenter = psp.x;
+    			yCenter = psp.y;
+    			psp.alpha = 0.5;
+
+    			stage.update();
+  		});
+
+  		// listen to events...
+  		//mc1.on("panmove", function(ev) {
+  		mc1.on("pandown", function(ev) {
+    			var pos = $('#joystick').position();
+
+    			var coords = calculateCoords(ev.angle, ev.distance);
+
+    			psp.x = coords.x;
+    			psp.y = coords.y;
+
+    			xRobot1 = xRobot1 + psp.x/15;
+    			yRobot1 = yRobot1 + psp.y/15;
+
+    			sendCmd("x="+xRobot1+"&y="+yRobot1+"&go");
+
+
+    			psp.alpha = 0.5;
+
+    			stage.update();
+  		});
+
+  		mc1.on("panend", function(ev) {
+    			psp.alpha = 0.25;
+    			createjs.Tween.get(psp).to({x:xCenter,y:yCenter},750,createjs.Ease.elasticOut);
+  		});
+
 		var chartPID1 = new CanvasJS.Chart("chartPID1",{
 			zoomEnabled:true,
 			
@@ -759,6 +823,23 @@ window.onload = function () {
                           sendCmd("x="+xRobot1+"&y="+yRobot1+"&go");
                   }
 		  drawRobot(ctx, xRobot1, yRobot1, 50, 50, tRobot1 + 180, "blue", "GR");
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 		//alert('Évènement keypress\n\n' + 'touche : ' + nomTouche);
 
 		  
@@ -1928,4 +2009,16 @@ window.onload = function () {
 			percentage = Math.round(percentage * 100)/100;
 			return percentage;
 		}
+
+		function calculateCoords(angle, distance) {
+  			var coords = {};
+  			distance = Math.min(distance, 100);  
+  			var rads = (angle * Math.PI) / 180.0;
+
+		  	coords.x = distance * Math.cos(rads);
+  			coords.y = distance * Math.sin(rads);
+
+  			return coords;
+		}
+
 }

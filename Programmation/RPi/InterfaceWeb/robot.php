@@ -7,6 +7,8 @@
 	<script type="text/javascript" src="jquery-3.2.1.min.js"></script>
 	<script type="text/javascript" src="canvasjs.min.js"></script>
 	<script type="text/javascript" src="script.js?1"></script>
+	<script src="createjs.min.js"></script>
+	<script src="hammer.min.js"></script>
 </head>
 <body>
 	<!-- Onglets -->
@@ -26,6 +28,10 @@
 				<div id="FlexChild_Actuators_Title">
 					Actuators
 				</div>
+					<div>Joystick</div>
+    					<div class="center-align">
+      						<canvas id="joystick" height="300" width="300"></canvas>
+    					</div>
 				<div>
 					Servomotors<br/><br/>
 					<table>
