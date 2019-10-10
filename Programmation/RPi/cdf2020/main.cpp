@@ -236,6 +236,9 @@ int main()
     web.startThread();
 
     lidar.startThreadDetection();
+    hmi.startThreadDetection();
+    actFront.startThreadDetection();
+    actBack.startThreadDetection();
 
 
 
@@ -280,7 +283,7 @@ int main()
 
 
     /*=============Strategy  START===================*/
-
+    //while(!hmi.isStopMain()){}
     
 
     std::vector<Node> strategyTour; // Contains the nodes we are going to visit 
@@ -1064,7 +1067,8 @@ int main()
     puts("exiting ...");
 
 	lidar.stop();
-
+	actFront.stopThreadDetection();
+    actBack.stopThreadDetection();
     lidar.stopThreadDetection();
 
     web.stopThread();
@@ -1077,6 +1081,9 @@ int main()
 
 	delay(200);
 
+	if(hmi.isStopPrgm()) {
+        system("sudo shutdown now");
+    }
 	
 
     return 0;

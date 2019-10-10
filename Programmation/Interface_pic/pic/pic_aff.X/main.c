@@ -728,7 +728,7 @@ void interrupt ISR(void) {
                     SSPBUF = SendNbSpi;
                     break;
                 case 4:
-                    SSPBUF = Modulo(SendNbSpi+TabPileSend[CptReadPile]+3);
+                    SSPBUF = (SendNbSpi+TabPileSend[CptReadPile]+3)%256;
                     TabPileSend[CptReadPile] = AUCUN;
                     CptReadPile++;
                     CptReadPile %= TAILLE_SEND;
