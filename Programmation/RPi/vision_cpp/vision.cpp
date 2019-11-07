@@ -14,7 +14,7 @@ void Vision::prendre_photo(){
 
 Orientation Vision::récuperer_sens_girouette(){
 	int num_girouette; //id dans la liste des tags détécté du tag arruco de la girouette
-	float angle = ERROR;
+	float angle = ERR;
 	//Récupération de l'image
 	cv::Mat image;
     inputVideo.retrieve(image);
@@ -37,4 +37,11 @@ Orientation Vision::récuperer_sens_girouette(){
 		angle = sqrt(rvecs[0]^2 + rvecs[1]^2 + rvecs[2]^2);
     }
  //On traite l'angle obtenu afin d'en sortir l'orientation de la girouette
+	if(angle == ERR){
+		return ERROR;
+	}else if(sin(angle) <= 0){ //cas ou l'on a une rotation tel que le panneau est tête en bas
+		return SUD;
+	}else{
+		return NORD;
+	}
 }
