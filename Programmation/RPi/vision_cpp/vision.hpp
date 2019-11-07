@@ -1,6 +1,6 @@
 //define necessaire
 #define VALEUR_TAG_GIROUETTE 17
-#define ERROR 424242
+#define ERR 424242
 
 //Include des biblio pour l'objet vision
 #include <opencv2/aruco.hpp>
