@@ -8,13 +8,13 @@ void Vision::init_vision(){
 void Vision::prendre_photo(){
 	//On allume la caméra
 	cv::Mat image;
-    inputVideo.retrieve(image);
+    	inputVideo.retrieve(image);
 	//enregistrement de l'image dans un réperoire quelconque
 }
 
 Orientation Vision::récuperer_sens_girouette(){
 	int num_girouette; //id dans la liste des tags détécté du tag arruco de la girouette
-	
+	float angle;
 	//Récupération de l'image
 	cv::Mat image;
     inputVideo.retrieve(image);
@@ -30,10 +30,13 @@ Orientation Vision::récuperer_sens_girouette(){
 				num_girouette = i;
 				break;
 			}
-			//On récupère l'orientation du tag dans l'espace
-			cv::aruco::estimatePoseSingleMarkers(corners[num_girouette], 0.05, cameraMatrix, distCoeffs, rvecs, tvecs);
-			//On récupère à partir de rvec la rotation du tag de la girouette
-			
 		}
-	}
+	    	//On récupère l'orientation du tag dans l'espace
+		cv::aruco::estimatePoseSingleMarkers(corners[num_girouette], 0.05, cameraMatrix, distCoeffs, rvecs, tvecs);
+		//On récupère à partir de rvec la rotation du tag de la girouette
+		angle = sqrt(rvecs[0]^2 + rvecs[1]^2 + rvecs[2]^2);
+	    	return angle;
+    }else{
+	    return ERROR;
+    }
 }
