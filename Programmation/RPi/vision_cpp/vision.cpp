@@ -14,7 +14,7 @@ void Vision::prendre_photo(){
 
 Orientation Vision::récuperer_sens_girouette(){
 	int num_girouette; //id dans la liste des tags détécté du tag arruco de la girouette
-	float angle;
+	float angle = ERROR;
 	//Récupération de l'image
 	cv::Mat image;
     inputVideo.retrieve(image);
@@ -35,8 +35,6 @@ Orientation Vision::récuperer_sens_girouette(){
 		cv::aruco::estimatePoseSingleMarkers(corners[num_girouette], 0.05, cameraMatrix, distCoeffs, rvecs, tvecs);
 		//On récupère à partir de rvec la rotation du tag de la girouette
 		angle = sqrt(rvecs[0]^2 + rvecs[1]^2 + rvecs[2]^2);
-	    	return angle;
-    }else{
-	    return ERROR;
     }
+ //On traite l'angle obtenu afin d'en sortir l'orientation de la girouette
 }
