@@ -1,4 +1,4 @@
-include "vision.hpp"
+include "vision.hpp" 
 
 void Vision::init_vision(){
 	//On allume la caméra
