@@ -1,0 +1,3 @@
+https://stackoverflow.com/questions/25348026/stdvector-segmentation-fault-with-and-without-initialization
+https://embeddedartistry.com/blog/2017/06/21/an-introduction-to-stdvector/
+https://cboard.cprogramming.com/cplusplus-programming/166092-segmentation-fault-vectors~.html
