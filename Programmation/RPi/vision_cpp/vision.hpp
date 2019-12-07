@@ -2,29 +2,44 @@
 #define VALEUR_TAG_GIROUETTE 17
 #define ERR 424242
 
-//Include des biblio pour l'objet vision
-#include <opencv2/aruco.hpp>
-#include <opencv2/videoio.hpp>
+#include <string>
+#include <stdio.h>
+ #include <ctime>
+#include <iostream>
 
-typedef enum Orientation Orientation;
+//Include des biblio pour l'objet vision
+#include </usr/local/include/opencv2/aruco.hpp>
+#include </usr/local/include/opencv2/opencv.hpp>
+#include </usr/local/include/opencv2/highgui/highgui.hpp>
+#include </usr/local/include/opencv2/videoio.hpp>
+#include </usr/local/include/opencv2/imgproc/imgproc.hpp>
+#include <raspicam/raspicam_cv.h>
+#include <raspicam/raspicam.h>
+
+//using namespace std;
 
 enum Orientation
 {
     NORD, SUD, ERROR
 };
 
+typedef Orientation Orientation;
+
 class Vision
 {
     public:
         void init_vision();
-		Orientation récuperer_sens_girouette();
+        void prendre_photo(std::string nom);
+        void stop_vision();
+		Orientation recuperer_sens_girouette();
 		
 		
     protected:
-		cv::VideoCapture inputVideo;
-		cv::Ptr<cv::aruco::Dictionary> dictionary = cv::aruco::getPredefinedDictionary(cv::aruco::DICT_4X4_250);
-		cv::Mat cameraMatrix = ;
-		cv::Mat distCoeffs = ;
+		raspicam::RaspiCam_Cv Camera;
+		cv::Ptr<cv::aruco::Dictionary> dictionary = cv::aruco::getPredefinedDictionary(cv::aruco::DICT_6X6_250);
+		cv::Ptr<cv::aruco::DetectorParameters> params = cv::aruco::DetectorParameters::create();
+		cv::Mat cameraMatrix;
+		cv::Mat distCoeffs;
 		std::vector<cv::Vec3d> rvecs, tvecs;
     private:
 };
