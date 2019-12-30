@@ -288,7 +288,7 @@ int main()
 
     std::vector<Node> strategyTour; // Contains the nodes we are going to visit 
 
-    LK strategy(100); 
+    LK strategy(100); //faire la liste des taches jusqu'a 80 secondes
 
     strategy.readNodes(strategyTour); // reads the nodes from the entree.txt file
 
@@ -310,7 +310,10 @@ int main()
 
     strategyTour = strategy.getSolution();  // We update the optimized tour 
 
-
+	//Rajouter les taches à faire lors des fin de matchs
+    std::vector<Node> Dernieres_taches_a_faire;
+	
+    strategyTour.insert( strategyTour.end(), Dernieres_taches_a_faire.begin(), Dernieres_taches_a_faire.end() );
 
     // Map Generation 
 

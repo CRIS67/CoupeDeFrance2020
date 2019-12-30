@@ -8,6 +8,7 @@ int Send(int in){
 	delayMicroseconds(SPI_DELAY_US);
 	return (int)buffer[0];
 	
+	
 }
 Actuators::Actuators(SPI *pSpi,uint8_t id){
     m_pSpi = pSpi;
