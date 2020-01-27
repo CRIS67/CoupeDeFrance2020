@@ -39,7 +39,8 @@
 int Cpt = 0, EtatScreen = SCREEN_MAIN, AutoLight = 0, FlagSleep = 0, FlagSpi = 1, blinkLed = 0, PosX = 150, PosY = 340, Score = 0, TypeVarSpi = 0, CptPile = 0, PrgmSens = 0, Stop = 0,
 TailleMsgSpi = 0, CptSpi = 0, SendNbSpi = 0, CptReadPile = 0, EtatSpi = SPI_IDLE, Checksum = 0, CptSpiSend = 0;
 String txt;
-char temp, TextSpi[TAILLE_SPI_CHAINE], TabPileSend[TAILLE_SEND], Text[TAILLE_SPI_CHAINE-2][4];
+char temp, TabPileSend[TAILLE_SEND], Text[TAILLE_SPI_CHAINE-2][4];
+unsigned char TextSpi[TAILLE_SPI_CHAINE];
 
 void Affiche(String txt_in);
 void(* resetFunc) (void) = 0;
@@ -59,7 +60,7 @@ void setup() {
 void loop() {
   delay(80);
   Cpt++;
-  /*if(FlagSleep || Stop) {
+  if(FlagSleep || Stop) {
     digitalWrite(LED,0);
   } else {
     if(Cpt > 10) {
@@ -71,7 +72,7 @@ void loop() {
       }
       Cpt = 0;
     }
-  }*/
+  }
   if(AutoLight) {
     double adc_res = analogRead(ADC0);
     adc_res = 103*exp(-(adc_res/610));
@@ -179,8 +180,7 @@ void Affiche(String txt_in) {
 
 /**************************** ISR ***********************************/
 ISR(SPI_STC_vect) {
-  char data_spi = SPDR;
-  SPDR = 0x03;
+  unsigned char data_spi = SPDR;
   switch(EtatSpi) {
     case SPI_IDLE:
       TailleMsgSpi = data_spi;
@@ -207,7 +207,7 @@ ISR(SPI_STC_vect) {
       }
       break;
     case SPI_CHECKSUM:
-      if((Checksum)%256 == data_spi) {
+      if((unsigned char)(Checksum%256) == (unsigned char)(data_spi)) {
         FlagSpi = 1;
         CptSpi = 0;
         switch(TypeVarSpi) {
@@ -228,7 +228,9 @@ ISR(SPI_STC_vect) {
             }
             break;
           case PING:
-            //a faire
+              /*TabPileSend[CptPile] = PING;
+              CptPile++;
+              CptPile %= TAILLE_SEND;*/
             break;
           case TERM1:
             for(int j=0;j<TAILLE_SPI_CHAINE-2;j++) {
@@ -252,7 +254,7 @@ ISR(SPI_STC_vect) {
             break;
           case SCORE:
             Score = TextSpi[0];
-            Score = Score << 8;
+            Score *= 256;
             Score += TextSpi[1];
             if(Score > 999) {
               Score = 999;
@@ -274,9 +276,7 @@ ISR(SPI_STC_vect) {
   }
   Checksum += data_spi;
   if(TabPileSend[CptReadPile]) {
-    digitalWrite(LED,1);
-    SPDR = 0x03;
-    /*CptSpiSend++;
+    CptSpiSend++;
     switch(CptSpiSend) {
       case 1:
         SPDR = 0x03;
@@ -294,6 +294,9 @@ ISR(SPI_STC_vect) {
             SendNbSpi = Stop;
             Stop = 0;
             break;
+          case PING:
+            SendNbSpi = 1;
+            break;
         }
         SPDR = SendNbSpi;
         break;
@@ -305,7 +308,7 @@ ISR(SPI_STC_vect) {
         CptSpiSend = 0;
         SendNbSpi = 0;
         break;
-    }*/
+    }
   } else {
     SPDR = 0;
   }
