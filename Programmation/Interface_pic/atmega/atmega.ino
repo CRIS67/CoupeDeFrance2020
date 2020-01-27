@@ -39,8 +39,8 @@
 int Cpt = 0, EtatScreen = SCREEN_MAIN, AutoLight = 0, FlagSleep = 0, FlagSpi = 1, blinkLed = 0, PosX = 150, PosY = 340, Score = 0, TypeVarSpi = 0, CptPile = 0, PrgmSens = 0, Stop = 0,
 TailleMsgSpi = 0, CptSpi = 0, SendNbSpi = 0, CptReadPile = 0, EtatSpi = SPI_IDLE, Checksum = 0, CptSpiSend = 0;
 String txt;
-char temp, TabPileSend[TAILLE_SEND], Text[TAILLE_SPI_CHAINE-2][4];
-unsigned char TextSpi[TAILLE_SPI_CHAINE];
+char temp, Text[TAILLE_SPI_CHAINE-2][4];
+unsigned char TextSpi[TAILLE_SPI_CHAINE], TabPileSend[TAILLE_SEND];
 
 void Affiche(String txt_in);
 void(* resetFunc) (void) = 0;
