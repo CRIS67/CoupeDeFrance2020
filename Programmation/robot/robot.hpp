@@ -41,7 +41,7 @@
 #define CODE_VAR_ANGLE      2
 
 //------------ CMD -------------------//
-#define AUCUNE							0
+#define AUCUN							0
 #define LIDAR_CMD_DEBUG               	1
 #define LIDAR_CMD_START               	2
 #define LIDAR_CMD_STOP                	3
@@ -72,6 +72,8 @@
 #define HMI_CMD_SCORE					36
 #define HMI_RET_COTE					37
 #define HMI_RET_OFF_PI					38
+#define ACT_CMD_SEUIL_COLOR             39
+#define ACT_CMD_RESET_CPT_COLOR         40
 #define LIDAR_RET_DEBUG_DEBUG       	42 
 #define LIDAR_RET_DEBUG_START       	43 
 #define LIDAR_RET_DEBUG_STOP        	44
@@ -92,6 +94,14 @@
 //cmd uart
 #define PHARE_CMD_ALLUMER	1
 #define PHARE_CMD_ETEINDRE	2
+
+#define LIM_RED_MIN   1
+#define LIM_RED_MAX   2
+#define LIM_GREEN_MIN 3
+#define LIM_GREEN_MAX 4
+#define LIM_BLUE_MIN  5
+#define LIM_BLUE_MAX  6
+#define LIM_WHITE_MAX 7
 
 void* thread(void *threadid);
 
@@ -126,6 +136,8 @@ class Robot {
 		int Dist(int nb_bras);
 		int Rupt(int nb_bras);
 		void SetMot4Q(int nb_bras, int vit, int sens);
+		void setSeuilColor(int seuil, int valeur);
+		void resetCptColor();
 
 		//hmi
 		uint8_t CoteChoisi();

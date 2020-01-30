@@ -8,15 +8,15 @@
 //à modifier
 #define NB_SERVO        3
 #define NB_MOTEUR       3
-#define NB_MOTEUR4Q     0
+#define NB_MOTEUR4Q     2
 #define NB_CAPT_CUR     3
 #define NB_CAPT_COLOR   3
-#define NB_UART         0
-#define NB_RUPT         0
-#define NB_AX12         0
-#define NB_LIDAR        0
-#define NB_SCREEN       0
-#define NB_CAPT_DIST    0
+#define NB_UART         2
+#define NB_RUPT         3
+#define NB_AX12         2
+#define NB_LIDAR        2
+#define NB_SCREEN       2
+#define NB_CAPT_DIST    2
 
 #define SERVO_MIN     700
 #define SERVO_MAX     1600
@@ -36,10 +36,13 @@ const int Pin_Led;
   const int Pin_Capt_Cur[] = {};
 #endif
 #if NB_CAPT_COLOR > 0
-
-#endif
-#if NB_UART > 0
-  
+  #define PIN_ENABLE 1
+  #if PIN_ENABLE > 0
+  	const int Pin_Capt_Color_Ena;
+  #endif
+  const int Pin_Capt_Color_TS2[NB_CAPT_COLOR];
+  const int Pin_Capt_Color_TS3[NB_CAPT_COLOR];
+  const int Pin_Capt_Color_Arm[NB_CAPT_COLOR];
 #endif
 #if NB_RUPT > 0
   const int Pin_Rupt[] = {};
@@ -52,7 +55,7 @@ const int Pin_Led;
 
 #endif
 #if NB_SCREEN > 0
-
+  #define ADC0                A0
 #endif
 #if NB_CAPT_DIST > 0
 
@@ -103,6 +106,8 @@ void ISRCrisSpi();
 #define HMI_CMD_SCORE                   36
 #define HMI_RET_COTE                    37
 #define HMI_RET_OFF_PI                  38
+#define ACT_CMD_SEUIL_COLOR             39
+#define ACT_CMD_RESET_CPT_COLOR         40
 #define LIDAR_RET_DEBUG_DEBUG           42 
 #define LIDAR_RET_DEBUG_START           43 
 #define LIDAR_RET_DEBUG_STOP            44
@@ -112,5 +117,66 @@ void ISRCrisSpi();
 #define LIDAR_RET_SPEED                 121
 
 #define MOTEUR_STOP     0
+
+#if NB_CAPT_COLOR > 0
+	#define CORRECTION_LUM
+	#define MAX_RGB         1000
+
+	//vitesse du capteur de couleur
+	#define TCS230_LOW_FREQ
+	//#define TCS230_MEDIUM_FREQ
+	//#define TCS230_HIGH_FREQ
+ 
+	#ifdef TCS230_LOW_FREQ
+  		#define MAP_RED_MIN   20
+  		#define MAP_RED_MAX   3000
+  		#define MAP_BLUE_MIN  20
+  		#define MAP_BLUE_MAX  3000
+  		#define MAP_GREEN_MIN 20
+  		#define MAP_GREEN_MAX 3000
+  		#define MAP_WHITE_MIN 20
+  		#define MAP_WHITE_MAX 3000
+	#endif
+
+	#ifdef TCS230_MEDIUM_FREQ
+  		#define MAP_RED_MIN   20
+  		#define MAP_RED_MAX   300
+  		#define MAP_BLUE_MIN  20
+  		#define MAP_BLUE_MAX  200
+  		#define MAP_GREEN_MIN 20
+  		#define MAP_GREEN_MAX 300
+  		#define MAP_WHITE_MIN 20
+  		#define MAP_WHITE_MAX 300
+	#endif
+
+	#ifdef TCS230_HIGH_FREQ
+  		#define MAP_RED_MIN   4
+  		#define MAP_RED_MAX   60
+  		#define MAP_BLUE_MIN  4
+  		#define MAP_BLUE_MAX  40
+  		#define MAP_GREEN_MIN 4
+  		#define MAP_GREEN_MAX 60
+  		#define MAP_WHITE_MIN 4
+  		#define MAP_WHITE_MAX 60
+	#endif
+	
+	#define AUCUNE	0
+	#define ROUGE	1
+	#define VERT	2
+	#define BLEU 	3
+	#define BLANC 	4
+	#define ERREUR	5
+
+	#define MAX_WAIT_COLOR  	2
+	#define NB_ITERATION_COLOR	10
+
+  #define LIM_RED_MIN   1
+  #define LIM_RED_MAX   2
+  #define LIM_GREEN_MIN 3
+  #define LIM_GREEN_MAX 4
+  #define LIM_BLUE_MIN  5
+  #define LIM_BLUE_MAX  6
+  #define LIM_WHITE_MAX 7
+#endif
 
 #endif //SPI_CRIS_LIB_H

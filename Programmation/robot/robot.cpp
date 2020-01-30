@@ -670,3 +670,22 @@ bool Robot::getFillBuffer() {
 	m_mutex.unlock();
 	return b;
 }
+
+void Robot::setSeuilColor(int seuil, int valeur) {
+	uint8_t buffer[4];
+	if(seuil > 7 || seuil < 0) {
+		std::cout << "erreur seuil " << seuil << std::endl;
+	} else {
+		buffer[0] = ACT_CMD_SEUIL_COLOR;
+		buffer[1] = seuil;
+		buffer[2] = (uint8_t)(valeur/256);
+		buffer[3] = valeur%256;
+		sendSPI(buffer,4);
+	}
+}
+
+void Robot::resetCptColor(void) {
+	uint8_t buffer[1];
+	buffer[0] = ACT_CMD_RESET_CPT_COLOR;
+	sendSPI(buffer,1);
+}

@@ -5,9 +5,6 @@ void(*resetFunc)(void) = 0; //declare reset function @ address 0
 #if NB_CAPT_CUR > 0
   int Valeur_Cur[NB_CAPT_CUR];
 #endif
-#if NB_CAPT_COLOR > 0
-  int Valeur_Color[NB_CAPT_COLOR];
-#endif
 #if NB_RUPT > 0
   int Valeur_Rupt[NB_RUPT];
 #endif
@@ -24,7 +21,6 @@ void(*resetFunc)(void) = 0; //declare reset function @ address 0
 #if NB_SCREEN > 0
   #include <math.h>
   #define BAUDRATE  115200
-  #define ADC0                A0
   #define SCREEN_MAIN         0
   #define SREEN_CONTROL       1
   #define SCREEN_TERMINAL     2
@@ -43,6 +39,144 @@ void(*resetFunc)(void) = 0; //declare reset function @ address 0
 #endif
 #if NB_SERVO > 0
   Servo S[NB_SERVO];
+#endif
+#if NB_CAPT_COLOR > 0
+  //limite des couleurs 40-135(6)-420(1)-3000
+  int TabSeuil[] = {15, 39, 39, 100, 195, 350, 32};
+  int cpt_capt_color[NB_CAPT_COLOR], Hg[NB_CAPT_COLOR], Valeur_Color[NB_CAPT_COLOR];
+  char GetColor(unsigned char nb_bras) {
+    int period, red, green, blue;
+    double H, C, m, M, white;
+    unsigned char col;
+    if(cpt_capt_color[nb_bras] < MAX_WAIT_COLOR && nb_bras > -1 && nb_bras < NB_CAPT_COLOR) {
+      // temps d'exec : 400-800us
+  
+      // Lecture de la composante rouge
+      digitalWrite(Pin_Capt_Color_TS2[nb_bras],LOW);
+      digitalWrite(Pin_Capt_Color_TS3[nb_bras],LOW);
+      delayMicroseconds(10);
+      period = pulseIn(Pin_Capt_Color_Arm[nb_bras], LOW);
+      if(MAP_RED_MIN >= period) {
+        cpt_capt_color[nb_bras]++;
+      } else {
+        cpt_capt_color[nb_bras] = 0;
+      
+        red = map(period, MAP_RED_MIN, MAP_RED_MAX,MAX_RGB,0);
+  
+        // Lecture de la composante verte
+        digitalWrite(Pin_Capt_Color_TS2[nb_bras],HIGH);
+        digitalWrite(Pin_Capt_Color_TS3[nb_bras],HIGH);
+        delayMicroseconds(10);
+        period = pulseIn(Pin_Capt_Color_Arm[nb_bras], LOW);
+        green = map(period, MAP_GREEN_MIN,MAP_GREEN_MAX,MAX_RGB,0);
+  
+        // Lecture de la composante bleue
+        digitalWrite(Pin_Capt_Color_TS2[nb_bras],LOW);
+        digitalWrite(Pin_Capt_Color_TS3[nb_bras],HIGH);
+        delayMicroseconds(10);
+        period = pulseIn(Pin_Capt_Color_Arm[nb_bras], LOW);
+        blue = map(period, MAP_BLUE_MIN,MAP_BLUE_MAX,MAX_RGB,0);
+
+        // Lecture de la composante blanche
+        digitalWrite(Pin_Capt_Color_TS2[nb_bras],HIGH);
+        digitalWrite(Pin_Capt_Color_TS3[nb_bras],LOW);
+        delayMicroseconds(10);
+        period = pulseIn(Pin_Capt_Color_Arm[nb_bras], LOW);
+        white = period;
+        //adaptation de la luminosité
+        white = -0.2*white+45; //test avec 40 ou 30 (45)
+
+        // Conversion de la couleur RGB en couleur HSL
+        //prérequis
+        M = max(max(red, green), blue);
+        m = min(min(red, green), blue);
+        C = M - m;
+        //HSL
+        if(C!=0){
+          if(M == red) {
+            H = green-blue;
+            H /= C;
+          } else if(M == green) {
+            H = blue-red;
+            H/= C;
+            H += 2;
+          } else {
+            H = red-green;
+            H /= C;
+            H += 4;
+          }
+        } else {
+          H = -1;
+        }
+        H *= 60;
+        if(H < 0) {H *= -1;}
+        #ifdef CORRECTION_LUM
+          H += white;
+        #endif
+        // Déduction de la couleur à partir du HSL
+        Hg[nb_bras] = H;
+
+        if(white > LIM_WHITE_MAX) {
+          col = 4;
+        } else if(LIM_RED_MIN < H && H < LIM_RED_MAX) {
+          col = 1;
+        } else if(LIM_GREEN_MIN < H && H < LIM_GREEN_MAX) {
+          col = 2;
+        } else if(LIM_BLUE_MIN < H && H < LIM_BLUE_MAX) {
+          col = 3;
+        } else {
+          col = 0;
+        }
+        return col;
+      }
+    } else {
+      return 5;
+    }
+  }
+  unsigned char RatioErr(unsigned char nb_bras, int taille) {
+    int i, R = 0, G = 0, B = 0, E = 0, C = 0, W = 0, test;
+    double mini = GetColor(nb_bras), maxi = GetColor(nb_bras);
+    for(i=0;i<taille;i++) {
+      test = GetColor(nb_bras);
+      if(mini > test) {mini = test;}
+      if(maxi < test) {maxi = test;}
+      switch(test) {
+        case 0:
+          E++;
+          break;
+        case 1:
+          R++;
+          break;
+        case 2:
+          G++;
+          break;
+        case 3:
+          B++;
+          break;
+        case 4:
+          W++;
+          break;
+        case 5:
+          C++;
+          break;  
+      }
+    }
+    if(E >= int(taille/2)) {
+      return 0;
+    } else if(W >= int(taille/2)) {
+      return 4;
+    } else if(C >= int(taille/2)) {
+      return 5;
+    } else if(max(E,max(R,max(B,G))) == R) {
+      return 1;
+    } else if(max(E,max(B,G)) == G) {
+      return 2;
+    } else if(max(E,B) == B) {
+      return 3;
+    } else {
+      return 0;
+    }
+  }
 #endif
 
 int Cpt = 0, FlagSleep = 0, FlagSpi = 1, TypeVarSpi = 0, CptPile = 0, TailleMsgSpi = 0, CptSpi = 0, SendNbSpi = 0,
@@ -89,7 +223,19 @@ void InitCrisSpi(void) {
     pinMode(Pin_Led, OUTPUT);
     digitalWrite(Pin_Led, 0);
   #endif
-  
+  #if NB_CAPT_COLOR > 0
+    #if PIN_ENABLE > 0
+      pinMode(Pin_Capt_Color_Ena,OUTPUT);
+      digitalWrite(Pin_Capt_Color_Ena, LOW);
+    #endif
+    for(i_init=0;i_init<NB_SERVO;i_init++) {
+      pinMode(Pin_Capt_Color_TS2[i_init],OUTPUT);
+      pinMode(Pin_Capt_Color_TS3[i_init],OUTPUT);
+      pinMode(Pin_Capt_Color_Arm[i_init],INPUT);
+      digitalWrite(Pin_Capt_Color_TS2[i_init],LOW);
+      digitalWrite(Pin_Capt_Color_TS3[i_init],LOW);
+    }
+  #endif
 
   //spi
   for(i_init=0;i_init<TAILLE_SEND;i_init++) {
@@ -227,6 +373,11 @@ void LoopCrisSpi(void) {
       }
     }
   #endif
+  #if NB_CAPT_COLOR > 0
+    for(i_init=0;i_init<NB_CAPT_CUR;i_init++) {
+      Valeur_Color[i_init] = RatioErr(i_init, NB_ITERATION_COLOR);
+    }
+  #endif
 }
 
 void ISRCrisSpi(void) {
@@ -293,9 +444,18 @@ void ISRCrisSpi(void) {
               CptPile++;
               CptPile %= TAILLE_SEND;
               break;
+            case ACT_CMD_SEUIL_COLOR:
+              TabSeuil[TextSpi[0]] = TextSpi[1]*256+TextSpi[2];
+              break;
+            case ACT_CMD_RESET_CPT_COLOR:
+              for(i_int=0;i_int<NB_CAPT_COLOR;i_int++) {
+                cpt_capt_color[i_int] = 0;
+              }
+              break;
           #endif
           #if NB_UART > 0
             case ACT_CMD_UART_SEND:
+              i_int = 0;
               while(TextSpi[i_int] != '\0') {
                 Serial.write(TextSpi[i_int]);
               }
