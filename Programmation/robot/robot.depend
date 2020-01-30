@@ -1,0 +1,25 @@
+# depslib dependency file v1.0
+1580231438 source:c:\users\xoxox\desktop\robot\main.cpp
+	<iostream>
+	"robot.hpp"
+	"SPI.hpp"
+
+1580231424 c:\users\xoxox\desktop\robot\robot.hpp
+	<stdint.h>
+	<unistd.h>
+	<iostream>
+	<string>
+	"SPI.hpp"
+
+1580231094 source:c:\users\xoxox\desktop\robot\robot.cpp
+	"robot.hpp"
+
+1580226706 c:\users\xoxox\desktop\robot\spi.hpp
+	<stdint.h>
+	<unistd.h>
+	<iostream>
+	<mutex>
+
+1580226733 source:c:\users\xoxox\desktop\robot\spi.cpp
+	"SPI.hpp"
+

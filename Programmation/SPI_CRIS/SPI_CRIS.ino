@@ -4,45 +4,46 @@
 //à modifier
 #define NB_SERVO        3
 #define NB_MOTEUR       3
-#define NB_MOTEUR4Q     0
+#define NB_MOTEUR4Q     2
 #define NB_CAPT_CUR     3
 #define NB_CAPT_COLOR   3
-#define NB_UART         0
-#define NB_RUPT         0
-#define NB_AX12         0
-#define NB_LIDAR        0
-#define NB_SCREEN       0
-#define NB_CAPT_DIST    0
+#define NB_UART         2
+#define NB_RUPT         2
+#define NB_AX12         2
+#define NB_LIDAR        2
+#define NB_SCREEN       2
+#define NB_CAPT_DIST    2
 
 #define SERVO_MIN     700
 #define SERVO_MAX     1600
 
+const int Pin_Led;
 #if NB_SERVO > 0
-  int Pin_Servo[] = {};
+  const int Pin_Servo[] = {};
   Servo S[NB_SERVO];
 #endif
 #if NB_MOTEUR > 0
-  int Pin_Moteur[] = {};
+  const int Pin_Moteur[] = {};
 #endif
 #if NB_MOTEUR4Q > 0
-  int Pin_Moteur4Q_SENS[] = {};
-  int Pin_Moteur4Q_PWM[] = {};
+  const int Pin_Moteur4Q_SENS[] = {};
+  const int Pin_Moteur4Q_PWM[] = {};
 #endif
 #if NB_CAPT_CUR > 0
-  int Pin_Capt_Cur[] = {};
+  const int Pin_Capt_Cur[] = {};
 #endif
 #if NB_CAPT_COLOR > 0
 
 #endif
 #if NB_UART > 0
-  #define BAUDRATE  9600
+  
 #endif
 #if NB_RUPT > 0
-  int Pin_Rupt[] = {};
+  const int Pin_Rupt[] = {};
 #endif
 #if NB_AX12 > 0
-  int Pin_ax12_RX[NB_AX12];
-  int Pin_ax12_TX[NB_AX12];
+  const int Pin_ax12_RX[NB_AX12];
+  const int Pin_ax12_TX[NB_AX12];
 #endif
 #if NB_LIDAR > 0
 
@@ -119,13 +120,28 @@
 #if NB_CAPT_DIST > 0
   int Valeur_Dist[NB_CAPT_DIST];
 #endif
+#if NB_UART > 0
+  #define BAUDRATE  9600
+#endif
 #if NB_SCREEN > 0
-  int PrgmSens = 0;
-  int StopMain = 0;
-  int Score = 0;
-  int PosX = 200;
-  int PosY = 400;
-  char Text[5][195];
+  #include <math.h>
+  #define BAUDRATE  115200
+  #define ADC0                A0
+  #define SCREEN_MAIN         0
+  #define SREEN_CONTROL       1
+  #define SCREEN_TERMINAL     2
+  #define SCREEN_PID          3
+  #define SCREEN_DEBUG        4
+  void Affiche(String txt_in);
+  char Text[TAILLE_SPI_CHAINE-2][4], temp;
+  String txt;
+  int AutoLight = 0, EtatScreen = SCREEN_MAIN, blinkLed = 0, PrgmSens = 0, StopMain = 0, Score = 0, PosX = 200, PosY = 400;
+  void Affiche(String txt_in) {
+    Serial.print(txt_in);
+    Serial.write(0xFF);
+    Serial.write(0xFF);
+    Serial.write(0xFF);
+  }
 #endif
 
 #define MOTEUR_STOP     0
@@ -171,6 +187,11 @@ void setup() {
   #if NB_UART > 0
     Serial.begin(BAUDRATE);
   #endif
+  #if NB_SCREEN > 0
+    Serial.begin(BAUDRATE);
+    digitalWrite(Pin_Led, OUTPUT);
+    digitalWrite(Pin_Led, 0);
+  #endif
   
 
   //spi
@@ -194,6 +215,119 @@ void loop() {
   #if NB_RUPT > 0
     for(i_init=0;i_init<NB_MOTEUR4Q;i_init++) {
       Valeur_Rupt[i_init] = digitalRead(Pin_Rupt[i_init]);
+    }
+  #endif
+  #if NB_SCREEN > 0
+    delay(80);
+    Cpt++;
+    if(FlagSleep || StopMain) {
+      digitalWrite(Pin_Led,0);
+    } else {
+      if(Cpt > 10) {
+        blinkLed = ~blinkLed;
+        if(blinkLed) {
+          digitalWrite(Pin_Led,1);
+        } else {
+          digitalWrite(Pin_Led,0);
+        }
+        Cpt = 0;
+      }
+    }
+    if(AutoLight) {
+      double adc_res = analogRead(ADC0);
+      adc_res = 103*exp(-(adc_res/610));
+      adc_res = (int)(adc_res);
+      if(adc_res < 0) {
+        adc_res = 0;
+      }
+      if(adc_res > 99) {
+        adc_res = 99;
+      }
+      txt = "dim=";
+      temp = '0' + (char)(adc_res/10);
+      txt += temp;
+      temp = '0' + (char)(adc_res-(10*(char)(adc_res/10)));  //regressi
+      txt += temp;
+      Affiche(txt);
+      if(EtatScreen == SCREEN_MAIN) {
+        txt = "h0.val=";
+        temp = '0' + (char)(adc_res/10);
+        txt += temp;
+        temp = '0' + (char)(adc_res-(10*(char)(adc_res/10)));
+        txt += temp;
+        Affiche(txt);
+      }
+    }
+    if(FlagSpi) {
+      FlagSpi = 0;
+      switch(EtatScreen) {
+        case SCREEN_MAIN:
+          txt = "n0.val=";
+          temp = '0' + (char)(Score/100);
+          txt += temp;
+          temp = '0' + (char)((Score-((char)(Score/100)*100))/10);
+          txt += temp;
+          temp = '0' + (char)((Score-((char)(Score/10)*10)));
+          txt += temp;
+          Affiche(txt);
+          break;
+        case SREEN_CONTROL:
+          FlagSpi = 1;
+          Affiche("ref 0");
+          txt = "pic ";
+          temp = '0' + (char)(PosX/100);
+          txt += temp;
+          temp = '0' + (char)((PosX-(100*(char)(PosX/100)))/10);
+          txt += temp;
+          temp = '0' + (char)(PosX-(10*(char)(PosX/10)));
+          txt += temp;
+          txt += ",";
+          temp = '0' + (char)(PosY/100);
+          txt += temp;
+          temp = '0' + (char)((PosY-(100*(char)(PosY/100)))/10);
+          txt += temp;
+          temp = '0' + (char)(PosY-(10*(char)(PosY/10)));
+          txt += temp;
+          txt += ",0";
+          //txt = "pic 150,150,0";
+          Affiche(txt);
+          break;
+        case SCREEN_TERMINAL:
+          //printS("t0.txt=\"mont_text\"ÿÿÿ");txt = "t";
+          txt = "t0.txt=\"";
+          for(int k=0;k<TAILLE_SPI_CHAINE-2;k++) {
+            txt += Text[k][0];
+          }
+          txt += "\"";
+        
+          txt = "t1.txt=\"";
+          for(int k=0;k<TAILLE_SPI_CHAINE-2;k++) {
+            txt += Text[k][1];
+          }
+          txt += "\"";
+
+          txt = "t2.txt=\"";
+          for(int k=0;k<TAILLE_SPI_CHAINE-2;k++) {
+            txt += Text[k][2];
+          }
+          txt += "\"";
+
+          txt = "t3.txt=\"";
+          for(int k=0;k<TAILLE_SPI_CHAINE-2;k++) {
+            txt += Text[k][3];
+          }
+          txt += "\"";
+          break;
+        case SCREEN_PID:
+          //graph
+          break;
+        case SCREEN_DEBUG:
+          //a faire
+          break;
+        default:
+          EtatScreen = SCREEN_MAIN;
+          break;
+      }
     }
   #endif
 }
