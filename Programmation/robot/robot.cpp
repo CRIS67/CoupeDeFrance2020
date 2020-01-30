@@ -1,5 +1,8 @@
 #include "robot.hpp"
 
+int g_nb_lidar;
+int g_nb_screen;
+
 Robot::Robot(std::string nom, SPI *pSpi,uint8_t id, int nb_servo, int nb_moteur4Q, int nb_moteur, int nb_capt_cur, int nb_capt_couleur, int nb_uart,
              int nb_rupteur, int nb_ax12, int nb_lidar, int nb_screen, int nb_capt_dist, Web *pWeb) {
     m_nom = nom;
@@ -16,19 +19,21 @@ Robot::Robot(std::string nom, SPI *pSpi,uint8_t id, int nb_servo, int nb_moteur4
     m_nb_lidar = nb_lidar;
     m_nb_screen = nb_screen;
     m_nb_capt_dist = nb_capt_dist;
+    g_nb_screen = m_nb_screen;
+    g_nb_lidar = m_nb_lidar;
     m_pWeb = pWeb;
-    DEBUG_ROBOT_ENABLE_PRINT(m_nom+" comporte : ")
-    DEBUG_ROBOT_ENABLE_PRINT("- "+m_nb_servo+" servo moteurs")
-    DEBUG_ROBOT_ENABLE_PRINT("- "+m_nb_moteur4Q+" pont en H")
-    DEBUG_ROBOT_ENABLE_PRINT("- "+m_nb_moteurs+" moteurs")
-    DEBUG_ROBOT_ENABLE_PRINT("- "+m_nb_capt_cur+" capteurs de courant")
-    DEBUG_ROBOT_ENABLE_PRINT("- "+m_nb_capt_couleur+" capteurs de courant")
-    DEBUG_ROBOT_ENABLE_PRINT("- "+m_nb_uart+" capteurs de couleur")
-    DEBUG_ROBOT_ENABLE_PRINT("- "+m_rupteur+" rupteurs")
-    DEBUG_ROBOT_ENABLE_PRINT("- "+m_ax12+" ax12")
-    DEBUG_ROBOT_ENABLE_PRINT("- "+m_lidar+" lidar")
-    DEBUG_ROBOT_ENABLE_PRINT("- "+m_nb_screen+" écran")
-    DEBUG_ROBOT_ENABLE_PRINT("- "+m_nb_capt_dist+" capteurs de distnace")
+    DEBUG_ROBOT_PRINT(m_nom << " comporte : ")
+    DEBUG_ROBOT_PRINT("- " << m_nb_servo << " servo moteurs")
+    DEBUG_ROBOT_PRINT("- " << m_nb_moteur4Q << " pont en H")
+    DEBUG_ROBOT_PRINT("- " << m_nb_moteurs << " moteurs")
+    DEBUG_ROBOT_PRINT("- " << m_nb_capt_cur << " capteurs de courant")
+    DEBUG_ROBOT_PRINT("- " << m_nb_capt_couleur << " capteurs de courant")
+    DEBUG_ROBOT_PRINT("- " << m_nb_uart << " capteurs de couleur")
+    DEBUG_ROBOT_PRINT("- " << m_nb_rupteur << " rupteurs")
+    DEBUG_ROBOT_PRINT("- " << m_nb_ax12 << " ax12")
+    DEBUG_ROBOT_PRINT("- " << m_nb_lidar << " lidar")
+    DEBUG_ROBOT_PRINT("- " << m_nb_screen << " écran")
+    DEBUG_ROBOT_PRINT("- " << m_nb_capt_dist << " capteurs de distance")
 }
 
 Robot::~Robot(){}
@@ -91,6 +96,97 @@ void Robot::checkMessages() {
 						m_stopMain = true;
 					}
 					break;
+				case LIDAR_RET_DEBUG_DEBUG:
+					//std::cout << "Lidar> Debug : debug received" << std::endl;
+					DEBUG_ROBOT_PRINT(m_nom << "Debug received");
+					break;
+				case LIDAR_RET_DEBUG_START:
+					//std::cout << "Lidar> Debug : Start received" << std::endl;
+					DEBUG_ROBOT_PRINT(m_nom << "Start received");
+					break;
+				case LIDAR_RET_DEBUG_STOP:
+					//std::cout << "Lidar> Debug : Stop received" << std::endl;
+					DEBUG_ROBOT_PRINT(m_nom << "Stop received");
+					break;
+				case LIDAR_RET_DATA_AVAILABLE:
+					std::cout << "Lidar> Data available = " << (int)buf[2]  << std::endl;
+					break;
+				case LIDAR_RET_RAW_POINT:{
+					float distance;
+					float *dPtr = &distance;
+					uint8_t *ptr = (uint8_t*)dPtr;
+					ptr[0] = buf[2];
+					ptr[1] = buf[3];
+					ptr[2] = buf[4];
+					ptr[3] = buf[5];
+					float angle;
+					dPtr = &angle;
+					ptr = (uint8_t*)dPtr;
+					ptr[0] = buf[6];
+					ptr[1] = buf[7];
+					ptr[2] = buf[8];
+					ptr[3] = buf[9];
+					
+					uint8_t quality = buf[10];
+					/*for(int i = 2; i < 10; i++){
+						std::cout << "buf["<<i<<"] : " << (int)buf[i] << " / ";
+					}*/
+					std::cout << "Lidar> Distance : " << distance << " & angle : " << angle << "& quality : " << (int)quality << std::endl;
+					break;}
+				case LIDAR_RET_DETECTED_POINTS:{
+					uint8_t s = buf[0];
+					uint8_t nbPoints = s/8;
+					//std::cout << "s : " << (int)s << " & nbPoints : " << (int)nbPoints << std::endl;
+					for(int i =0; i < nbPoints; i++){
+						pointFloat2d p;
+						//float x,y;
+						float *dPtr = &p.x;
+						uint8_t *ptr = (uint8_t*)dPtr;
+						ptr[0] = buf[i*8+2];
+						ptr[1] = buf[i*8+3];
+						ptr[2] = buf[i*8+4];
+						ptr[3] = buf[i*8+5];
+						dPtr = &p.y;
+						ptr = (uint8_t*)dPtr;
+						ptr[0] = buf[i*8+6];
+						ptr[1] = buf[i*8+7];
+						ptr[2] = buf[i*8+8];
+						ptr[3] = buf[i*8+9];
+						/*for(int i = 2; i < 10; i++){
+							std::cout << "buf["<<i<<"] : " << (int)buf[i] << " / ";
+						}*/
+						//std::cout << "x : " << x << " & y : " << y << std::endl;
+						//std::cout << x << "," << y << std::endl;
+						//std::cout << "Lidar> " << p.x << "," << p.y << std::endl;
+						//addDetectedPoint(p);
+						double angle = atan2(p.y,p.x);
+						double distance = sqrt(p.x*p.x + p.y*p.y);
+						//angle += m_pWeb->dspic->getT() + 3.14159/4 + 3.14159;
+						angle += m_pWeb->dspic->getT() + 3.14159/4;
+						p.x = distance*cos(angle);
+						p.y = distance*sin(angle);
+						p.x += m_pWeb->dspic->getX();
+						p.y += m_pWeb->dspic->getY();
+						m_pWeb->addLidarPoints(p);
+						if(getFillBuffer()){
+							addDetectedPoint(p);
+						}
+					}
+					
+					break;}
+				case LIDAR_RET_SPEED:{
+					float speed;
+					float *dPtr = &speed;
+					uint8_t *ptr = (uint8_t*)dPtr;
+					ptr[0] = buf[2];
+					ptr[1] = buf[3];
+					ptr[2] = buf[4];
+					ptr[3] = buf[5];
+					for(int i = 2; i < 6; i++){
+						std::cout << "buf["<<i<<"] : " << (int)buf[i] << " / ";
+					}
+					std::cout << "speed : " << speed << std::endl;
+					break;}
 				default:
 					std::cout << "message non pris en charge" << std::endl;
 					break;
@@ -191,12 +287,12 @@ bool Robot::startThreadDetection(){
 void* thread(void *threadid){
 	Robot *robot = (Robot*)threadid;
 	while(robot->isContinueThread()){
-		if(nb_lidar) {
+		if(g_nb_lidar) {
 			robot->sendGetDetectedPoints();
 			robot->flush(255);
 			robot->checkMessages();
 			delay(1);
-		} else if(nb_screen) {
+		} else if(g_nb_screen) {
 			robot->flush(10);
 			robot->checkMessages();
 			delay(100);
@@ -234,7 +330,7 @@ void Robot::reset(void) {
 
 void Robot::GetPing() {
 	uint8_t buffer[1];
-	buffer[0] = HMI_CMD_PING;
+	buffer[0] = CMD_PING;
 	sendSPI(buffer,1);
 	flush(5);
 }
@@ -242,7 +338,7 @@ void Robot::GetPing() {
 bool Robot::Ping(void) {
 	m_mutex.lock();
 	bool b = m_ping;
-	m_ping = flase;
+	m_ping = false;
 	m_mutex.unlock();
 	return b;
 }
@@ -266,7 +362,7 @@ void Robot::MoveServo(int nb_bras, int pos) {
 
 void Robot::SetMot(int nb_bras, int state) {
 	uint8_t buffer[3];
-	if(nb_bras < 0 || nb_bras > nb_moteur) {
+	if(nb_bras < 0 || nb_bras > m_nb_moteurs) {
 		std::cout << "erreur nb_bras = " << nb_bras << std::endl;
 	} else {
 		if(state < 0 || state > 1) {
@@ -282,7 +378,7 @@ void Robot::SetMot(int nb_bras, int state) {
 
 void Robot::SetMot4Q(int nb_bras, int vit, int sens) {
 	uint8_t buffer[4];
-	if(nb_bras < 0 || nb_bras > nb_moteur4Q) {
+	if(nb_bras < 0 || nb_bras > m_nb_moteur4Q) {
 		std::cout << "erreur nb_bras = " << nb_bras << std::endl;
 	} else {
 		if(sens < 0 || sens > 1) {
@@ -303,7 +399,7 @@ void Robot::SetMot4Q(int nb_bras, int vit, int sens) {
 
 void Robot::GetColor(int nb_bras) {
 	uint8_t buffer[2];
-	if(nb_bras < 0 || nb_bras > nb_capt_couleur) {
+	if(nb_bras < 0 || nb_bras > m_nb_capt_couleur) {
 		std::cout << "erreur nb_bras = " << nb_bras << std::endl;
 	} else {
 		buffer[0] = ACT_CMD_COLOR;
@@ -315,7 +411,7 @@ void Robot::GetColor(int nb_bras) {
 
 void Robot::GetCurrent(int nb_bras){
 	uint8_t buffer[2];
-	if(nb_bras < 0 || nb_bras > nb_capt_cur) {
+	if(nb_bras < 0 || nb_bras > m_nb_capt_cur) {
 		std::cout << "erreur nb_bras = " << nb_bras << std::endl;
 	} else {
 		buffer[0] = ACT_CMD_CUR;
@@ -327,7 +423,7 @@ void Robot::GetCurrent(int nb_bras){
 
 void Robot::GetRupt(int nb_bras) {
 	uint8_t buffer[2];
-	if(nb_bras < 0 || nb_bras > nb_rupteur) {
+	if(nb_bras < 0 || nb_bras > m_nb_rupteur) {
 		std::cout << "erreur nb_bras = " << nb_bras << std::endl;
 	} else {
 		buffer[0] = ACT_CMD_RUPT;
@@ -339,10 +435,10 @@ void Robot::GetRupt(int nb_bras) {
 
 void Robot::GetDist(int nb_bras) {
 	uint8_t buffer[2];
-	if(nb_bras < 0 || nb_bras > nb_capt_dist) {
+	if(nb_bras < 0 || nb_bras > m_nb_capt_dist) {
 		std::cout << "erreur nb_bras = " << nb_bras << std::endl;
 	} else {
-		buffer[0] = NB_CAPT_DIST;
+		buffer[0] = ACT_CMD_DIST;
 		buffer[1] = nb_bras;
 		sendSPI(buffer,2);
 	}
@@ -377,20 +473,30 @@ int Robot::Rupt(int nb_bras) {
 	return b;
 }
 
-void Robot::UartSend(std::string txt) {
-	uint8_t buffer[txt.size()+3];
-	char txt_char[txt.size()+1];
-	int i;
-	if(txt.size() < 20) {
-		strcpy(txt_char, txt.c_str());
+void Robot::UartSend(unsigned char Send[], unsigned char id_uart) {
+	uint8_t buffer[3+sizeof(Send)];
+	if(sizeof(Send) < 255) {
+		int i_cpt;
 		buffer[0] = ACT_CMD_UART_SEND;
-		for(i=0;i<txt.size()+1;i++) {
-			buffer[i+1] = txt_char[i];
+		buffer[1] = sizeof(Send);
+		buffer[2] = id_uart;
+		for(i_cpt=0;i_cpt<sizeof(Send);i_cpt++) {
+			buffer[i_cpt+3] = Send[i_cpt];
 		}
-		sendSPI(buffer,txt.size()+1);
+		sendSPI(buffer,3+sizeof(Send));
 	} else {
-		std::cout << "erreur chaine trop longue max 20" << std::endl;
+		std::cout << "erreur chaine uart trop longue" << std::endl;
 	}
+}
+
+void Robot::allumerPhare(void) {
+	unsigned char TabPhare[] = {PHARE_CMD_ALLUMER};
+    UartSend(TabPhare,UART_ID_PHARE);
+}
+
+void Robot::eteindrePhare(void) {
+	unsigned char TabPhare[] = {PHARE_CMD_ETEINDRE};
+    UartSend(TabPhare,UART_ID_PHARE);
 }
 
 void Robot::EraseScreen(int in_era) {
@@ -488,63 +594,63 @@ uint8_t Robot::CoteChoisi(void) {
 	return b;
 }
 
-void Lidar::start() {
+void Robot::start() {
 	uint8_t buffer[1];
 	buffer[0] = LIDAR_CMD_START;
 	sendSPI(buffer,1);
 }
 
-void Lidar::stop() {
+void Robot::stop() {
 	uint8_t buffer[1];
 	buffer[0] = LIDAR_CMD_STOP;
 	sendSPI(buffer,1);
 }
 
-void Lidar::getAvailableData() {
+void Robot::getAvailableData() {
 	uint8_t buffer[1];
 	buffer[0] = LIDAR_CMD_GET_DATA_AVAILABLE;
 	sendSPI(buffer,1);
 }
 
-void Lidar::getRawPoint() {
+void Robot::getRawPoint() {
 	uint8_t buffer[1];
 	buffer[0] = LIDAR_CMD_GET_RAW_POINT;
 	sendSPI(buffer,1);
 }
 
-void Lidar::sendGetDetectedPoints() {
+void Robot::sendGetDetectedPoints() {
 	uint8_t buffer[1];
 	buffer[0] = LIDAR_CMD_GET_DETECTED_POINTS;
 	sendSPI(buffer,1);
 }
 
-void Lidar::setSpeed(uint8_t speed) {	//change rotation speed
+void Robot::setSpeed(uint8_t speed) {	//change rotation speed
 	uint8_t buffer[2];
 	buffer[0] = LIDAR_CMD_SET_SPEED;
 	buffer[1] = speed;
 	sendSPI(buffer,2);
 }
 
-void Lidar::getSpeed() {	//change rotation speed
+void Robot::getSpeed() {	//change rotation speed
 	uint8_t buffer[1];
 	buffer[0] = LIDAR_CMD_GET_SPEED;
 	sendSPI(buffer,1);
 }
 
-void Lidar::addDetectedPoint(pointFloat2d p) {
+void Robot::addDetectedPoint(pointFloat2d p) {
 	m_mutex.lock();
 	m_qDetectedPoints.push(p);
 	m_mutex.unlock();
 }
 
-std::queue<pointFloat2d> Lidar::getDetectedPoints() {
+std::queue<pointFloat2d> Robot::getDetectedPoints() {
 	m_mutex.lock();
 	std::queue<pointFloat2d> q = m_qDetectedPoints;
 	m_mutex.unlock();
 	return q;
 }
 
-std::queue<pointFloat2d> Lidar::getAndClearDetectedPoints() {
+std::queue<pointFloat2d> Robot::getAndClearDetectedPoints() {
 	m_mutex.lock();
 	std::queue<pointFloat2d> q;
 	std::swap(m_qDetectedPoints,q);
@@ -552,13 +658,13 @@ std::queue<pointFloat2d> Lidar::getAndClearDetectedPoints() {
 	return q;
 }
 	
-void Lidar::setFillBuffer(bool b) {
+void Robot::setFillBuffer(bool b) {
 	m_mutex.lock();
 	m_fillBuffer = b;
 	m_mutex.unlock();
 }
 
-bool Lidar::getFillBuffer() {
+bool Robot::getFillBuffer() {
 	m_mutex.lock();
 	bool b = m_fillBuffer;
 	m_mutex.unlock();

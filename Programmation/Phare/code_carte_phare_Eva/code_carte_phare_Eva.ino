@@ -45,13 +45,14 @@ void setup() {
   analogWrite(pwm_act_Tourner, 0);
   Serial.begin(9600);
 
-  digitalWrite(sens_act_Montee, descendrePhare);
+  /*digitalWrite(sens_act_Montee, descendrePhare);
   analogWrite(pwm_act_Monter, vitesseDeCroisiereMonter);
   while(!digitalRead(RUPT_INFO_Bas)) {}
-  analogWrite(pwm_act_Monter, 0);
+  analogWrite(pwm_act_Monter, 0);*/
 }
 
 void loop() {
+  Serial.println("bonjour");
   if(Serial.available()) {
     receive = Serial.read();
     if(receive == 'A') {

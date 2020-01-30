@@ -9,7 +9,6 @@ SPI::SPI(int channel, int speed){
 	pinMode(PIN_MUX_C, OUTPUT);
 	
 	for(int i=0;i<NB_CARTE;i++) {
-		PinRst
 		pinMode(PinRst[i], OUTPUT);
 		digitalWrite(PinRst[i],HIGH);
 	}

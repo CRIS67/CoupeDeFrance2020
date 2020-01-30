@@ -92,9 +92,6 @@ std::vector<Node> completePath;
 #define FORWARD         0
 #define BACKWARD        1
 
-bool stopMain();
-bool turnOffPi();
-
 int main() {
 
     std::cout << std::endl << "     Coupe de France 2019 by CRIS" << std::endl << std::endl;
@@ -110,7 +107,7 @@ int main() {
     SPI spi(SPI_CHANNEL,SPI_SPEED); //initialise SPI
 
     Robot actBack("Actuator Back",&spi,SPI_ID_ACT_BACK,6,0,0,0,2,0,6,0,0,0,0,NULL);
-    Robot actScara("Actuator Scara",&spi,SPI_ID_SCARA,0,2,2,2,0,0,5,3,0,0,1,NULL);
+    Robot actScara("Actuator Scara",&spi,SPI_ID_ACT_SCARA,0,2,2,2,0,0,5,3,0,0,1,NULL);
 
     Web web(&dspic, &actScara, &actBack);
 
@@ -118,8 +115,8 @@ int main() {
     Robot lidar("Lidar",&spi,SPI_ID_LIDAR,0,0,0,0,0,0,0,0,1,0,0,&web);
     Robot xbee("Xbee",&spi,SPI_ID_XBEE,4,2,0,0,0,1,3,0,0,0,0,NULL);
 
-    actFront.Reset();
-    actBack.Reset();
+    actScara.reset();
+    actBack.reset();
     lidar.stop();
 
     puts("Hello human ! I, your fervent robot, am initialised. Press <ENTER> to continue.");
@@ -131,7 +128,7 @@ int main() {
     web.startThread();
     lidar.startThreadDetection();
     hmi.startThreadDetection();
-    actFront.startThreadDetection();
+    actScara.startThreadDetection();
     actBack.startThreadDetection();
 
     dspic.setVar8(CODE_VAR_VERBOSE,1);
@@ -150,6 +147,7 @@ int main() {
     getchar();
 
     dspic.go(1445, 1500, 0, 0);
+    xbee.allumerPhare();
     delay(4000);
 
     while(!hmi.isStopMain()){
@@ -164,7 +162,7 @@ int main() {
     lidar.stop();
     lidar.stopThreadDetection();
     hmi.stopThreadDetection();
-    actFront.stopThreadDetection();
+    actScara.stopThreadDetection();
     actBack.stopThreadDetection();
     web.stopThread();
 
@@ -178,17 +176,4 @@ int main() {
 
     
     return 0;
-}
-
-bool stopMain(){
-    m_mutex.lock();
-    stopMain = m_stopMain;
-    m_mutex.unlock();
-    return stopMain;
-}
-bool turnOffPi(){
-    m_mutex.lock();
-    turnOffPi = m_turnOffPi;
-    m_mutex.unlock();
-    return turnOffPi;
 }

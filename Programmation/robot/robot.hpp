@@ -10,16 +10,20 @@
 #include <unistd.h>
 #include <iostream>
 #include <pthread.h>
+#include <errno.h>
+#include <math.h>
+#include <string.h>
 
 #include "SPI.hpp"
 #include "web.hpp"
+#include "float.hpp"
 
 #define DEBUG_ROBOT_ENABLE_PRINT		1
 
 #if(DEBUG_ROBOT_ENABLE_PRINT)
-#define DEBUG_ROBOT_ENABLE_PRINT(x) 				std::cout << m_nom << " Debug> " << x << std::endl;
+#define DEBUG_ROBOT_PRINT(x) 				std::cout << x << std::endl;
 #else
-#define DEBUG_ROBOT_ENABLE_PRINT(x)				
+#define DEBUG_ROBOT_PRINT(x)				
 #endif
 
 #define SIZE_BUFFER_RX	1000
@@ -81,13 +85,23 @@
 #define SERVO_VALUE_DROP	1500
 #define SERVO_VALUE_LOW		1600
 
-void* thread(void *threadid); //à voir
+#define UART_ID_PHARE		1
+#define UART_ID_HOLONOME	2
+#define UART_ID_BALISE		3
+
+//cmd uart
+#define PHARE_CMD_ALLUMER	1
+#define PHARE_CMD_ETEINDRE	2
+
+void* thread(void *threadid);
+
+class Web;
 
 class Robot {
 	public:
 	    //functions
 		Robot(std::string nom, SPI *pSpi, uint8_t id, int nb_servo, int nb_moteur4Q, int nb_moteur, int nb_capt_cur, int nb_capt_couleur,
-              int nb_uart, int nb_rupteur, int nb_ax12, int nb_lidar, int nb_screen, int nb_capt_dist);
+              int nb_uart, int nb_rupteur, int nb_ax12, int nb_lidar, int nb_screen, int nb_capt_dist, Web *pWeb);
 		virtual ~Robot();
 		void checkMessages();
 		bool startThreadDetection();
@@ -97,19 +111,16 @@ class Robot {
 		void sendSPI(uint8_t *buf, uint8_t bufSize);
 		void sendReceiveSPI(uint8_t data);
 		void flush(uint16_t nb);
-		bool flushDyn();
 		void GetPing();
-		bool GetPing();
+		bool Ping();
 
 		//actuator
 		void MoveServo(int nb_bras, int pos);
 		void SetMot(int nb_bras, int state);
 		void GetColor(int nb_bras);
 		void GetCurrent(int nb_bras);
-		void GetColor(int nb_bras);
 		void GetRupt(int nb_bras);
 		void GetDist(int nb_bras);
-		bool flushDyn(void);
 		int Cur(int nb_bras);
 		int Color(int nb_bras);
 		int Dist(int nb_bras);
@@ -124,6 +135,7 @@ class Robot {
 		void EraseScreen(int in_era);
 		void SetTxt(int in, std::string txt);
 		void SetTxtFull(std::string txt_in);
+		void setScore(int score);
 
 		//lidar
 		void start();
@@ -138,6 +150,11 @@ class Robot {
 		std::queue<pointFloat2d> getAndClearDetectedPoints();
 		void setFillBuffer(bool b);
 		bool getFillBuffer();
+
+		//Xbee
+		void UartSend(unsigned char Send[], unsigned char id_uart);
+		void allumerPhare();
+		void eteindrePhare();
 
 		int16_t x = 1500,y = 1000, t = 45;
 		uint8_t bufferRx[SIZE_BUFFER_RX];
@@ -167,17 +184,15 @@ class Robot {
 		bool m_stopMain = false;
 		SPI *m_pSpi;
 		std::string m_nom;
-		Web *m_pWeb;
         int m_cur[10];
         int m_color[10];
         int m_dist[10];
         int m_RX[10];
         int m_rupt[10];
-		bool m_stopPrgm = false;
-		bool m_stopMain = false;
 		uint8_t m_hmi_cote = 0;
 		pthread_t m_thread;
 		std::mutex m_mutex;
+		Web *m_pWeb;	//pointer to SPI instance
 		std::queue<pointFloat2d> m_qDetectedPoints;
 		bool m_ping = false;
 };
