@@ -8,11 +8,20 @@
 
 #define PIN_MUX_A	28		//pin 38 / BCM 20 / WiringPi 28
 #define PIN_MUX_B	29		//pin 40 / BCM 21 / WiringPi 29
+#define PIN_MUX_C	26
 
 #define SPI_ID_LIDAR		0
 #define SPI_ID_ACT_FRONT	1
 #define SPI_ID_ACT_BACK		2
 #define SPI_ID_HMI			3
+#define SPI_ID_XBEE			4
+
+#define PIN_RST_LIDAR		22
+#define PIN_RST_ACT_0		24
+#define PIN_RST_ACT_1		25
+#define PIN_RST_HMI			23
+#define PIN_RST_XBEE		21
+
 
 #include <wiringPi.h>
 #include <wiringPiSPI.h>
