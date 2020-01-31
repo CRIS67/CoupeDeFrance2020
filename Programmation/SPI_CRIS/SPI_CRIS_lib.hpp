@@ -6,22 +6,22 @@
 #include <Arduino.h>
 
 //à modifier
-#define NB_SERVO        0
+#define NB_SERVO        3
 #define NB_MOTEUR4Q     0
-#define NB_MOTEUR       0
-#define NB_CAPT_CUR     0
+#define NB_MOTEUR       3
+#define NB_CAPT_CUR     3
 #define NB_CAPT_COLOR   0
 #define NB_UART         0
 #define NB_RUPT         0
 #define NB_AX12         0
 #define NB_LIDAR        0
-#define NB_SCREEN       1
+#define NB_SCREEN       0
 #define NB_CAPT_DIST    0
 
 #define SERVO_MIN     700
 #define SERVO_MAX     1600
 
-const int Pin_Led = 5;
+const int Pin_Led = 8;
 #if NB_SERVO > 0
   const int Pin_Servo[] = {2, 3, 4};
 #endif

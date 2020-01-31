@@ -454,6 +454,7 @@ void ISRCrisSpi(void) {
     case SPI_IDLE:
       TailleMsgSpi = data_spi;
         if(TailleMsgSpi) {
+          digitalWrite(Pin_Led, !digitalRead(Pin_Led));
           EtatSpi = SPI_NUM_VAR;
         }
       Checksum = 0;
@@ -478,7 +479,6 @@ void ISRCrisSpi(void) {
     case SPI_CHECKSUM:
       if((unsigned char)(Checksum%256) == (unsigned char)(data_spi)) {
         int i_int = 0;
-        FlagSpi = 1;
         CptSpi = 0;
         switch(TypeVarSpi) {
           #if NB_SERVO > 0
