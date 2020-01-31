@@ -1,8 +1,5 @@
 #include "robot.hpp"
 
-int g_nb_lidar;
-int g_nb_screen;
-
 Robot::Robot(std::string nom, SPI *pSpi,uint8_t id, int nb_servo, int nb_moteur4Q, int nb_moteur, int nb_capt_cur, int nb_capt_couleur, int nb_uart,
              int nb_rupteur, int nb_ax12, int nb_lidar, int nb_screen, int nb_capt_dist, Web *pWeb) {
     m_nom = nom;
@@ -19,16 +16,16 @@ Robot::Robot(std::string nom, SPI *pSpi,uint8_t id, int nb_servo, int nb_moteur4
     m_nb_lidar = nb_lidar;
     m_nb_screen = nb_screen;
     m_nb_capt_dist = nb_capt_dist;
-    g_nb_screen = m_nb_screen;
-    g_nb_lidar = m_nb_lidar;
     m_pWeb = pWeb;
+    p_nb_lidar = m_nb_lidar;
+    p_nb_screen = m_nb_screen;
     DEBUG_ROBOT_PRINT(m_nom << " comporte : ")
     DEBUG_ROBOT_PRINT("- " << m_nb_servo << " servo moteurs")
     DEBUG_ROBOT_PRINT("- " << m_nb_moteur4Q << " pont en H")
     DEBUG_ROBOT_PRINT("- " << m_nb_moteurs << " moteurs")
     DEBUG_ROBOT_PRINT("- " << m_nb_capt_cur << " capteurs de courant")
-    DEBUG_ROBOT_PRINT("- " << m_nb_capt_couleur << " capteurs de courant")
-    DEBUG_ROBOT_PRINT("- " << m_nb_uart << " capteurs de couleur")
+    DEBUG_ROBOT_PRINT("- " << m_nb_capt_couleur << " capteurs de couleur")
+    DEBUG_ROBOT_PRINT("- " << m_nb_uart << " uart")
     DEBUG_ROBOT_PRINT("- " << m_nb_rupteur << " rupteurs")
     DEBUG_ROBOT_PRINT("- " << m_nb_ax12 << " ax12")
     DEBUG_ROBOT_PRINT("- " << m_nb_lidar << " lidar")
@@ -43,11 +40,9 @@ void Robot::checkMessages() {
 		nbMsgReceived--;
 		uint8_t msgSize = bufferRx[iRxOut];
 		iRxOut++;
-
 		if(iRxOut == SIZE_BUFFER_RX){
 			iRxOut = 0;
 		}
-		msgSize++; //suppr
 		uint8_t buf[msgSize];
 		buf[0] = msgSize;
 		for(int i = 1; i < msgSize; i++){
@@ -62,14 +57,13 @@ void Robot::checkMessages() {
 			checksum += buf[i];
 		}
 
-		checksum--; //err
-
 		if(checksum != buf[msgSize-1]){
 			std::cout << m_nom << " > CHECKSUM ERROR ! (msgSize = " << (int)msgSize << " & iRxOut = " << (int)iRxOut << ")" << " & CS = " << (int)buf[msgSize-1] << std::endl;
 		} else {	//Checksum ok
 			switch(buf[1]){	//type of msg
 				case ACT_CMD_CUR:
 					m_cur[buf[2]] = buf[3];
+					std::cout << buf[3] << std::endl;
 					break;
 				case ACT_CMD_COLOR:
 					m_color[buf[2]] = buf[3];
@@ -92,7 +86,8 @@ void Robot::checkMessages() {
 					break;
 				case HMI_RET_OFF_PI:
 					if(buf[3]) {
-						m_stopPrgm = true;
+						std::cout << "turn off pi debug" << std::endl;
+ 						m_stopPrgm = true;
 						m_stopMain = true;
 					}
 					break;
@@ -235,8 +230,7 @@ void Robot::sendReceiveSPI(uint8_t data){	//send & handle response
 		}
 		nbBytesReceived++;
 		nbBytesReceivedTotal++;
-	}
-	else{
+	}else{
 		if(buffer[0] != 0){
 			currentMsgSize = buffer[0];
 			bufferRx[iRxIn] = currentMsgSize;
@@ -287,12 +281,12 @@ bool Robot::startThreadDetection(){
 void* thread(void *threadid){
 	Robot *robot = (Robot*)threadid;
 	while(robot->isContinueThread()){
-		if(g_nb_lidar) {
+		if(robot->p_nb_lidar) {
 			robot->sendGetDetectedPoints();
 			robot->flush(255);
 			robot->checkMessages();
 			delay(1);
-		} else if(g_nb_screen) {
+		} else if(robot->isScreen()) {
 			robot->flush(10);
 			robot->checkMessages();
 			delay(100);
@@ -314,6 +308,20 @@ void Robot::stopThreadDetection(){
 	m_mutex.lock();
 	m_continueThread = false;
 	m_mutex.unlock();
+}
+
+bool Robot::isLidar(){
+	m_mutex.lock();
+	bool b = m_nb_lidar;
+	m_mutex.unlock();
+	return b;
+}
+
+bool Robot::isScreen(){
+	m_mutex.lock();
+	bool b = m_nb_screen;
+	m_mutex.unlock();
+	return b;
 }
 
 void Robot::reset(void) {

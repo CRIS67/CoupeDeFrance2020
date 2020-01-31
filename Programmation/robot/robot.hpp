@@ -40,6 +40,9 @@
 #define CODE_VAR_DISTANCE   1
 #define CODE_VAR_ANGLE      2
 
+#define JAUNE               1
+#define BLEU                2
+
 //------------ CMD -------------------//
 #define AUCUN							0
 #define LIDAR_CMD_DEBUG               	1
@@ -105,7 +108,7 @@
 
 void* thread(void *threadid);
 
-class Web;
+class Web; //pré déclaration de la class Web car inclusion mutuelle de Web et Robot
 
 class Robot {
 	public:
@@ -148,6 +151,7 @@ class Robot {
 		void SetTxt(int in, std::string txt);
 		void SetTxtFull(std::string txt_in);
 		void setScore(int score);
+		bool isScreen();
 
 		//lidar
 		void start();
@@ -162,6 +166,7 @@ class Robot {
 		std::queue<pointFloat2d> getAndClearDetectedPoints();
 		void setFillBuffer(bool b);
 		bool getFillBuffer();
+		bool isLidar();
 
 		//Xbee
 		void UartSend(unsigned char Send[], unsigned char id_uart);
@@ -177,6 +182,8 @@ class Robot {
 		uint8_t currentMsgSize = 0;
 		uint8_t nbBytesReceived = 0;
 		uint32_t nbBytesReceivedTotal = 0;
+		int p_nb_lidar;
+		int p_nb_screen;
     protected:
         int m_nb_servo;
         int m_nb_moteur4Q;
@@ -186,9 +193,9 @@ class Robot {
         int m_nb_uart;
         int m_nb_rupteur;
         int m_nb_ax12;
+        int m_nb_capt_dist;
         int m_nb_lidar;
         int m_nb_screen;
-        int m_nb_capt_dist;
 		uint8_t m_id;	//id of this SPI slave
 		bool m_continueThread;
 		bool m_fillBuffer = false;

@@ -106,7 +106,8 @@ int main() {
 
     SPI spi(SPI_CHANNEL,SPI_SPEED); //initialise SPI
 
-    Robot actBack("Actuator Back",&spi,SPI_ID_ACT_BACK,6,0,0,0,2,0,6,0,0,0,0,NULL);
+    //Robot actBack("Actuator Back",&spi,SPI_ID_ACT_BACK,6,0,0,0,2,0,6,0,0,0,0,NULL);
+    Robot actBack("Actuator Back 2019",&spi,SPI_ID_ACT_BACK,3,0,3,3,0,0,0,0,0,0,0,NULL);
     Robot actScara("Actuator Scara",&spi,SPI_ID_ACT_SCARA,0,2,2,2,0,0,5,3,0,0,1,NULL);
 
     Web web(&dspic, &actScara, &actBack);
@@ -116,22 +117,22 @@ int main() {
     Robot xbee("Xbee",&spi,SPI_ID_XBEE,4,2,0,0,0,1,3,0,0,0,0,NULL);
 
     actScara.reset();
-    actBack.reset();
-    lidar.stop();
+    //actBack.reset();
+    //lidar.stop();
 
     puts("Hello human ! I, your fervent robot, am initialised. Press <ENTER> to continue.");
     getchar();
 
-    lidar.start();
+    /*lidar.start();
     dspic.start();
     dspic.startThreadReception();
     web.startThread();
     lidar.startThreadDetection();
     hmi.startThreadDetection();
-    actScara.startThreadDetection();
-    actBack.startThreadDetection();
+    actScara.startThreadDetection();*/
+    //actBack.startThreadDetection();
 
-    dspic.setVar8(CODE_VAR_VERBOSE,1);
+    /*dspic.setVar8(CODE_VAR_VERBOSE,1);
     puts("verbose set to 1");
     dspic.getVar(CODE_VAR_BAT);
     dspic.loadVarDspicFromFile("config.txt");
@@ -148,10 +149,24 @@ int main() {
 
     dspic.go(1445, 1500, 0, 0);
     xbee.allumerPhare();
-    delay(4000);
+    delay(4000);*/
+    //actBack.MoveServo(0,800);
+    hmi.setScore(666);
+    hmi.startThreadDetection();
 
     while(!hmi.isStopMain()){
-
+        if(hmi.CoteChoisi() == JAUNE) {
+            std::cout << "JAUNE"<< std::endl;
+        } else if(hmi.CoteChoisi() == BLEU) {
+            std::cout << "BLEU"<< std::endl;
+        } else {
+        	std::cout << "RIEN"<< std::endl;
+        }
+    	delay(100);
+        /*actBack.GetCurrent(0);
+        int test = actBack.Cur(0);
+        std::cout << test << std::endl;
+        delay(1000);*/
 	}
 
     dspic.stop();

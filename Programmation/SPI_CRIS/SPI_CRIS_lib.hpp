@@ -6,34 +6,34 @@
 #include <Arduino.h>
 
 //à modifier
-#define NB_SERVO        3
-#define NB_MOTEUR       3
-#define NB_MOTEUR4Q     2
-#define NB_CAPT_CUR     3
-#define NB_CAPT_COLOR   3
-#define NB_UART         2
-#define NB_RUPT         3
-#define NB_AX12         2
-#define NB_LIDAR        2
-#define NB_SCREEN       2
-#define NB_CAPT_DIST    2
+#define NB_SERVO        0
+#define NB_MOTEUR4Q     0
+#define NB_MOTEUR       0
+#define NB_CAPT_CUR     0
+#define NB_CAPT_COLOR   0
+#define NB_UART         0
+#define NB_RUPT         0
+#define NB_AX12         0
+#define NB_LIDAR        0
+#define NB_SCREEN       1
+#define NB_CAPT_DIST    0
 
 #define SERVO_MIN     700
 #define SERVO_MAX     1600
 
-const int Pin_Led;
+const int Pin_Led = 5;
 #if NB_SERVO > 0
-  const int Pin_Servo[] = {};
+  const int Pin_Servo[] = {2, 3, 4};
 #endif
 #if NB_MOTEUR > 0
-  const int Pin_Moteur[] = {};
+  const int Pin_Moteur[] = {5, 6, 7};
 #endif
 #if NB_MOTEUR4Q > 0
   const int Pin_Moteur4Q_SENS[] = {};
   const int Pin_Moteur4Q_PWM[] = {};
 #endif
 #if NB_CAPT_CUR > 0
-  const int Pin_Capt_Cur[] = {};
+  const int Pin_Capt_Cur[] = {A5, A6, A7};
 #endif
 #if NB_CAPT_COLOR > 0
   #define PIN_ENABLE 1
@@ -66,14 +66,26 @@ void InitCrisSpi();
 void LoopCrisSpi();
 void ISRCrisSpi();
 
+#define SS              10
+#define MOSI            11
+#define MISO            12
+#define SCK             13
+
 //etat machine spi
 #define SPI_IDLE        0
 #define SPI_NUM_VAR     1
 #define SPI_MSG_UTILE   2
 #define SPI_CHECKSUM    3
 
+#define SPI_SEND_IDLE   0
+#define SPI_SEND_TYPE   1
+#define SPI_SEND_NUM    2
+#define SPI_SEND_MSG    3
+#define SPI_SEND_CHECK  4
+
 #define TAILLE_SPI_CHAINE   100
 #define TAILLE_SEND         10
+#define TAILLE_SPI_SEND     5
 
 #define AUCUN                           0
 #define LIDAR_CMD_DEBUG                 1
@@ -116,8 +128,13 @@ void ISRCrisSpi();
 #define LIDAR_RET_RAW_POINT             102
 #define LIDAR_RET_SPEED                 121
 
-#define MOTEUR_STOP     0
-
+#if NB_MOTEUR4Q > 0
+  #define MOTEUR_STOP     0
+#endif
+#if NB_SCREEN > 0
+  #define JAUNE               1
+  #define BLEU                2
+#endif
 #if NB_CAPT_COLOR > 0
 	#define CORRECTION_LUM
 	#define MAX_RGB         1000

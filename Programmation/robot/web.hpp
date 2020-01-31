@@ -22,7 +22,7 @@
 void* thread_HandleConnnection(void *threadid);
 std::string simulateResponse(double i);
 
-class Robot;
+class Robot; //pré déclaration de la class Robot car inclusion mutuelle de Web et Robot
 
 class Web
 {

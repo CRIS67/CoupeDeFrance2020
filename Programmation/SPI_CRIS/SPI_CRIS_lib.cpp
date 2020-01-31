@@ -2,6 +2,10 @@
 
 void(*resetFunc)(void) = 0; //declare reset function @ address 0
 
+int Cpt = 0, TypeVarSpi = 0, CptPile = 0, TailleMsgSpi = 0, CptSpi = 0, SendNbSpi = 0,
+CptReadPile = 0, EtatSpi = SPI_IDLE, CptSpiSend = SPI_SEND_IDLE, Checksum = 0;
+unsigned char TextSpi[TAILLE_SPI_CHAINE], TabPileSend[TAILLE_SEND], TabTypeSend[TAILLE_SEND];
+
 #if NB_CAPT_CUR > 0
   int Valeur_Cur[NB_CAPT_CUR];
 #endif
@@ -20,21 +24,83 @@ void(*resetFunc)(void) = 0; //declare reset function @ address 0
 #endif
 #if NB_SCREEN > 0
   #include <math.h>
+  
   #define BAUDRATE  115200
+  
   #define SCREEN_MAIN         0
   #define SREEN_CONTROL       1
   #define SCREEN_TERMINAL     2
   #define SCREEN_PID          3
   #define SCREEN_DEBUG        4
+  
   void Affiche(String txt_in);
+  
   char Text[TAILLE_SPI_CHAINE-2][4], temp;
   String txt;
-  int AutoLight = 0, EtatScreen = SCREEN_MAIN, blinkLed = 0, PrgmSens = 0, StopMain = 0, Score = 0, PosX = 200, PosY = 400;
+  int AutoLight = 0, EtatScreen = SCREEN_MAIN, blinkLed = 0, PrgmSens = 0, StopMain = 0, Score = 0, PosX = 200, PosY = 400, FlagSpi = 1, FlagSleep = 0;
+  
   void Affiche(String txt_in) {
     Serial.print(txt_in);
     Serial.write(0xFF);
     Serial.write(0xFF);
     Serial.write(0xFF);
+  }
+  void serialEvent() {
+    char Receive;     //reception de l'ecran
+    Receive = Serial.read();
+        if(FlagSleep) {
+            if(Receive == 0x68) {
+                FlagSleep = 0; //a tester
+                FlagSpi = 1;
+            }
+        } else {
+            switch(Receive) {
+                case 0x31:
+                case 0x32:
+                case 0x33:
+                case 0x34:
+                    EtatScreen = Receive-0x30;
+                    FlagSpi = 1;
+                    break;
+                case 0x41:
+                case 0x42:
+                case 0x43:
+                case 0x44:
+                    EtatScreen = SCREEN_MAIN;
+                    FlagSpi = 1;
+                    break;
+                case 0x35:
+                    AutoLight = 1;
+                    break;
+                case 0x36:
+                    AutoLight = 0;
+                    break;
+                case 0x40:
+                    FlagSleep = 1;
+                    break;
+                case 0x51:
+                    PrgmSens = JAUNE;
+                    TabPileSend[CptPile] = HMI_RET_COTE;
+                    CptPile++;
+                    CptPile %= TAILLE_SEND;
+                    break;
+                case 0x52:
+                    PrgmSens = BLEU;
+                    TabPileSend[CptPile] = HMI_RET_COTE;
+                    CptPile++;
+                    CptPile %= TAILLE_SEND;
+                    break;
+                case 0x53:
+                    StopMain = 1;
+                    TabPileSend[CptPile] = HMI_RET_OFF_PI;
+                    CptPile++;
+                    CptPile %= TAILLE_SEND;
+                    break;
+                default:
+                    //do nothing
+                    break;
+            }
+    }
   }
 #endif
 #if NB_SERVO > 0
@@ -179,11 +245,9 @@ void(*resetFunc)(void) = 0; //declare reset function @ address 0
   }
 #endif
 
-int Cpt = 0, FlagSleep = 0, FlagSpi = 1, TypeVarSpi = 0, CptPile = 0, TailleMsgSpi = 0, CptSpi = 0, SendNbSpi = 0,
-CptReadPile = 0, EtatSpi = SPI_IDLE, Checksum = 0, CptSpiSend = 0;
-unsigned char TextSpi[TAILLE_SPI_CHAINE], TabPileSend[TAILLE_SEND], TabTypeSend[TAILLE_SEND];
-
 void InitCrisSpi(void) {
+  pinMode(Pin_Led, OUTPUT);
+  digitalWrite(Pin_Led, 1);
   int i_init;
   #if NB_SERVO > 0
     for(i_init=0;i_init<NB_SERVO;i_init++) {
@@ -220,8 +284,6 @@ void InitCrisSpi(void) {
   #endif
   #if NB_SCREEN > 0
     Serial.begin(BAUDRATE);
-    pinMode(Pin_Led, OUTPUT);
-    digitalWrite(Pin_Led, 0);
   #endif
   #if NB_CAPT_COLOR > 0
     #if PIN_ENABLE > 0
@@ -242,6 +304,11 @@ void InitCrisSpi(void) {
     TabPileSend[i_init] = AUCUN;
   }
 
+  pinMode(SS, INPUT);
+  pinMode(MOSI, INPUT);
+  pinMode(MISO, OUTPUT);
+  pinMode(SCK, INPUT);
+
   SPCR = _BV(SPE);    // turn on SPI in slave mode
   SPCR |= _BV(SPIE);  // turn on interrupts
   SPDR = 0;           //clear buffer SPI
@@ -252,7 +319,8 @@ void LoopCrisSpi(void) {
   int i_init;
   #if NB_CAPT_CUR > 0
     for(i_init=0;i_init<NB_CAPT_CUR;i_init++) {
-      Valeur_Cur[i_init] = analogRead(Pin_Capt_Cur[i_init]);
+      //Valeur_Cur[i_init] = analogRead(Pin_Capt_Cur[i_init]);
+      Valeur_Cur[i_init] = 12;
     }
   #endif
   #if NB_RUPT > 0
@@ -479,6 +547,7 @@ void ISRCrisSpi(void) {
             //à faire peut être
           #endif
           #if NB_SCREEN > 0
+            FlagSpi = 1;
             case HMI_CMD_POS:
               PosX = TextSpi[0];
               PosX = PosX << 8;
@@ -531,27 +600,30 @@ void ISRCrisSpi(void) {
       EtatSpi = SPI_IDLE;
       break;
     default:
-    EtatSpi = SPI_IDLE;
-    break;
+      EtatSpi = SPI_IDLE;
+      break;
   }
   Checksum += data_spi;
   if(TabPileSend[CptReadPile]) {
-    CptSpiSend++;
     switch(CptSpiSend) {
-      case 1:
-        SPDR = 0x04;
+      case SPI_SEND_IDLE:
+        SPDR = TAILLE_SPI_SEND;
+        CptSpiSend = SPI_SEND_TYPE;
         break;
-      case 2:
+      case SPI_SEND_TYPE:
         SPDR = TabPileSend[CptReadPile];
+        CptSpiSend = SPI_SEND_NUM;
         break;
-      case 3:
+      case SPI_SEND_NUM:
         SPDR = TabTypeSend[CptReadPile];
+        CptSpiSend = SPI_SEND_MSG;
         break;
-      case 4:
+      case SPI_SEND_MSG:
         switch(TabPileSend[CptReadPile]) {
           #if NB_CAPT_CUR > 0
             case ACT_CMD_CUR:
-              SendNbSpi = Valeur_Cur[TabTypeSend[CptReadPile]];
+              //SendNbSpi = Valeur_Cur[TabTypeSend[CptReadPile]];
+              SendNbSpi = 13;
               break;
           #endif
           #if NB_CAPT_COLOR > 0
@@ -575,7 +647,6 @@ void ISRCrisSpi(void) {
           #if NB_SCREEN > 0
             case HMI_RET_COTE:
               SendNbSpi = PrgmSens;
-              PrgmSens = 0;
               break;
             case HMI_RET_OFF_PI:
               SendNbSpi = StopMain;
@@ -587,13 +658,14 @@ void ISRCrisSpi(void) {
             break;
         }
         SPDR = SendNbSpi;
+        CptSpiSend = SPI_SEND_CHECK;
         break;
-      case 5:
-        SPDR = (SendNbSpi+TabPileSend[CptReadPile]+TabTypeSend[CptReadPile]+4)%256;
+      case SPI_SEND_CHECK:
+        SPDR = (SendNbSpi+TabPileSend[CptReadPile]+TabTypeSend[CptReadPile]+TAILLE_SPI_SEND)%256;
         TabPileSend[CptReadPile] = AUCUN;
+        CptSpiSend = SPI_SEND_IDLE;
         CptReadPile++;
         CptReadPile %= TAILLE_SEND;
-        CptSpiSend = 0;
         SendNbSpi = 0;
         break;
     }
