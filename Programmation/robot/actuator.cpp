@@ -21,61 +21,49 @@ Actuator::Actuator(std::string nom, SPI *pSpi, uint8_t id, int nb_servo, int nb_
     DEBUG_ROBOT_PRINT("- " << m_nb_rupteur << " rupteurs")
     DEBUG_ROBOT_PRINT("- " << m_nb_ax12 << " ax12")
     DEBUG_ROBOT_PRINT("- " << m_nb_capt_dist << " capteurs de distance")
+	std::cout << std::endl;
 }
 
 Actuator::~Actuator() {}
 
-void Actuator::checkMessages() {
-	while(nbMsgReceived > 0) {
-		nbMsgReceived--;
-		uint8_t msgSize = bufferRx[iRxOut];
-		iRxOut++;
-		if(iRxOut == SIZE_BUFFER_RX){
-			iRxOut = 0;
-		}
-		uint8_t buf[msgSize];
-		buf[0] = msgSize;
-		for(int i = 1; i < msgSize; i++){
-			buf[i] = bufferRx[iRxOut];
-			iRxOut++;
-			if(iRxOut == SIZE_BUFFER_RX){
-				iRxOut = 0;
-			}
-		}
-		uint8_t checksum = 0;
-		for(int i = 0; i < msgSize-1; i++){
-			checksum += buf[i];
-		}
-
-		if(checksum != buf[msgSize-1]){
-			std::cout << m_nom << " > CHECKSUM ERROR ! (msgSize = " << (int)msgSize << " & iRxOut = " << (int)iRxOut << ")" << " & CS = " << (int)buf[msgSize-1] << std::endl;
-		} else {	//Checksum ok
-			switch(buf[1]){	//type of msg
-				case ACT_CMD_CUR:
-					m_cur[buf[2]] = buf[3];
-					std::cout << buf[3] << std::endl;
-					break;
-				case ACT_CMD_COLOR:
-					m_color[buf[2]] = buf[3];
-					break;
-				case ACT_CMD_RUPT:
-					m_rupt[buf[2]] = buf[3];
-					break;
-				case ACT_CMD_DIST:
-					m_dist[buf[2]] = buf[3];
-					break;
-				case CMD_PING:
-					if(buf[3] == 0x01) {
-						m_ping = true;
+void Actuator::DecodMsg(uint8_t buf[]) {
+	switch(buf[1]){	//type of msg
+		case ACT_CMD_CUR:
+			m_cur[buf[2]] = buf[3];
+			break;
+		case ACT_CMD_COLOR:
+			m_color[buf[2]] = buf[3];
+			break;
+		case ACT_CMD_RUPT:
+			m_rupt[buf[2]] = buf[3];
+			break;
+		case ACT_CMD_DIST:
+			m_dist[buf[2]] = buf[3];
+			break;
+		case ACT_CMD_UART_SEND:
+			if(buf[6] == (buf[2]+buf[3]+buf[4]+buf[5])%256) { //test CS
+				if(buf[2] == 5) {
+					if(buf[3] == UART_ID_PHARE) {
+						if(buf[4] == PHARE_CMD_ALLUMER) {
+							m_phareAllumee = buf[5];
+						} else if(buf[4] == PHARE_CMD_ETEINDRE) {
+							m_phareEteint = buf[5];
+						} else {
+							std::cout << "erreur type message" << std::endl;
+						}
 					} else {
-						m_ping = false;
+						std::cout << "wrong ID UART" << std::endl;
 					}
-					break;
-				default:
-					std::cout << "message non pris en charge" << std::endl;
-					break;
+				} else {
+					std::cout << "wrong length UART" << std::endl;
+				}
+			} else {
+				std::cout << "wrong CS UART" << std::endl;
 			}
-		}
+			break;
+		default:
+			std::cout << m_nom << "message non pris en charge" << std::endl;
+			break;
 	}
 }
 
@@ -162,7 +150,7 @@ void Actuator::GetColor(int nb_bras) {
 		buffer[1] = nb_bras;
 		sendSPI(buffer,2);
 	}
-	flush(5);
+	flush(NB_FLUSH_MIN);
 }
 
 void Actuator::GetCurrent(int nb_bras){
@@ -174,7 +162,7 @@ void Actuator::GetCurrent(int nb_bras){
 		buffer[1] = nb_bras;
 		sendSPI(buffer,2);
 	}
-	flush(5);
+	flush(NB_FLUSH_MIN);
 }
 
 void Actuator::GetRupt(int nb_bras) {
@@ -186,7 +174,7 @@ void Actuator::GetRupt(int nb_bras) {
 		buffer[1] = nb_bras;
 		sendSPI(buffer,2);
 	}
-	flush(5);
+	flush(NB_FLUSH_MIN);
 }
 
 void Actuator::GetDist(int nb_bras) {
@@ -198,12 +186,13 @@ void Actuator::GetDist(int nb_bras) {
 		buffer[1] = nb_bras;
 		sendSPI(buffer,2);
 	}
-	flush(5);
+	flush(NB_FLUSH_MIN);
 }
 
 int Actuator::Cur(int nb_bras) {
 	m_mutex.lock();
 	int b = m_cur[nb_bras];
+	m_cur[nb_bras] = ERROR_VALUE;
 	m_mutex.unlock();
 	return b;
 }
@@ -211,6 +200,7 @@ int Actuator::Cur(int nb_bras) {
 int Actuator::Color(int nb_bras) {
 	m_mutex.lock();
 	int b = m_color[nb_bras];
+	m_color[nb_bras] = ERROR_VALUE;
 	m_mutex.unlock();
 	return b;
 }
@@ -218,6 +208,7 @@ int Actuator::Color(int nb_bras) {
 int Actuator::Dist(int nb_bras) {
 	m_mutex.lock();
 	int b = m_dist[nb_bras];
+	m_dist[nb_bras] = ERROR_VALUE;
 	m_mutex.unlock();
 	return b;
 }
@@ -225,6 +216,7 @@ int Actuator::Dist(int nb_bras) {
 int Actuator::Rupt(int nb_bras) {
 	m_mutex.lock();
 	int b = m_rupt[nb_bras];
+	m_rupt[nb_bras] = ERROR_VALUE;
 	m_mutex.unlock();
 	return b;
 }
@@ -264,4 +256,20 @@ void Actuator::resetCptColor(void) {
 	uint8_t buffer[1];
 	buffer[0] = ACT_CMD_RESET_CPT_COLOR;
 	sendSPI(buffer,1);
+}
+
+bool Actuator::isPhareAllumee(void) {
+	m_mutex.lock();
+	int b = m_phareAllumee;
+	m_phareAllumee = 0;
+	m_mutex.unlock();
+	return b;
+}
+
+bool Actuator::isPhareEteint(void) {
+	m_mutex.lock();
+	int b = m_phareEteint;
+	m_phareEteint = 0;
+	m_mutex.unlock();
+	return b;
 }

@@ -25,7 +25,7 @@ class Hmi : public Robot {
 	public:
 		Hmi(std::string nom, SPI *pSpi, uint8_t id);
 		virtual ~Hmi();
-		void checkMessages();
+		void DecodMsg(uint8_t buf[]);
 		bool startThreadDetection();
 
 		uint8_t CoteChoisi();

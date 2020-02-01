@@ -120,7 +120,7 @@ int main() {
     Actuator xbee("Xbee",&spi,SPI_ID_XBEE,4,2,0,0,0,1,3,0,0);
 
     //actScara.reset();
-    //actBack.reset();
+    actBack.reset();
     //lidar.stop();
 
     puts("Hello human ! I, your fervent robot, am initialised. Press <ENTER> to continue.");
@@ -154,14 +154,28 @@ int main() {
     xbee.allumerPhare();
     delay(4000);*/
     //actBack.MoveServo(0,800);
-    //hmi.setScore(666);
+    hmi.setScore(666);
+    hmi.SetPos(10,27);
     hmi.startThreadDetection();
-    actBack.startThreadDetection();
+    //actBack.startThreadDetection();
 
     while(!hmi.isStopMain()){
-        actBack.GetCurrent(0);
-        int test = actBack.Cur(0);
-        std::cout << test << std::endl;
+        /*actBack.GetCurrent(0);
+        std::cout << "0 = " << actBack.Cur(0) << std::endl;
+
+        actBack.GetCurrent(1);
+        std::cout << "1 = " << actBack.Cur(1) << std::endl;
+
+        actBack.GetCurrent(2);
+        std::cout << "2 = " << actBack.Cur(2) << std::endl;*/
+        if(hmi.CoteChoisi() == JAUNE) {
+            std::cout << "JAUNE" << std::endl;
+        } else if(hmi.CoteChoisi() == BLEU) {
+            std::cout << "BLEU" << std::endl;
+        } else {
+            std::cout << "AUCUN" << std::endl;
+        }
+
         delay(1000);
 	}
 

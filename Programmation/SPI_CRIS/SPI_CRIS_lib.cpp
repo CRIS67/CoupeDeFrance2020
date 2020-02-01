@@ -3,7 +3,7 @@
 void(*resetFunc)(void) = 0; //declare reset function @ address 0
 
 int Cpt = 0, TypeVarSpi = 0, CptPile = 0, TailleMsgSpi = 0, CptSpi = 0, SendNbSpi = 0,
-CptReadPile = 0, EtatSpi = SPI_IDLE, CptSpiSend = SPI_SEND_IDLE, Checksum = 0;
+CptReadPile = 0, EtatSpi = SPI_IDLE, CptSpiSend = SPI_SEND_IDLE, Checksum = 0, cptLed = 0;
 unsigned char TextSpi[TAILLE_SPI_CHAINE], TabPileSend[TAILLE_SEND], TabTypeSend[TAILLE_SEND];
 
 #if NB_CAPT_CUR > 0
@@ -319,8 +319,7 @@ void LoopCrisSpi(void) {
   int i_init;
   #if NB_CAPT_CUR > 0
     for(i_init=0;i_init<NB_CAPT_CUR;i_init++) {
-      //Valeur_Cur[i_init] = analogRead(Pin_Capt_Cur[i_init]);
-      Valeur_Cur[i_init] = 12;
+      Valeur_Cur[i_init] = analogRead(Pin_Capt_Cur[i_init]);
     }
   #endif
   #if NB_RUPT > 0
@@ -440,6 +439,12 @@ void LoopCrisSpi(void) {
           break;
       }
     }
+  #else
+    cptLed++;
+    if(cptLed > 1000) {
+      cptLed = 0;
+      digitalWrite(Pin_Led,!digitalRead(Pin_Led));
+    }
   #endif
   #if NB_CAPT_COLOR > 0
     for(i_init=0;i_init<NB_CAPT_CUR;i_init++) {
@@ -454,7 +459,6 @@ void ISRCrisSpi(void) {
     case SPI_IDLE:
       TailleMsgSpi = data_spi;
         if(TailleMsgSpi) {
-          digitalWrite(Pin_Led, !digitalRead(Pin_Led));
           EtatSpi = SPI_NUM_VAR;
         }
       Checksum = 0;
@@ -622,8 +626,7 @@ void ISRCrisSpi(void) {
         switch(TabPileSend[CptReadPile]) {
           #if NB_CAPT_CUR > 0
             case ACT_CMD_CUR:
-              //SendNbSpi = Valeur_Cur[TabTypeSend[CptReadPile]];
-              SendNbSpi = 13;
+              SendNbSpi = Valeur_Cur[TabTypeSend[CptReadPile]];
               break;
           #endif
           #if NB_CAPT_COLOR > 0

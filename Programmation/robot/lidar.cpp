@@ -2,7 +2,7 @@
 
 Lidar::Lidar(std::string nom, SPI *pSpi, uint8_t id, Web *pWeb) : Robot(nom, pSpi, id) {
 	m_pWeb = pWeb;
-	DEBUG_ROBOT_PRINT("Lidar");
+	std::cout << std::endl;
 }
 
 Lidar::~Lidar() {}
@@ -30,135 +30,102 @@ void* thread_Lidar(void *threadid){
 	pthread_exit(NULL);
 }
 
-void Lidar::checkMessages() {
-	while(nbMsgReceived > 0) {
-		nbMsgReceived--;
-		uint8_t msgSize = bufferRx[iRxOut];
-		iRxOut++;
-		if(iRxOut == SIZE_BUFFER_RX){
-			iRxOut = 0;
-		}
-		uint8_t buf[msgSize];
-		buf[0] = msgSize;
-		for(int i = 1; i < msgSize; i++){
-			buf[i] = bufferRx[iRxOut];
-			iRxOut++;
-			if(iRxOut == SIZE_BUFFER_RX){
-				iRxOut = 0;
+void Lidar::DecodMsg(uint8_t buf[]) {
+	switch(buf[1]){	//type of msg
+		case LIDAR_RET_DEBUG_DEBUG:
+			//std::cout << "Lidar> Debug : debug received" << std::endl;
+			DEBUG_ROBOT_PRINT(m_nom << "Debug received");
+			break;
+		case LIDAR_RET_DEBUG_START:
+			//std::cout << "Lidar> Debug : Start received" << std::endl;
+			DEBUG_ROBOT_PRINT(m_nom << "Start received");
+			break;
+		case LIDAR_RET_DEBUG_STOP:
+			//std::cout << "Lidar> Debug : Stop received" << std::endl;
+			DEBUG_ROBOT_PRINT(m_nom << "Stop received");
+			break;
+		case LIDAR_RET_DATA_AVAILABLE:
+			std::cout << "Lidar> Data available = " << (int)buf[2]  << std::endl;
+			break;
+		case LIDAR_RET_RAW_POINT:{
+			float distance;
+			float *dPtr = &distance;
+			uint8_t *ptr = (uint8_t*)dPtr;
+			ptr[0] = buf[2];
+			ptr[1] = buf[3];
+			ptr[2] = buf[4];
+			ptr[3] = buf[5];
+			float angle;
+			dPtr = &angle;
+			ptr = (uint8_t*)dPtr;
+			ptr[0] = buf[6];
+			ptr[1] = buf[7];
+			ptr[2] = buf[8];
+			ptr[3] = buf[9];
+	
+			uint8_t quality = buf[10];
+			/*for(int i = 2; i < 10; i++){
+				std::cout << "buf["<<i<<"] : " << (int)buf[i] << " / ";
+			}*/
+			std::cout << "Lidar> Distance : " << distance << " & angle : " << angle << "& quality : " << (int)quality << std::endl;
+			break;}
+		case LIDAR_RET_DETECTED_POINTS:{
+			uint8_t s = buf[0];
+			uint8_t nbPoints = s/8;
+			//std::cout << "s : " << (int)s << " & nbPoints : " << (int)nbPoints << std::endl;
+			for(int i =0; i < nbPoints; i++){
+				pointFloat2d p;
+				//float x,y;
+				float *dPtr = &p.x;
+				uint8_t *ptr = (uint8_t*)dPtr;
+				ptr[0] = buf[i*8+2];
+				ptr[1] = buf[i*8+3];
+				ptr[2] = buf[i*8+4];
+				ptr[3] = buf[i*8+5];
+				dPtr = &p.y;
+				ptr = (uint8_t*)dPtr;
+				ptr[0] = buf[i*8+6];
+				ptr[1] = buf[i*8+7];
+				ptr[2] = buf[i*8+8];
+				ptr[3] = buf[i*8+9];
+				/*for(int i = 2; i < 10; i++){
+					std::cout << "buf["<<i<<"] : " << (int)buf[i] << " / ";
+				}*/
+				//std::cout << "x : " << x << " & y : " << y << std::endl;
+				//std::cout << x << "," << y << std::endl;
+				//std::cout << "Lidar> " << p.x << "," << p.y << std::endl;
+				//addDetectedPoint(p);
+				double angle = atan2(p.y,p.x);
+				double distance = sqrt(p.x*p.x + p.y*p.y);
+				//angle += m_pWeb->dspic->getT() + 3.14159/4 + 3.14159;
+				angle += m_pWeb->dspic->getT() + 3.14159/4;
+				p.x = distance*cos(angle);
+				p.y = distance*sin(angle);
+				p.x += m_pWeb->dspic->getX();
+				p.y += m_pWeb->dspic->getY();
+				m_pWeb->addLidarPoints(p);
+				if(getFillBuffer()){
+					addDetectedPoint(p);
+				}
 			}
-		}
-		uint8_t checksum = 0;
-		for(int i = 0; i < msgSize-1; i++){
-			checksum += buf[i];
-		}
-
-		if(checksum != buf[msgSize-1]){
-			std::cout << m_nom << " > CHECKSUM ERROR ! (msgSize = " << (int)msgSize << " & iRxOut = " << (int)iRxOut << ")" << " & CS = " << (int)buf[msgSize-1] << std::endl;
-		} else {	//Checksum ok
-			switch(buf[1]){	//type of msg
-				case LIDAR_RET_DEBUG_DEBUG:
-					//std::cout << "Lidar> Debug : debug received" << std::endl;
-					DEBUG_ROBOT_PRINT(m_nom << "Debug received");
-					break;
-				case LIDAR_RET_DEBUG_START:
-					//std::cout << "Lidar> Debug : Start received" << std::endl;
-					DEBUG_ROBOT_PRINT(m_nom << "Start received");
-					break;
-				case LIDAR_RET_DEBUG_STOP:
-					//std::cout << "Lidar> Debug : Stop received" << std::endl;
-					DEBUG_ROBOT_PRINT(m_nom << "Stop received");
-					break;
-				case LIDAR_RET_DATA_AVAILABLE:
-					std::cout << "Lidar> Data available = " << (int)buf[2]  << std::endl;
-					break;
-				case LIDAR_RET_RAW_POINT:{
-					float distance;
-					float *dPtr = &distance;
-					uint8_t *ptr = (uint8_t*)dPtr;
-					ptr[0] = buf[2];
-					ptr[1] = buf[3];
-					ptr[2] = buf[4];
-					ptr[3] = buf[5];
-					float angle;
-					dPtr = &angle;
-					ptr = (uint8_t*)dPtr;
-					ptr[0] = buf[6];
-					ptr[1] = buf[7];
-					ptr[2] = buf[8];
-					ptr[3] = buf[9];
-
-					uint8_t quality = buf[10];
-					/*for(int i = 2; i < 10; i++){
-						std::cout << "buf["<<i<<"] : " << (int)buf[i] << " / ";
-					}*/
-					std::cout << "Lidar> Distance : " << distance << " & angle : " << angle << "& quality : " << (int)quality << std::endl;
-					break;}
-				case LIDAR_RET_DETECTED_POINTS:{
-					uint8_t s = buf[0];
-					uint8_t nbPoints = s/8;
-					//std::cout << "s : " << (int)s << " & nbPoints : " << (int)nbPoints << std::endl;
-					for(int i =0; i < nbPoints; i++){
-						pointFloat2d p;
-						//float x,y;
-						float *dPtr = &p.x;
-						uint8_t *ptr = (uint8_t*)dPtr;
-						ptr[0] = buf[i*8+2];
-						ptr[1] = buf[i*8+3];
-						ptr[2] = buf[i*8+4];
-						ptr[3] = buf[i*8+5];
-						dPtr = &p.y;
-						ptr = (uint8_t*)dPtr;
-						ptr[0] = buf[i*8+6];
-						ptr[1] = buf[i*8+7];
-						ptr[2] = buf[i*8+8];
-						ptr[3] = buf[i*8+9];
-						/*for(int i = 2; i < 10; i++){
-							std::cout << "buf["<<i<<"] : " << (int)buf[i] << " / ";
-						}*/
-						//std::cout << "x : " << x << " & y : " << y << std::endl;
-						//std::cout << x << "," << y << std::endl;
-						//std::cout << "Lidar> " << p.x << "," << p.y << std::endl;
-						//addDetectedPoint(p);
-						double angle = atan2(p.y,p.x);
-						double distance = sqrt(p.x*p.x + p.y*p.y);
-						//angle += m_pWeb->dspic->getT() + 3.14159/4 + 3.14159;
-						angle += m_pWeb->dspic->getT() + 3.14159/4;
-						p.x = distance*cos(angle);
-						p.y = distance*sin(angle);
-						p.x += m_pWeb->dspic->getX();
-						p.y += m_pWeb->dspic->getY();
-						m_pWeb->addLidarPoints(p);
-						if(getFillBuffer()){
-							addDetectedPoint(p);
-						}
-					}
-			
-					break;}
-				case LIDAR_RET_SPEED:{
-					float speed;
-					float *dPtr = &speed;
-					uint8_t *ptr = (uint8_t*)dPtr;
-					ptr[0] = buf[2];
-					ptr[1] = buf[3];
-					ptr[2] = buf[4];
-					ptr[3] = buf[5];
-					for(int i = 2; i < 6; i++){
-						std::cout << "buf["<<i<<"] : " << (int)buf[i] << " / ";
-					}
-					std::cout << "speed : " << speed << std::endl;
-					break;}
-				case CMD_PING:
-					if(buf[3] == 0x01) {
-						m_ping = true;
-					} else {
-						m_ping = false;
-					}
-					break;
-				default:
-					std::cout << "message non pris en charge" << std::endl;
-					break;
+	
+			break;}
+		case LIDAR_RET_SPEED:{
+			float speed;
+			float *dPtr = &speed;
+			uint8_t *ptr = (uint8_t*)dPtr;
+			ptr[0] = buf[2];
+			ptr[1] = buf[3];
+			ptr[2] = buf[4];
+			ptr[3] = buf[5];
+			for(int i = 2; i < 6; i++){
+				std::cout << "buf["<<i<<"] : " << (int)buf[i] << " / ";
 			}
-		}
+			std::cout << "speed : " << speed << std::endl;
+			break;}
+		default:
+			std::cout << m_nom << "message non pris en charge" << std::endl;
+			break;
 	}
 }
 

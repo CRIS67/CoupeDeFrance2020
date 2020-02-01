@@ -24,7 +24,7 @@ class Lidar : public Robot {
 	public:
 		Lidar(std::string nom, SPI *pSpi, uint8_t id, Web *pWeb);
 		~Lidar();
-		void checkMessages();
+		void DecodMsg(uint8_t buf[]);
 		bool startThreadDetection();
 		
 		void start();

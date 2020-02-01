@@ -26,7 +26,7 @@
 
 #define SIZE_BUFFER_RX	1000
 
-#define NB_FLUSH_MIN	4
+#define NB_FLUSH_MIN	10
 #define TEMP_MAX_FLUSH	1000
 
 #define LOW 	0
@@ -87,6 +87,9 @@ class Robot {
 		void flush(uint16_t nb);
 		void GetPing();
 		bool Ping();
+		void checkMessages();
+		virtual void DecodMsg(uint8_t buf[]);
+		bool isConnected();
 
 		int16_t x = 1500,y = 1000, t = 45;
 		uint8_t bufferRx[SIZE_BUFFER_RX];
@@ -106,6 +109,7 @@ class Robot {
 		pthread_t m_thread;
 		std::mutex m_mutex;
 		bool m_ping = false;
+		bool m_connected = false;
 };
 
 #endif // ROBOT_H

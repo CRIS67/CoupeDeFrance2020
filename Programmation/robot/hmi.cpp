@@ -1,59 +1,26 @@
 #include "hmi.hpp"
 
 Hmi::Hmi(std::string nom, SPI *pSpi, uint8_t id) : Robot(nom, pSpi, id) {
-	DEBUG_ROBOT_PRINT("Hmi")
+	std::cout << std::endl;
 }
 
 Hmi::~Hmi() {}
 
-void Hmi::checkMessages() {
-	while(nbMsgReceived > 0) {
-		nbMsgReceived--;
-		uint8_t msgSize = bufferRx[iRxOut];
-		iRxOut++;
-		if(iRxOut == SIZE_BUFFER_RX){
-			iRxOut = 0;
-		}
-		uint8_t buf[msgSize];
-		buf[0] = msgSize;
-		for(int i = 1; i < msgSize; i++){
-			buf[i] = bufferRx[iRxOut];
-			iRxOut++;
-			if(iRxOut == SIZE_BUFFER_RX){
-				iRxOut = 0;
+void Hmi::DecodMsg(uint8_t buf[]) {
+	switch(buf[1]){	//type of msg
+		case HMI_RET_COTE:
+			m_hmi_cote = buf[3];
+			break;
+		case HMI_RET_OFF_PI:
+			if(buf[3]) {
+				std::cout << "turn off pi debug" << std::endl;
+				m_stopPrgm = true;
+				m_stopMain = true;
 			}
-		}
-		uint8_t checksum = 0;
-		for(int i = 0; i < msgSize-1; i++){
-			checksum += buf[i];
-		}
-
-		if(checksum != buf[msgSize-1]){
-			std::cout << m_nom << " > CHECKSUM ERROR ! (msgSize = " << (int)msgSize << " & iRxOut = " << (int)iRxOut << ")" << " & CS = " << (int)buf[msgSize-1] << std::endl;
-		} else {	//Checksum ok
-			switch(buf[1]){	//type of msg
-				case HMI_RET_COTE:
-					m_hmi_cote = buf[3];
-					break;
-				case HMI_RET_OFF_PI:
-					if(buf[3]) {
-						std::cout << "turn off pi debug" << std::endl;
-						m_stopPrgm = true;
-						m_stopMain = true;
-					}
-					break;
-				case CMD_PING:
-					if(buf[3] == 0x01) {
-						m_ping = true;
-					} else {
-						m_ping = false;
-					}
-					break;
-				default:
-					std::cout << "message non pris en charge" << std::endl;
-					break;
-			}
-		}
+			break;
+		default:
+			std::cout << m_nom << "message non pris en charge" << std::endl;
+			break;
 	}
 }
 

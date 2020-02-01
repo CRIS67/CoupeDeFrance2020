@@ -4,6 +4,23 @@ Robot::Robot(std::string nom, SPI *pSpi, uint8_t id) {
 	m_nom = nom;
 	m_pSpi = pSpi;
 	m_id = id;
+	GetPing();
+	checkMessages();
+	if(m_ping) {
+		std::cout << m_nom << " connecté" << std::endl;
+		m_connected = true;
+	} else {
+		reset();
+		GetPing();
+		checkMessages();
+		if(m_ping) {
+			std::cout << m_nom << " connecté" << std::endl;
+			m_connected = true;
+		} else {
+			std::cout <<  m_nom << " non connecté ERROR" << std::endl;
+			m_connected = false;
+		}
+	}
 }
 
 Robot::~Robot() {}
@@ -39,7 +56,8 @@ void Robot::sendReceiveSPI(uint8_t data){	//send & handle response
 	buffer[0] = data;
 	wiringPiSPIDataRW(SPI_CHANNEL, buffer, 1);
 
-	std::cout << "sent : " << (int)data << " / " << (int)buffer[0] << std::endl;		//for debug
+	//std::cout << "sent : " << (int)data << " / " << (int)buffer[0] << std::endl;		//for debug
+	delay(1);
 	if(receivingMsg){
 		bufferRx[iRxIn] = buffer[0];
 		iRxIn++;
@@ -66,6 +84,55 @@ void Robot::sendReceiveSPI(uint8_t data){	//send & handle response
 		nbMsgReceived++;
 		nbBytesReceived = 0;
 	}
+}
+
+void Robot::checkMessages() {
+	while(nbMsgReceived > 0) {
+		nbMsgReceived--;
+		uint8_t msgSize = bufferRx[iRxOut];
+		iRxOut++;
+		if(iRxOut == SIZE_BUFFER_RX){
+			iRxOut = 0;
+		}
+		uint8_t buf[msgSize];
+		buf[0] = msgSize;
+		for(int i = 1; i < msgSize; i++){
+			buf[i] = bufferRx[iRxOut];
+			iRxOut++;
+			if(iRxOut == SIZE_BUFFER_RX){
+				iRxOut = 0;
+			}
+		}
+		uint8_t checksum = 0;
+		for(int i = 0; i < msgSize-1; i++){
+			checksum += buf[i];
+		}
+
+		//for(int i = 0; i < msgSize-1; i++){std::cout << "MSG" << (int)i << " " << (int)buf[i] << std::endl;}std::cout << "MSG" << (int)msgSize << " " << (int)checksum << std::endl;
+
+		if(checksum != buf[msgSize-1]){
+			std::cout << m_nom << " > CHECKSUM ERROR ! (msgSize = " << (int)msgSize << " & iRxOut = " << (int)iRxOut << ")" << " & CS = " << (int)buf[msgSize-1] << " CS th = " << (int)checksum << std::endl;
+		} else {	//Checksum ok
+			if(buf[1] == CMD_PING) {
+				if(buf[3] == 0x01) {
+					m_ping = true;
+				} else {
+					m_ping = false;
+				}
+			} else {
+				DecodMsg(buf);
+			}
+		}
+	}
+}
+
+void Robot::DecodMsg(uint8_t buf[]) {}
+
+bool Robot::isConnected(void) {
+	m_mutex.lock();
+	bool b = m_connected;
+	m_mutex.unlock();
+	return b;
 }
 
 void Robot::flush(uint16_t nbBytes){
@@ -113,7 +180,7 @@ void Robot::GetPing() {
 	uint8_t buffer[1];
 	buffer[0] = CMD_PING;
 	sendSPI(buffer,1);
-	flush(5);
+	flush(NB_FLUSH_MIN);
 }
 
 bool Robot::Ping(void) {
