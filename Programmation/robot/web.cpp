@@ -1,6 +1,6 @@
 #include "web.hpp"
 
-Web::Web(DsPIC *ds, Robot *a1, Robot *a2){
+Web::Web(DsPIC *ds, Actuator *a1, Actuator *a2){
 	dspic = ds;
 	actScara = a1;
 	actBack = a2;

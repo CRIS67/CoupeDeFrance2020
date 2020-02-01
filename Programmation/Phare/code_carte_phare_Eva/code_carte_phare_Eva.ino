@@ -39,7 +39,7 @@ void setup() {
   digitalWrite(leds, 0);
   analogWrite(pwm_act_Monter, 0);
   analogWrite(pwm_act_Tourner, 0);
-  Serial.begin(300);
+  Serial.begin(115200);
   /*digitalWrite(sens_act_Montee, descendrePhare);
   analogWrite(pwm_act_Monter, vitesseDeCroisiereMonter);
   while(!digitalRead(RUPT_INFO_Bas)) {}
@@ -47,7 +47,8 @@ void setup() {
 }
 
 void loop() {
-  Serial.println("bonjour");
+  Serial.print("a");
+  delay(1);
   /*if(Serial.available()) {
     receive = Serial.read();
     if(receive == 'A') {

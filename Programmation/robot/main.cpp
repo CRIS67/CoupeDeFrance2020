@@ -7,6 +7,9 @@
 #include "dspic.hpp"
 #include "SPI.hpp"
 #include "robot.hpp"
+#include "actuator.hpp"
+#include "lidar.hpp"
+#include "hmi.hpp"
 
 #include <wiringPi.h>
 #include <wiringPiSPI.h>
@@ -107,16 +110,16 @@ int main() {
     SPI spi(SPI_CHANNEL,SPI_SPEED); //initialise SPI
 
     //Robot actBack("Actuator Back",&spi,SPI_ID_ACT_BACK,6,0,0,0,2,0,6,0,0,0,0,NULL);
-    Robot actBack("Actuator Back 2019",&spi,SPI_ID_ACT_BACK,3,0,3,3,0,0,0,0,0,0,0,NULL);
-    Robot actScara("Actuator Scara",&spi,SPI_ID_ACT_SCARA,0,2,2,2,0,0,5,3,0,0,1,NULL);
+    Actuator actBack("Actuator Back 2019",&spi,SPI_ID_ACT_BACK,3,0,3,3,0,0,0,0,0);
+    Actuator actScara("Actuator Scara",&spi,SPI_ID_ACT_SCARA,0,2,2,2,0,0,5,3,1);
 
     Web web(&dspic, &actScara, &actBack);
 
-    Robot hmi("HMI",&spi,SPI_ID_HMI,0,0,0,0,0,0,0,0,0,1,0,NULL);
-    Robot lidar("Lidar",&spi,SPI_ID_LIDAR,0,0,0,0,0,0,0,0,1,0,0,&web);
-    Robot xbee("Xbee",&spi,SPI_ID_XBEE,4,2,0,0,0,1,3,0,0,0,0,NULL);
+    Hmi hmi("HMI",&spi,SPI_ID_HMI);
+    Lidar lidar("Lidar",&spi,SPI_ID_LIDAR,&web);
+    Actuator xbee("Xbee",&spi,SPI_ID_XBEE,4,2,0,0,0,1,3,0,0);
 
-    actScara.reset();
+    //actScara.reset();
     //actBack.reset();
     //lidar.stop();
 
@@ -151,22 +154,15 @@ int main() {
     xbee.allumerPhare();
     delay(4000);*/
     //actBack.MoveServo(0,800);
-    hmi.setScore(666);
+    //hmi.setScore(666);
     hmi.startThreadDetection();
+    actBack.startThreadDetection();
 
     while(!hmi.isStopMain()){
-        if(hmi.CoteChoisi() == JAUNE) {
-            std::cout << "JAUNE"<< std::endl;
-        } else if(hmi.CoteChoisi() == BLEU) {
-            std::cout << "BLEU"<< std::endl;
-        } else {
-        	std::cout << "RIEN"<< std::endl;
-        }
-    	delay(100);
-        /*actBack.GetCurrent(0);
+        actBack.GetCurrent(0);
         int test = actBack.Cur(0);
         std::cout << test << std::endl;
-        delay(1000);*/
+        delay(1000);
 	}
 
     dspic.stop();
@@ -176,7 +172,7 @@ int main() {
     puts("exiting ...");
     lidar.stop();
     lidar.stopThreadDetection();
-    hmi.stopThreadDetection();
+    //hmi.stopThreadDetection();
     actScara.stopThreadDetection();
     actBack.stopThreadDetection();
     web.stopThread();

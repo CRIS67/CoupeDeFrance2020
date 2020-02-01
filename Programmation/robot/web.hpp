@@ -14,20 +14,22 @@
 #include <math.h>
 #include <unistd.h>
 #include "dspic.hpp"
-#include "robot.hpp"
-#include "float.hpp"
+#include "actuator.hpp"
 
 #define DEBUG_PID	0
 
 void* thread_HandleConnnection(void *threadid);
 std::string simulateResponse(double i);
 
-class Robot; //pré déclaration de la class Robot car inclusion mutuelle de Web et Robot
+struct pointFloat2d{
+  float x;
+  float y;
+};
 
 class Web
 {
     public:
-        Web(DsPIC *ds, Robot *a1, Robot *a2);
+        Web(DsPIC *ds, Actuator *a1, Actuator *a2);
         virtual ~Web();
         bool acceptClient();
 		void closeClient();
@@ -39,8 +41,8 @@ class Web
 		
         std::string s;
 		DsPIC *dspic;
-		Robot *actScara;
-		Robot *actBack;
+		Actuator *actScara;
+		Actuator *actBack;
 		bool waitingResponsePID = false;
 		
 		void addLidarPoints(float x, float y);
