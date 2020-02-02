@@ -194,6 +194,7 @@ int Actuator::Cur(int nb_bras) {
 	int cpt = 0;
 	do{
 		GetCurrent(nb_bras);
+		delay(20);
 		cpt++;
 	}while(m_cur[nb_bras] == ERROR_VALUE && cpt < 10);
 	if(cpt > 1) {DEBUG_ROBOT_PRINTLN("plusieur essais " << cpt)}
@@ -208,7 +209,8 @@ int Actuator::Color(int nb_bras) {
 	m_mutex.lock();
 	int cpt = 0;
 	do{
-		GetCurrent(nb_bras);
+		GetColor(nb_bras);
+		delay(20);
 		cpt++;
 	}while(m_color[nb_bras] == ERROR_VALUE && cpt < 10);
 	if(cpt > 1) {DEBUG_ROBOT_PRINTLN("plusieur essais " << cpt)}
@@ -223,7 +225,8 @@ int Actuator::Dist(int nb_bras) {
 	m_mutex.lock();
 	int cpt = 0;
 	do{
-		GetCurrent(nb_bras);
+		GetDist(nb_bras);
+		delay(20);
 		cpt++;
 	}while(m_dist[nb_bras] == ERROR_VALUE && cpt < 10);
 	if(cpt > 1) {DEBUG_ROBOT_PRINTLN("plusieur essais " << cpt)}
@@ -238,7 +241,8 @@ int Actuator::Rupt(int nb_bras) {
 	m_mutex.lock();
 	int cpt = 0;
 	do{
-		GetCurrent(nb_bras);
+		GetRupt(nb_bras);
+		delay(20);
 		cpt++;
 	}while(m_rupt[nb_bras] == ERROR_VALUE && cpt < 10);
 	if(cpt > 1) {DEBUG_ROBOT_PRINTLN("plusieur essais " << cpt)}

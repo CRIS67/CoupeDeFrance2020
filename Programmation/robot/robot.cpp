@@ -57,7 +57,7 @@ void Robot::sendReceiveSPI(uint8_t data){	//send & handle response
 	wiringPiSPIDataRW(SPI_CHANNEL, buffer, 1);
 
 	//std::cout << "sent : " << (int)data << " / " << (int)buffer[0] << std::endl;		//for debug
-	delay(1);
+	delay(2);
 	if(receivingMsg){
 		bufferRx[iRxIn] = buffer[0];
 		iRxIn++;
