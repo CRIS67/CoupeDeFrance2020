@@ -29,16 +29,16 @@ Actuator::~Actuator() {}
 void Actuator::DecodMsg(uint8_t buf[]) {
 	switch(buf[1]){	//type of msg
 		case ACT_CMD_CUR:
-			m_cur[buf[2]] = buf[3];
+			m_cur[buf[2]] = buf[3]*256+buf[4];
 			break;
 		case ACT_CMD_COLOR:
-			m_color[buf[2]] = buf[3];
+			m_color[buf[2]] = buf[3]*256+buf[4];
 			break;
 		case ACT_CMD_RUPT:
 			m_rupt[buf[2]] = buf[3];
 			break;
 		case ACT_CMD_DIST:
-			m_dist[buf[2]] = buf[3];
+			m_dist[buf[2]] = buf[3]*256+buf[4];
 			break;
 		case ACT_CMD_UART_SEND:
 			if(buf[6] == (buf[2]+buf[3]+buf[4]+buf[5])%256) { //test CS

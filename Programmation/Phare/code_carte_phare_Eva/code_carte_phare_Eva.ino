@@ -22,7 +22,7 @@
 char receive;
  
 void setup() {
-  pinMode(state, OUTPUT);
+  /*pinMode(state, OUTPUT);
   pinMode(RUPT_INFO_Haut, INPUT);
   pinMode(RUPT_INFO_Bas, INPUT);
   pinMode(RUPT_INFO_DG, INPUT);
@@ -38,7 +38,7 @@ void setup() {
   digitalWrite(sens_act_Tourner, 0);
   digitalWrite(leds, 0);
   analogWrite(pwm_act_Monter, 0);
-  analogWrite(pwm_act_Tourner, 0);
+  analogWrite(pwm_act_Tourner, 0);*/
   Serial.begin(115200);
   /*digitalWrite(sens_act_Montee, descendrePhare);
   analogWrite(pwm_act_Monter, vitesseDeCroisiereMonter);

@@ -66,6 +66,7 @@
 #define HMI_RET_OFF_PI					38
 #define ACT_CMD_SEUIL_COLOR             39
 #define ACT_CMD_RESET_CPT_COLOR         40
+#define MSG_NON_PRIS_EN_CHARGE			41
 #define LIDAR_RET_DEBUG_DEBUG       	42 
 #define LIDAR_RET_DEBUG_START       	43 
 #define LIDAR_RET_DEBUG_STOP        	44

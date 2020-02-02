@@ -131,6 +131,8 @@ void Robot::checkMessages() {
 				} else {
 					m_ping = false;
 				}
+			} else if(buf[1] == MSG_NON_PRIS_EN_CHARGE){
+				std::cout << m_nom << "Salve receive msg with not concern it !!! ERROR" << std::endl;
 			} else {
 				DecodMsg(buf);
 			}
