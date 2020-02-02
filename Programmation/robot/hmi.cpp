@@ -10,6 +10,13 @@ void Hmi::DecodMsg(uint8_t buf[]) {
 	switch(buf[1]){	//type of msg
 		case HMI_RET_COTE:
 			m_hmi_cote = buf[3];
+			if(m_hmi_cote == JAUNE) {
+				std::cout << "JAUNE SELECTED" << std::endl;
+			} else if(m_hmi_cote == BLEU) {
+				std::cout << "BLEU SELECTED" << std::endl;
+			} else {
+				std::cout << "AUCUN COTE" << std::endl;
+			}
 			break;
 		case HMI_RET_OFF_PI:
 			if(buf[3]) {

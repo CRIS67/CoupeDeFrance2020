@@ -90,13 +90,14 @@ void Robot::checkMessages() {
 	while(nbMsgReceived > 0) {
 		nbMsgReceived--;
 		uint8_t msgSize = bufferRx[iRxOut];
+		int i;
 		iRxOut++;
 		if(iRxOut == SIZE_BUFFER_RX){
 			iRxOut = 0;
 		}
 		uint8_t buf[msgSize];
 		buf[0] = msgSize;
-		for(int i = 1; i < msgSize; i++){
+		for(i = 1; i < msgSize; i++){
 			buf[i] = bufferRx[iRxOut];
 			iRxOut++;
 			if(iRxOut == SIZE_BUFFER_RX){
@@ -104,7 +105,7 @@ void Robot::checkMessages() {
 			}
 		}
 		uint8_t checksum = 0;
-		for(int i = 0; i < msgSize-1; i++){
+		for(i = 0; i < msgSize-1; i++){
 			checksum += buf[i];
 		}
 
@@ -112,6 +113,17 @@ void Robot::checkMessages() {
 
 		if(checksum != buf[msgSize-1]){
 			std::cout << m_nom << " > CHECKSUM ERROR ! (msgSize = " << (int)msgSize << " & iRxOut = " << (int)iRxOut << ")" << " & CS = " << (int)buf[msgSize-1] << " CS th = " << (int)checksum << std::endl;
+			m_pSpi->lock();
+			if(m_pSpi->getSlaveId() != m_id){	
+				m_pSpi->setSlave(m_id);		//change Chip select
+			}
+			uint8_t b[1];
+			for(i = 0; i < 255; i++){
+				b[0] = 0;
+				wiringPiSPIDataRW(SPI_CHANNEL, b, 1);
+				delayMicroseconds(SPI_DELAY_US);
+			}
+			m_pSpi->unlock();
 		} else {	//Checksum ok
 			if(buf[1] == CMD_PING) {
 				if(buf[3] == 0x01) {
@@ -146,7 +158,6 @@ void Robot::flush(uint16_t nbBytes){
 		sendReceiveSPI(buffer[0]);
 		//delay(SPI_DELAY_MS);
 		delayMicroseconds(SPI_DELAY_US);
-		delay(10);
 	}
 	m_pSpi->unlock();
 }

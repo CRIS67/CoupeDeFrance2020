@@ -4,64 +4,16 @@
 #include <Servo.h>
 #include <SoftwareSerial.h>
 #include <Arduino.h>
+#include "SPI_CRIS_pin.hpp"
 
-//à modifier
-#define NB_SERVO        3
-#define NB_MOTEUR       3
-#define NB_MOTEUR4Q     0
-#define NB_CAPT_CUR     3
-#define NB_CAPT_COLOR   3
-#define NB_UART         0
-#define NB_RUPT         0
-#define NB_AX12         0
-#define NB_LIDAR        0
-#define NB_SCREEN       0
-#define NB_CAPT_DIST    0
-
-#define SERVO_MIN     700
-#define SERVO_MAX     1600
-
-const int Pin_Led;
-#if NB_SERVO > 0
-  const int Pin_Servo[] = {};
-#endif
-#if NB_MOTEUR > 0
-  const int Pin_Moteur[] = {};
-#endif
-#if NB_MOTEUR4Q > 0
-  const int Pin_Moteur4Q_SENS[] = {};
-  const int Pin_Moteur4Q_PWM[] = {};
-#endif
-#if NB_CAPT_CUR > 0
-  const int Pin_Capt_Cur[] = {};
-#endif
-#if NB_CAPT_COLOR > 0
-
-#endif
-#if NB_UART > 0
-  
-#endif
-#if NB_RUPT > 0
-  const int Pin_Rupt[] = {};
-#endif
-#if NB_AX12 > 0
-  const int Pin_ax12_RX[NB_AX12];
-  const int Pin_ax12_TX[NB_AX12];
-#endif
-#if NB_LIDAR > 0
-
-#endif
-#if NB_SCREEN > 0
-
-#endif
-#if NB_CAPT_DIST > 0
-
-#endif
-
-//ne pas toucher
 void InitCrisSpi();
 void LoopCrisSpi();
 void ISRCrisSpi();
+
+#define SS              10
+#define MOSI            11
+#define MISO            12
+#define SCK             13
 
 //etat machine spi
 #define SPI_IDLE        0
@@ -69,8 +21,15 @@ void ISRCrisSpi();
 #define SPI_MSG_UTILE   2
 #define SPI_CHECKSUM    3
 
+#define SPI_SEND_IDLE   0
+#define SPI_SEND_TYPE   1
+#define SPI_SEND_NUM    2
+#define SPI_SEND_MSG    3
+#define SPI_SEND_CHECK  4
+
 #define TAILLE_SPI_CHAINE   100
 #define TAILLE_SEND         10
+#define TAILLE_SPI_SEND     5
 
 #define AUCUN                           0
 #define LIDAR_CMD_DEBUG                 1
@@ -103,6 +62,8 @@ void ISRCrisSpi();
 #define HMI_CMD_SCORE                   36
 #define HMI_RET_COTE                    37
 #define HMI_RET_OFF_PI                  38
+#define ACT_CMD_SEUIL_COLOR             39
+#define ACT_CMD_RESET_CPT_COLOR         40
 #define LIDAR_RET_DEBUG_DEBUG           42 
 #define LIDAR_RET_DEBUG_START           43 
 #define LIDAR_RET_DEBUG_STOP            44
@@ -111,6 +72,72 @@ void ISRCrisSpi();
 #define LIDAR_RET_RAW_POINT             102
 #define LIDAR_RET_SPEED                 121
 
-#define MOTEUR_STOP     0
+#if NB_MOTEUR4Q > 0
+  #define MOTEUR_STOP     0
+#endif
+#if NB_SCREEN > 0
+  #define JAUNE               1
+  #define BLEU                2
+#endif
+#if NB_CAPT_COLOR > 0
+	#define CORRECTION_LUM
+	#define MAX_RGB         1000
+
+	//vitesse du capteur de couleur
+	#define TCS230_LOW_FREQ
+	//#define TCS230_MEDIUM_FREQ
+	//#define TCS230_HIGH_FREQ
+ 
+	#ifdef TCS230_LOW_FREQ
+  		#define MAP_RED_MIN   20
+  		#define MAP_RED_MAX   3000
+  		#define MAP_BLUE_MIN  20
+  		#define MAP_BLUE_MAX  3000
+  		#define MAP_GREEN_MIN 20
+  		#define MAP_GREEN_MAX 3000
+  		#define MAP_WHITE_MIN 20
+  		#define MAP_WHITE_MAX 3000
+	#endif
+
+	#ifdef TCS230_MEDIUM_FREQ
+  		#define MAP_RED_MIN   20
+  		#define MAP_RED_MAX   300
+  		#define MAP_BLUE_MIN  20
+  		#define MAP_BLUE_MAX  200
+  		#define MAP_GREEN_MIN 20
+  		#define MAP_GREEN_MAX 300
+  		#define MAP_WHITE_MIN 20
+  		#define MAP_WHITE_MAX 300
+	#endif
+
+	#ifdef TCS230_HIGH_FREQ
+  		#define MAP_RED_MIN   4
+  		#define MAP_RED_MAX   60
+  		#define MAP_BLUE_MIN  4
+  		#define MAP_BLUE_MAX  40
+  		#define MAP_GREEN_MIN 4
+  		#define MAP_GREEN_MAX 60
+  		#define MAP_WHITE_MIN 4
+  		#define MAP_WHITE_MAX 60
+	#endif
+	
+	#define AUCUNE	0
+	#define ROUGE	1
+	#define VERT	2
+	#define BLEU 	3
+	#define BLANC 	4
+	#define ERREUR	5
+
+	#define MAX_WAIT_COLOR  	2
+	#define NB_ITERATION_COLOR	10
+
+  #define LIM_RED_MIN   1
+  #define LIM_RED_MAX   2
+  #define LIM_GREEN_MIN 3
+  #define LIM_GREEN_MAX 4
+  #define LIM_BLUE_MIN  5
+  #define LIM_BLUE_MAX  6
+  #define LIM_WHITE_MAX 7
+#endif
 
 #endif //SPI_CRIS_LIB_H
