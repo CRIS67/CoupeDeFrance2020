@@ -1,10 +1,12 @@
 #include "SPI_CRIS_lib.hpp"
 
 void(*resetFunc)(void) = 0; //declare reset function @ address 0
+void SendSpi(uint8_t buf, uint8_t leng, uint8_t num);
 
-int Cpt = 0, TypeVarSpi = 0, CptPile = 0, TailleMsgSpi = 0, CptSpi = 0, SendNbSpi = 0,
-CptReadPile = 0, EtatSpi = SPI_IDLE, CptSpiSend = SPI_SEND_IDLE, Checksum = 0, cptLed = 0, cptCS = 0, CS_fault = 0;
-unsigned char TextSpi[TAILLE_SPI_CHAINE], TabPileSend[TAILLE_SEND], TabTypeSend[TAILLE_SEND];
+int Cpt = 0, TypeVarSpi = 0, CptPile = 0, TailleMsgSpi = 0, CptSpi = 0, SendNbSpi = 0, CptReadPile = 0, EtatSpi = SPI_IDLE,
+CptSpiSend = SPI_SEND_IDLE, Checksum = 0,CS_fault = 0, SendNbSpi2 = 0;
+unsigned char TextSpi[TAILLE_SPI_CHAINE], TabPileSend[TAILLE_SEND], TabTypeSend[TAILLE_SEND], TabTailleSend[TAILLE_SEND];
+volatile unsigned long timeLed, timeCS;
 
 #if NB_CAPT_CUR > 0
   int Valeur_Cur[NB_CAPT_CUR];
@@ -80,21 +82,15 @@ unsigned char TextSpi[TAILLE_SPI_CHAINE], TabPileSend[TAILLE_SEND], TabTypeSend[
                     break;
                 case 0x51:
                     PrgmSens = JAUNE;
-                    TabPileSend[CptPile] = HMI_RET_COTE;
-                    CptPile++;
-                    CptPile %= TAILLE_SEND;
+                    SendSpi(HMI_RET_COTE,3,0);
                     break;
                 case 0x52:
                     PrgmSens = BLEU;
-                    TabPileSend[CptPile] = HMI_RET_COTE;
-                    CptPile++;
-                    CptPile %= TAILLE_SEND;
+                    SendSpi(HMI_RET_COTE,3,0);
                     break;
                 case 0x53:
                     StopMain = 1;
-                    TabPileSend[CptPile] = HMI_RET_OFF_PI;
-                    CptPile++;
-                    CptPile %= TAILLE_SEND;
+                    SendSpi(HMI_RET_OFF_PI,3,0);
                     break;
                 default:
                     //do nothing
@@ -313,6 +309,7 @@ void InitCrisSpi(void) {
   SPCR |= _BV(SPIE);  // turn on interrupts
   SPDR = 0;           //clear buffer SPI
 
+  timeLed = millis();
 }
 
 void LoopCrisSpi(void) {
@@ -440,9 +437,8 @@ void LoopCrisSpi(void) {
       }
     }
   #else
-    cptLed++;
-    if(cptLed > 1000) {
-      cptLed = 0;
+    if(millis() - timeLed > 1000){ 
+      timeLed = millis();
       digitalWrite(Pin_Led,!digitalRead(Pin_Led));
     }
   #endif
@@ -452,8 +448,7 @@ void LoopCrisSpi(void) {
     }
   #endif
   if(CS_fault) {
-    cptCS++;
-    if(cptCS > 100) {
+    if(millis() - timeCS > 100){ 
       CS_fault = 0;
       EtatSpi = SPI_IDLE;
     }
@@ -462,7 +457,7 @@ void LoopCrisSpi(void) {
 
 void ISRCrisSpi(void) {
   unsigned char data_spi = SPDR;
-  cptCS = 0;
+  timeCS = millis();
   if(!CS_fault) {
     switch(EtatSpi) {
       case SPI_IDLE:
@@ -512,18 +507,12 @@ void ISRCrisSpi(void) {
             #endif
             #if NB_CAPT_CUR > 0
               case ACT_CMD_CUR:
-                TabPileSend[CptPile] = ACT_CMD_CUR;
-                TabTypeSend[CptPile] = TextSpi[0];
-                CptPile++;
-                CptPile %= TAILLE_SEND;
+                SendSpi(ACT_CMD_CUR,4,TextSpi[0]);
                 break;
             #endif
             #if NB_CAPT_COLOR > 0
               case ACT_CMD_COLOR:
-                TabPileSend[CptPile] = ACT_CMD_COLOR;
-                TabTypeSend[CptPile] = TextSpi[0];
-                CptPile++;
-                CptPile %= TAILLE_SEND;
+                SendSpi(ACT_CMD_COLOR,4,TextSpi[0]);
                 break;
               case ACT_CMD_SEUIL_COLOR:
                 TabSeuil[TextSpi[0]] = TextSpi[1]*256+TextSpi[2];
@@ -544,10 +533,7 @@ void ISRCrisSpi(void) {
             #endif
             #if NB_RUPT > 0
               case ACT_CMD_RUPT:
-                TabPileSend[CptPile] = ACT_CMD_RUPT;
-                TabTypeSend[CptPile] = TextSpi[0];
-                CptPile++;
-                CptPile %= TAILLE_SEND;
+                SendSpi(ACT_CMD_RUPT,3,TextSpi[0]);
                 break;
             #endif
             #if NB_AX12 > 0
@@ -591,27 +577,22 @@ void ISRCrisSpi(void) {
             #endif
             #if NB_CAPT_DIST > 0
               case ACT_CMD_DIST:
-                TabPileSend[CptPile] = ACT_CMD_DIST;
-                TabTypeSend[CptPile] = TextSpi[0];
-                CptPile++;
-                CptPile %= TAILLE_SEND;
+                SendSpi(ACT_CMD_DIST,4,TextSpi[0]);
                 break;
             #endif
             case CMD_PING:
-              TabPileSend[CptPile] = CMD_PING;
-              CptPile++;
-              CptPile %= TAILLE_SEND;
+                SendSpi(CMD_PING,3,0);
               break;
             case CMD_RST:
               resetFunc();
               break;
             default:
-              //do nothing
+              SendSpi(MSG_NON_PRIS_EN_CHARGE,3,0);
               break;
           }
         } else {
           CS_fault = 1;
-          cptCS = 0;
+          timeCS = millis();
         }
         EtatSpi = SPI_IDLE;
         break;
@@ -623,7 +604,7 @@ void ISRCrisSpi(void) {
     if(TabPileSend[CptReadPile]) {
       switch(CptSpiSend) {
         case SPI_SEND_IDLE:
-          SPDR = TAILLE_SPI_SEND;
+          SPDR = TabTailleSend[CptReadPile];
           CptSpiSend = SPI_SEND_TYPE;
           break;
         case SPI_SEND_TYPE:
@@ -638,12 +619,12 @@ void ISRCrisSpi(void) {
           switch(TabPileSend[CptReadPile]) {
             #if NB_CAPT_CUR > 0
               case ACT_CMD_CUR:
-                SendNbSpi = Valeur_Cur[TabTypeSend[CptReadPile]];
+                SendNbSpi = (uint8_t)(Valeur_Cur[TabTypeSend[CptReadPile]]/256);
                 break;
             #endif
             #if NB_CAPT_COLOR > 0
               case ACT_CMD_COLOR:
-                SendNbSpi = Valeur_Color[TabTypeSend[CptReadPile]];
+                SendNbSpi = (uint8_t)(Valeur_Color[TabTypeSend[CptReadPile]]/256);
                 break;
             #endif
             #if NB_RUPT > 0
@@ -653,12 +634,9 @@ void ISRCrisSpi(void) {
             #endif
             #if NB_CAPT_DIST > 0
               case ACT_CMD_DIST:
-                SendNbSpi = Valeur_Dist[TabTypeSend[CptReadPile]];
+                SendNbSpi = (uint8_t)(Valeur_Dist[TabTypeSend[CptReadPile]]/256);
                 break;
             #endif
-            case CMD_PING:
-              SendNbSpi = 0x01;
-              break;
             #if NB_SCREEN > 0
               case HMI_RET_COTE:
                 SendNbSpi = PrgmSens;
@@ -668,20 +646,52 @@ void ISRCrisSpi(void) {
                 StopMain = 0;
                 break;
             #endif
+            case CMD_PING:
+              SendNbSpi = 0x01;
+              break;
             default:
               SendNbSpi = 0;
               break;
           }
           SPDR = SendNbSpi;
+          if(TabTailleSend[CptReadPile] > 5) {
+            CptSpiSend = SPI_SEND_MSG2;
+          } else {
+            CptSpiSend = SPI_SEND_CHECK;
+          }
+          break;
+        case SPI_SEND_MSG2:
+          switch(TabPileSend[CptReadPile]) {
+            #if NB_CAPT_CUR > 0
+              case ACT_CMD_CUR:
+                SendNbSpi2 = Valeur_Cur[TabTypeSend[CptReadPile]]%256;
+                break;
+            #endif
+            #if NB_CAPT_COLOR > 0
+              case ACT_CMD_COLOR:
+                SendNbSpi2 = Valeur_Color[TabTypeSend[CptReadPile]]%256;
+                break;
+            #endif
+            #if NB_CAPT_DIST > 0
+              case ACT_CMD_DIST:
+                SendNbSpi2 = Valeur_Dist[TabTypeSend[CptReadPile]]%256;
+                break;
+            #endif
+            default:
+              SendNbSpi2 = 0;
+              break;
+          }
+          SPDR = SendNbSpi2;
           CptSpiSend = SPI_SEND_CHECK;
           break;
         case SPI_SEND_CHECK:
-          SPDR = (SendNbSpi+TabPileSend[CptReadPile]+TabTypeSend[CptReadPile]+TAILLE_SPI_SEND)%256;
+          SPDR = (SendNbSpi+TabPileSend[CptReadPile]+TabTypeSend[CptReadPile]+TabTailleSend[CptReadPile]+SendNbSpi2)%256;
           TabPileSend[CptReadPile] = AUCUN;
           CptSpiSend = SPI_SEND_IDLE;
           CptReadPile++;
           CptReadPile %= TAILLE_SEND;
           SendNbSpi = 0;
+          SendNbSpi2 = 0;
           break;
       }
     } else {
@@ -689,3 +699,12 @@ void ISRCrisSpi(void) {
     }
   }
 }
+
+void SendSpi(uint8_t buf, uint8_t leng, uint8_t num) {
+  TabPileSend[CptPile] = buf;
+  TabTailleSend[CptPile] = leng+2;
+  TabTypeSend[CptPile] = num;
+  CptPile++;
+  CptPile %= TAILLE_SEND;
+}
+

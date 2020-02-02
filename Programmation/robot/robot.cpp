@@ -7,17 +7,17 @@ Robot::Robot(std::string nom, SPI *pSpi, uint8_t id) {
 	GetPing();
 	checkMessages();
 	if(m_ping) {
-		std::cout << m_nom << " connecté" << std::endl;
+		DEBUG_ROBOT_PRINTLN(" connecté")
 		m_connected = true;
 	} else {
 		reset();
 		GetPing();
 		checkMessages();
 		if(m_ping) {
-			std::cout << m_nom << " connecté" << std::endl;
+			DEBUG_ROBOT_PRINTLN(" connecté")
 			m_connected = true;
 		} else {
-			std::cout <<  m_nom << " non connecté ERROR" << std::endl;
+			DEBUG_ROBOT_PRINTLN(" non connecté ERROR")
 			m_connected = false;
 		}
 	}
@@ -112,7 +112,7 @@ void Robot::checkMessages() {
 		//for(int i = 0; i < msgSize-1; i++){std::cout << "MSG" << (int)i << " " << (int)buf[i] << std::endl;}std::cout << "MSG" << (int)msgSize << " " << (int)checksum << std::endl;
 
 		if(checksum != buf[msgSize-1]){
-			std::cout << m_nom << " > CHECKSUM ERROR ! (msgSize = " << (int)msgSize << " & iRxOut = " << (int)iRxOut << ")" << " & CS = " << (int)buf[msgSize-1] << " CS th = " << (int)checksum << std::endl;
+			DEBUG_ROBOT_PRINTLN("CHECKSUM ERROR ! (msgSize = " << (int)msgSize << " & iRxOut = " << (int)iRxOut << ")" << " & CS = " << (int)buf[msgSize-1] << " CS th = " << (int)checksum)
 			m_pSpi->lock();
 			if(m_pSpi->getSlaveId() != m_id){	
 				m_pSpi->setSlave(m_id);		//change Chip select
@@ -132,7 +132,7 @@ void Robot::checkMessages() {
 					m_ping = false;
 				}
 			} else if(buf[1] == MSG_NON_PRIS_EN_CHARGE){
-				std::cout << m_nom << "Salve receive msg with not concern it !!! ERROR" << std::endl;
+				DEBUG_ROBOT_PRINTLN("Salve receive msg with not concern it !!! ERROR" << buf[1])
 			} else {
 				DecodMsg(buf);
 			}

@@ -25,11 +25,11 @@ void ISRCrisSpi();
 #define SPI_SEND_TYPE   1
 #define SPI_SEND_NUM    2
 #define SPI_SEND_MSG    3
-#define SPI_SEND_CHECK  4
+#define SPI_SEND_MSG2   4
+#define SPI_SEND_CHECK  5
 
 #define TAILLE_SPI_CHAINE   100
 #define TAILLE_SEND         10
-#define TAILLE_SPI_SEND     5
 
 #define AUCUN                           0
 #define LIDAR_CMD_DEBUG                 1
@@ -64,6 +64,7 @@ void ISRCrisSpi();
 #define HMI_RET_OFF_PI                  38
 #define ACT_CMD_SEUIL_COLOR             39
 #define ACT_CMD_RESET_CPT_COLOR         40
+#define MSG_NON_PRIS_EN_CHARGE          41
 #define LIDAR_RET_DEBUG_DEBUG           42 
 #define LIDAR_RET_DEBUG_START           43 
 #define LIDAR_RET_DEBUG_STOP            44

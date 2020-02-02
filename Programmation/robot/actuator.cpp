@@ -191,6 +191,13 @@ void Actuator::GetDist(int nb_bras) {
 
 int Actuator::Cur(int nb_bras) {
 	m_mutex.lock();
+	int cpt = 0;
+	do{
+		GetCurrent(nb_bras);
+		cpt++;
+	}while(m_cur[nb_bras] == ERROR_VALUE && cpt < 10);
+	if(cpt > 1) {DEBUG_ROBOT_PRINTLN("plusieur essais " << cpt)}
+	if(m_cur[nb_bras] == ERROR_VALUE) {DEBUG_ROBOT_PRINTLN("ERROR courant")}
 	int b = m_cur[nb_bras];
 	m_cur[nb_bras] = ERROR_VALUE;
 	m_mutex.unlock();
@@ -199,6 +206,13 @@ int Actuator::Cur(int nb_bras) {
 
 int Actuator::Color(int nb_bras) {
 	m_mutex.lock();
+	int cpt = 0;
+	do{
+		GetCurrent(nb_bras);
+		cpt++;
+	}while(m_color[nb_bras] == ERROR_VALUE && cpt < 10);
+	if(cpt > 1) {DEBUG_ROBOT_PRINTLN("plusieur essais " << cpt)}
+	if(m_color[nb_bras] == ERROR_VALUE) {DEBUG_ROBOT_PRINTLN("ERROR couleur")}
 	int b = m_color[nb_bras];
 	m_color[nb_bras] = ERROR_VALUE;
 	m_mutex.unlock();
@@ -207,6 +221,13 @@ int Actuator::Color(int nb_bras) {
 
 int Actuator::Dist(int nb_bras) {
 	m_mutex.lock();
+	int cpt = 0;
+	do{
+		GetCurrent(nb_bras);
+		cpt++;
+	}while(m_dist[nb_bras] == ERROR_VALUE && cpt < 10);
+	if(cpt > 1) {DEBUG_ROBOT_PRINTLN("plusieur essais " << cpt)}
+	if(m_dist[nb_bras] == ERROR_VALUE) {DEBUG_ROBOT_PRINTLN("ERROR couleur")}
 	int b = m_dist[nb_bras];
 	m_dist[nb_bras] = ERROR_VALUE;
 	m_mutex.unlock();
@@ -215,6 +236,13 @@ int Actuator::Dist(int nb_bras) {
 
 int Actuator::Rupt(int nb_bras) {
 	m_mutex.lock();
+	int cpt = 0;
+	do{
+		GetCurrent(nb_bras);
+		cpt++;
+	}while(m_rupt[nb_bras] == ERROR_VALUE && cpt < 10);
+	if(cpt > 1) {DEBUG_ROBOT_PRINTLN("plusieur essais " << cpt)}
+	if(m_rupt[nb_bras] == ERROR_VALUE) {DEBUG_ROBOT_PRINTLN("ERROR couleur")}
 	int b = m_rupt[nb_bras];
 	m_rupt[nb_bras] = ERROR_VALUE;
 	m_mutex.unlock();

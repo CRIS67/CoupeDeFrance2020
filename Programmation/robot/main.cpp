@@ -120,7 +120,7 @@ int main() {
     Actuator xbee("Xbee",&spi,SPI_ID_XBEE,4,2,0,0,0,1,3,0,0);
 
     //actScara.reset();
-    actBack.reset();
+    //actBack.reset();
     //lidar.stop();
 
     puts("Hello human ! I, your fervent robot, am initialised. Press <ENTER> to continue.");
