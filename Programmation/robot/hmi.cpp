@@ -11,22 +11,22 @@ void Hmi::DecodMsg(uint8_t buf[]) {
 		case HMI_RET_COTE:
 			m_hmi_cote = buf[3];
 			if(m_hmi_cote == JAUNE) {
-				std::cout << "JAUNE SELECTED" << std::endl;
+    			DEBUG_ROBOT_PRINTLN("JAUNE SELECTED")
 			} else if(m_hmi_cote == BLEU) {
-				std::cout << "BLEU SELECTED" << std::endl;
+    			DEBUG_ROBOT_PRINTLN("BLEU SELECTED")
 			} else {
-				std::cout << "AUCUN COTE" << std::endl;
+    			DEBUG_ROBOT_PRINTLN("AUCUN COTE")
 			}
 			break;
 		case HMI_RET_OFF_PI:
 			if(buf[3]) {
-				std::cout << "turn off pi debug" << std::endl;
+    			DEBUG_ROBOT_PRINTLN("turn off pi debug")
 				m_stopPrgm = true;
 				m_stopMain = true;
 			}
 			break;
 		default:
-			std::cout << m_nom << "message non pris en charge" << std::endl;
+    		DEBUG_ROBOT_PRINTLN("message non pris en charge")
 			break;
 	}
 }
@@ -37,7 +37,7 @@ bool Hmi::startThreadDetection(){
 	m_mutex.unlock();
 	int rc = pthread_create(&m_thread, NULL, thread_Hmi, this);
 	if (rc) {
-		std::cout << "Error:unable to create thread," << rc << std::endl;
+    	DEBUG_ROBOT_PRINTLN("Error:unable to create thread," << rc)
 		return false;
     }
 	return true;
@@ -89,7 +89,7 @@ void Hmi::SetTxt(int in, std::string txt) {
 		}
 		sendSPI(buffer,txt.size()+2);
 	} else {
-		std::cout << "erreur chaine trop longue max 195" << std::endl;
+    	DEBUG_ROBOT_PRINTLN("erreur chaine trop longue max 195")
 	}
 }
 
@@ -115,7 +115,7 @@ void Hmi::SetTxtFull(std::string txt_in) {
 		SetTxt(2, txt_in.substr(392,196));
 		SetTxt(3, txt_in.substr(588,txt_in.size()-588));
 	} else {
-		std::cout << "erreur chaine trop longue";
+    	DEBUG_ROBOT_PRINTLN("erreur chaine trop longue")
 	}
 }
 

@@ -11,16 +11,16 @@ Actuator::Actuator(std::string nom, SPI *pSpi, uint8_t id, int nb_servo, int nb_
 	m_nb_rupteur = nb_rupteur;
 	m_nb_ax12 = nb_ax12;
 	m_nb_capt_dist = nb_capt_dist;
-    DEBUG_ROBOT_PRINT(m_nom << " comporte : ")
-    DEBUG_ROBOT_PRINT("- " << m_nb_servo << " servo moteurs")
-    DEBUG_ROBOT_PRINT("- " << m_nb_moteur4Q << " pont en H")
-    DEBUG_ROBOT_PRINT("- " << m_nb_moteur << " moteurs")
-    DEBUG_ROBOT_PRINT("- " << m_nb_capt_cur << " capteurs de courant")
-    DEBUG_ROBOT_PRINT("- " << m_nb_capt_couleur << " capteurs de couleur")
-    DEBUG_ROBOT_PRINT("- " << m_nb_uart << " uart")
-    DEBUG_ROBOT_PRINT("- " << m_nb_rupteur << " rupteurs")
-    DEBUG_ROBOT_PRINT("- " << m_nb_ax12 << " ax12")
-    DEBUG_ROBOT_PRINT("- " << m_nb_capt_dist << " capteurs de distance")
+	std::cout << m_nom << " comporte : " << std::endl;
+	if(m_nb_servo) {std::cout << m_nb_servo << " servo moteurs" << std::endl;}
+	if(m_nb_moteur4Q) {std::cout << m_nb_moteur4Q << " pont en H" << std::endl;}
+	if(m_nb_moteur) {std::cout << m_nb_moteur << " moteurs" << std::endl;}
+	if(m_nb_capt_cur) {std::cout << m_nb_capt_cur << " capteurs de courant" << std::endl;}
+	if(m_nb_capt_couleur) {std::cout << m_nb_capt_couleur << " capteurs de couleur" << std::endl;}
+	if(m_nb_uart) {std::cout << m_nb_uart << " uart" << std::endl;}
+	if(m_nb_rupteur) {std::cout << m_nb_rupteur << " rupteurs" << std::endl;}
+	if(m_nb_ax12) {std::cout << m_nb_ax12 << " ax12" << std::endl;}
+	if(m_nb_capt_dist) {std::cout << m_nb_capt_dist << " capteurs de distance" << std::endl;}
 	std::cout << std::endl;
 }
 
@@ -49,20 +49,20 @@ void Actuator::DecodMsg(uint8_t buf[]) {
 						} else if(buf[4] == PHARE_CMD_ETEINDRE) {
 							m_phareEteint = buf[5];
 						} else {
-							std::cout << "erreur type message" << std::endl;
+    						DEBUG_ROBOT_PRINTLN("erreur type message")
 						}
 					} else {
-						std::cout << "wrong ID UART" << std::endl;
+    					DEBUG_ROBOT_PRINTLN("wrong ID UART")
 					}
 				} else {
-					std::cout << "wrong length UART" << std::endl;
+    				DEBUG_ROBOT_PRINTLN("wrong length UART")
 				}
 			} else {
-				std::cout << "wrong CS UART" << std::endl;
+    			DEBUG_ROBOT_PRINTLN("wrong CS UART")
 			}
 			break;
 		default:
-			std::cout << m_nom << "message non pris en charge" << std::endl;
+    		DEBUG_ROBOT_PRINTLN("message non pris en charge")
 			break;
 	}
 }
@@ -73,7 +73,7 @@ bool Actuator::startThreadDetection(){
 	m_mutex.unlock();
 	int rc = pthread_create(&m_thread, NULL, thread_act, this);
 	if (rc) {
-		std::cout << "Error:unable to create thread," << rc << std::endl;
+    	DEBUG_ROBOT_PRINTLN("Error:unable to create thread," << rc)
 		return false;
     }
 	return true;
@@ -90,10 +90,10 @@ void* thread_act(void *threadid){
 void Actuator::MoveServo(int nb_bras, int pos) {
     uint8_t buffer[4];
 	if(nb_bras < 0 || nb_bras > m_nb_servo) {
-		std::cout << "erreur bras = " << nb_bras << std::endl;
+    	DEBUG_ROBOT_PRINTLN("erreur bras = " << nb_bras)
 	} else {
 		if(pos < 600 || pos > 1600) {
-			std::cout << "erreur pos = " << pos << std::endl;
+    	DEBUG_ROBOT_PRINTLN("erreur pos = " << pos)
 		} else {
 			buffer[0] = ACT_CMD_SERVO;
 			buffer[1] = nb_bras;
@@ -107,10 +107,10 @@ void Actuator::MoveServo(int nb_bras, int pos) {
 void Actuator::SetMot(int nb_bras, int state) {
 	uint8_t buffer[3];
 	if(nb_bras < 0 || nb_bras > m_nb_moteur) {
-		std::cout << "erreur nb_bras = " << nb_bras << std::endl;
+    	DEBUG_ROBOT_PRINTLN("erreur nb_bras = " << nb_bras)
 	} else {
 		if(state < 0 || state > 1) {
-			std::cout << "erreur state = " << state << std::endl;
+    	DEBUG_ROBOT_PRINTLN("erreur state = " << state)
 		} else {
 			buffer[0] = ACT_CMD_SET_MOT;
 			buffer[1] = nb_bras;
@@ -123,13 +123,13 @@ void Actuator::SetMot(int nb_bras, int state) {
 void Actuator::SetMot4Q(int nb_bras, int vit, int sens) {
 	uint8_t buffer[4];
 	if(nb_bras < 0 || nb_bras > m_nb_moteur4Q) {
-		std::cout << "erreur nb_bras = " << nb_bras << std::endl;
+    	DEBUG_ROBOT_PRINTLN("erreur nb_bras = " << nb_bras)
 	} else {
 		if(sens < 0 || sens > 1) {
-			std::cout << "erreur sens = " << sens << std::endl;
+    		DEBUG_ROBOT_PRINTLN("erreur sens = " << sens)
 		} else {
 			if(vit < 0 || vit > 255) {
-				std::cout << "erreur vit = " << vit << std::endl;
+    			DEBUG_ROBOT_PRINTLN("erreur vit = " << vit)
 			} else {
 				buffer[0] = ACT_CMD_SET_MOT4Q;
 				buffer[1] = nb_bras;
@@ -144,7 +144,7 @@ void Actuator::SetMot4Q(int nb_bras, int vit, int sens) {
 void Actuator::GetColor(int nb_bras) {
 	uint8_t buffer[2];
 	if(nb_bras < 0 || nb_bras > m_nb_capt_couleur) {
-		std::cout << "erreur nb_bras = " << nb_bras << std::endl;
+    	DEBUG_ROBOT_PRINTLN("erreur nb_bras = " << nb_bras)
 	} else {
 		buffer[0] = ACT_CMD_COLOR;
 		buffer[1] = nb_bras;
@@ -156,7 +156,7 @@ void Actuator::GetColor(int nb_bras) {
 void Actuator::GetCurrent(int nb_bras){
 	uint8_t buffer[2];
 	if(nb_bras < 0 || nb_bras > m_nb_capt_cur) {
-		std::cout << "erreur nb_bras = " << nb_bras << std::endl;
+    	DEBUG_ROBOT_PRINTLN("erreur nb_bras = " << nb_bras)
 	} else {
 		buffer[0] = ACT_CMD_CUR;
 		buffer[1] = nb_bras;
@@ -168,7 +168,7 @@ void Actuator::GetCurrent(int nb_bras){
 void Actuator::GetRupt(int nb_bras) {
 	uint8_t buffer[2];
 	if(nb_bras < 0 || nb_bras > m_nb_rupteur) {
-		std::cout << "erreur nb_bras = " << nb_bras << std::endl;
+    	DEBUG_ROBOT_PRINTLN("erreur nb_bras = " << nb_bras)
 	} else {
 		buffer[0] = ACT_CMD_RUPT;
 		buffer[1] = nb_bras;
@@ -180,7 +180,7 @@ void Actuator::GetRupt(int nb_bras) {
 void Actuator::GetDist(int nb_bras) {
 	uint8_t buffer[2];
 	if(nb_bras < 0 || nb_bras > m_nb_capt_dist) {
-		std::cout << "erreur nb_bras = " << nb_bras << std::endl;
+    	DEBUG_ROBOT_PRINTLN("erreur nb_bras = " << nb_bras)
 	} else {
 		buffer[0] = ACT_CMD_DIST;
 		buffer[1] = nb_bras;
@@ -242,7 +242,7 @@ void Actuator::eteindrePhare(void) {
 void Actuator::setSeuilColor(int seuil, int valeur) {
 	uint8_t buffer[4];
 	if(seuil > 7 || seuil < 0) {
-		std::cout << "erreur seuil " << seuil << std::endl;
+    	DEBUG_ROBOT_PRINTLN("erreur seuil " << seuil)
 	} else {
 		buffer[0] = ACT_CMD_SEUIL_COLOR;
 		buffer[1] = seuil;

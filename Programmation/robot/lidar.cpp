@@ -13,7 +13,7 @@ bool Lidar::startThreadDetection(){
 	m_mutex.unlock();
 	int rc = pthread_create(&m_thread, NULL, thread_Lidar, this);
 	if (rc) {
-		std::cout << "Error:unable to create thread," << rc << std::endl;
+    	DEBUG_ROBOT_PRINTLN("Error:unable to create thread," << rc)
 		return false;
     }
 	return true;
@@ -34,18 +34,18 @@ void Lidar::DecodMsg(uint8_t buf[]) {
 	switch(buf[1]){	//type of msg
 		case LIDAR_RET_DEBUG_DEBUG:
 			//std::cout << "Lidar> Debug : debug received" << std::endl;
-			DEBUG_ROBOT_PRINT(m_nom << "Debug received");
+			DEBUG_ROBOT_PRINTLN("Debug received");
 			break;
 		case LIDAR_RET_DEBUG_START:
 			//std::cout << "Lidar> Debug : Start received" << std::endl;
-			DEBUG_ROBOT_PRINT(m_nom << "Start received");
+			DEBUG_ROBOT_PRINTLN("Start received");
 			break;
 		case LIDAR_RET_DEBUG_STOP:
 			//std::cout << "Lidar> Debug : Stop received" << std::endl;
-			DEBUG_ROBOT_PRINT(m_nom << "Stop received");
+			DEBUG_ROBOT_PRINTLN("Stop received");
 			break;
 		case LIDAR_RET_DATA_AVAILABLE:
-			std::cout << "Lidar> Data available = " << (int)buf[2]  << std::endl;
+    		DEBUG_ROBOT_PRINTLN("Data available = " << (int)buf[2])
 			break;
 		case LIDAR_RET_RAW_POINT:{
 			float distance;
@@ -67,7 +67,7 @@ void Lidar::DecodMsg(uint8_t buf[]) {
 			/*for(int i = 2; i < 10; i++){
 				std::cout << "buf["<<i<<"] : " << (int)buf[i] << " / ";
 			}*/
-			std::cout << "Lidar> Distance : " << distance << " & angle : " << angle << "& quality : " << (int)quality << std::endl;
+    		DEBUG_ROBOT_PRINTLN("Distance : " << distance << " & angle : " << angle << "& quality : " << (int)quality)
 			break;}
 		case LIDAR_RET_DETECTED_POINTS:{
 			uint8_t s = buf[0];
@@ -119,12 +119,12 @@ void Lidar::DecodMsg(uint8_t buf[]) {
 			ptr[2] = buf[4];
 			ptr[3] = buf[5];
 			for(int i = 2; i < 6; i++){
-				std::cout << "buf["<<i<<"] : " << (int)buf[i] << " / ";
+    			DEBUG_ROBOT_PRINT("buf["<<i<<"] : " << (int)buf[i] << " / ")
 			}
-			std::cout << "speed : " << speed << std::endl;
+    		DEBUG_ROBOT_PRINTLN("speed : " << speed)
 			break;}
 		default:
-			std::cout << m_nom << "message non pris en charge" << std::endl;
+    		DEBUG_ROBOT_PRINTLN("message non pris en charge")
 			break;
 	}
 }

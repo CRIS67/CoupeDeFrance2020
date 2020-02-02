@@ -19,8 +19,10 @@
 #define DEBUG_ROBOT_ENABLE_PRINT		1
 
 #if(DEBUG_ROBOT_ENABLE_PRINT)
-#define DEBUG_ROBOT_PRINT(x) 				std::cout << x << std::endl;
+#define DEBUG_ROBOT_PRINTLN(x) 				std::cout << m_nom << " > " << x << std::endl;
+#define DEBUG_ROBOT_PRINT(x) 				std::cout << m_nom << " > " << x;
 #else
+#define DEBUG_ROBOT_PRINTLN(x)
 #define DEBUG_ROBOT_PRINT(x)				
 #endif
 
