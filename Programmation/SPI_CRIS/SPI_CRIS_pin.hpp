@@ -1,6 +1,9 @@
 #ifndef SPI_CRIS_PIN_H
 #define SPI_CRIS_PIN_H
 
+#define COM_SPI
+//#define COM_UART
+
 #define NB_SERVO        3
 #define NB_MOTEUR4Q     0
 #define NB_MOTEUR       3
@@ -17,6 +20,10 @@
 #define SERVO_MAX     1600
 
 const int Pin_Led = 8;
+#ifdef COM_UART
+  #define BAUDRATE_UART   9600
+  #define ADDR_SLAVE      UART_ID_PHARE
+#endif
 #if NB_SERVO > 0
   const int Pin_Servo[] = {2, 3, 4};
 #endif

@@ -257,8 +257,8 @@ void Actuator::UartSend(unsigned char Send, unsigned char id_uart) {
 	uint8_t buffer[5];
 	buffer[0] = ACT_CMD_UART_SEND;
 	buffer[1] = 3;
-	buffer[2] = id_uart;
-	buffer[3] = Send;
+	buffer[2] = Send;
+	buffer[3] = id_uart;
 	buffer[4] = (3+id_uart+Send)%256;
 	sendSPI(buffer,5);
 }

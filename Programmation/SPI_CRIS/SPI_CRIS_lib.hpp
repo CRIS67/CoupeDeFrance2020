@@ -8,18 +8,27 @@
 
 void InitCrisSpi();
 void LoopCrisSpi();
-void ISRCrisSpi();
+unsigned char ISRCrisSpi(unsigned char data_spi);
 
 #define SS              10
 #define MOSI            11
 #define MISO            12
 #define SCK             13
 
+#define UART_ID_PHARE    1
+#define UART_ID_HOLONOME  2
+#define UART_ID_BALISE    3
+
+//cmd uart
+#define PHARE_CMD_ALLUMER 1
+#define PHARE_CMD_ETEINDRE  2
+
 //etat machine spi
 #define SPI_IDLE        0
 #define SPI_NUM_VAR     1
 #define SPI_MSG_UTILE   2
 #define SPI_CHECKSUM    3
+#define SPI_ADDR        4
 
 #define SPI_SEND_IDLE   0
 #define SPI_SEND_TYPE   1

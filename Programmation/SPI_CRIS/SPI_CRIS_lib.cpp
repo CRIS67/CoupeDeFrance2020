@@ -295,19 +295,23 @@ void InitCrisSpi(void) {
     }
   #endif
 
-  //spi
-  for(i_init=0;i_init<TAILLE_SEND;i_init++) {
-    TabPileSend[i_init] = AUCUN;
-  }
+  #ifdef COM_SPI
+    for(i_init=0;i_init<TAILLE_SEND;i_init++) {
+      TabPileSend[i_init] = AUCUN;
+    }
 
-  pinMode(SS, INPUT);
-  pinMode(MOSI, INPUT);
-  pinMode(MISO, OUTPUT);
-  pinMode(SCK, INPUT);
+    pinMode(SS, INPUT);
+    pinMode(MOSI, INPUT);
+    pinMode(MISO, OUTPUT);
+    pinMode(SCK, INPUT);
 
-  SPCR = _BV(SPE);    // turn on SPI in slave mode
-  SPCR |= _BV(SPIE);  // turn on interrupts
-  SPDR = 0;           //clear buffer SPI
+    SPCR = _BV(SPE);    // turn on SPI in slave mode
+    SPCR |= _BV(SPIE);  // turn on interrupts
+    SPDR = 0;           //clear buffer SPI
+  #endif
+  #ifdef COM_UART
+    Serial.begin(BAUDRATE_UART);
+  #endif
 
   timeLed = millis();
 }
@@ -447,6 +451,9 @@ void LoopCrisSpi(void) {
       Valeur_Color[i_init] = RatioErr(i_init, NB_ITERATION_COLOR);
     }
   #endif
+  #ifdef COM_UART
+    
+  #endif
   if(CS_fault) {
     if(millis() - timeCS > 100){ 
       CS_fault = 0;
@@ -455,8 +462,7 @@ void LoopCrisSpi(void) {
   }
 }
 
-void ISRCrisSpi(void) {
-  unsigned char data_spi = SPDR;
+unsigned char ISRCrisSpi(unsigned char data_spi) {
   timeCS = millis();
   if(!CS_fault) {
     switch(EtatSpi) {
@@ -489,6 +495,18 @@ void ISRCrisSpi(void) {
           int i_int = 0;
           CptSpi = 0;
           switch(TypeVarSpi) {
+            #ifdef COM_UART
+              case PHARE_CMD_ALLUMER:
+                if(UART_ID_PHARE == TextSpi[0]) {
+                  //do
+                }
+                break;
+              case PHARE_CMD_ETEINDRE:
+                if(UART_ID_PHARE == TextSpi[0]) {
+                  //do
+                }
+                break;
+            #endif
             #if NB_SERVO > 0
               case ACT_CMD_SERVO:
                 S[TextSpi[0]].writeMicroseconds(TextSpi[1]*256+TextSpi[2]);
@@ -604,15 +622,15 @@ void ISRCrisSpi(void) {
     if(TabPileSend[CptReadPile]) {
       switch(CptSpiSend) {
         case SPI_SEND_IDLE:
-          SPDR = TabTailleSend[CptReadPile];
+          data_spi = TabTailleSend[CptReadPile];
           CptSpiSend = SPI_SEND_TYPE;
           break;
         case SPI_SEND_TYPE:
-          SPDR = TabPileSend[CptReadPile];
+          data_spi = TabPileSend[CptReadPile];
           CptSpiSend = SPI_SEND_NUM;
           break;
         case SPI_SEND_NUM:
-          SPDR = TabTypeSend[CptReadPile];
+          data_spi = TabTypeSend[CptReadPile];
           CptSpiSend = SPI_SEND_MSG;
           break;
         case SPI_SEND_MSG:
@@ -653,7 +671,7 @@ void ISRCrisSpi(void) {
               SendNbSpi = 0;
               break;
           }
-          SPDR = SendNbSpi;
+          data_spi = SendNbSpi;
           if(TabTailleSend[CptReadPile] > 5) {
             CptSpiSend = SPI_SEND_MSG2;
           } else {
@@ -681,11 +699,11 @@ void ISRCrisSpi(void) {
               SendNbSpi2 = 0;
               break;
           }
-          SPDR = SendNbSpi2;
+          data_spi = SendNbSpi2;
           CptSpiSend = SPI_SEND_CHECK;
           break;
         case SPI_SEND_CHECK:
-          SPDR = (SendNbSpi+TabPileSend[CptReadPile]+TabTypeSend[CptReadPile]+TabTailleSend[CptReadPile]+SendNbSpi2)%256;
+          data_spi = (SendNbSpi+TabPileSend[CptReadPile]+TabTypeSend[CptReadPile]+TabTailleSend[CptReadPile]+SendNbSpi2)%256;
           TabPileSend[CptReadPile] = AUCUN;
           CptSpiSend = SPI_SEND_IDLE;
           CptReadPile++;
@@ -695,9 +713,10 @@ void ISRCrisSpi(void) {
           break;
       }
     } else {
-      SPDR = 0;
+      data_spi = 0;
     }
   }
+  return data_spi;
 }
 
 void SendSpi(uint8_t buf, uint8_t leng, uint8_t num) {

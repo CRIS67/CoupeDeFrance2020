@@ -9,5 +9,5 @@ void loop() {
 }
 
 ISR(SPI_STC_vect) {
-  ISRCrisSpi();
+  SPDR = ISRCrisSpi(SPDR);
 }
