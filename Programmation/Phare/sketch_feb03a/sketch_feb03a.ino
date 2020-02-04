@@ -1,30 +1,9 @@
-#define state             2
-#define RUPT_INFO_Haut    3
-#define RUPT_INFO_Bas     4
-#define RUPT_INFO_DG      5
-#define RESET_XBEE        6
-#define PWM_Servo0        7
-#define leds              8
-#define pwm_servo1        9
-#define sens_act_Montee   16
-#define sens_act_Tourner  17 
-#define pwm_act_Monter     18
-#define pwm_act_Tourner    19
-
-
-#define monterPhare                   1
-#define descendrePhare                !monterPhare
-#define tournerLedsGauche             0
-#define tournerLedsDroite             !tournerLedsGauche
-#define vitesseDeCroisiereMonter      200
-#define vitesseDeCroisiereTourner     200
-
 #include <NeoSWSerial.h>
 
-int XBee_Adress = 1;              // Adresse propre de la XBee entre 0 et 255
-int XBee_Adress_To_Send = 2;
-String XBee_Team = "1";           // Adresse de la team de la XBee
-String Other_Team = "2";          // Adresse de la team à laquelle les messages seront envoyés. Ces deux adresses se composent d'un unique caractère au choix
+int XBee_Adress = 2;              // Adresse propre de la XBee entre 0 et 255
+int XBee_Adress_To_Send = 1;
+String XBee_Team = "2";           // Adresse de la team de la XBee
+String Other_Team = "1";          // Adresse de la team à laquelle les messages seront envoyés. Ces deux adresses se composent d'un unique caractère au choix
 String Network_Adress = "1234";   // Adresse du réseau
 
 const byte Rx_Pin = 0;            // Le Rx et Tx sont déplacés sur d'autres pins grâce à NeoSerial
@@ -40,63 +19,34 @@ String Data_Text = "";            // Chaine contenant le dernier message reçu
 int Data_Type = 0;                // Type du dernier message reçu
 int Data_Sender = 0;              // Adresse proprede la XBee qui à envoyé ledit message
 boolean Data_Reading = false;
- 
+
 void setup() {
-  pinMode(state, OUTPUT);
-  pinMode(RUPT_INFO_Haut, INPUT);
-  pinMode(RUPT_INFO_Bas, INPUT);
-  pinMode(RUPT_INFO_DG, INPUT);
-  pinMode(RESET_XBEE, OUTPUT);
-  pinMode(leds, OUTPUT);
-  pinMode(sens_act_Montee, OUTPUT);
-  pinMode(sens_act_Tourner, OUTPUT);
-  pinMode(pwm_act_Monter, OUTPUT);
-  pinMode(pwm_act_Tourner, OUTPUT);
-  digitalWrite(state, 0);
-  digitalWrite(RESET_XBEE, 1);
-  digitalWrite(sens_act_Montee, 0);
-  digitalWrite(sens_act_Tourner, 0);
-  digitalWrite(leds, 0);
-  analogWrite(pwm_act_Monter, 0);
-  analogWrite(pwm_act_Tourner, 0);
+
+  if (Debug)
+    Serial.begin(9600);             // Deux serial sont initialisés : celui pour la communication USB
+
   XBee.begin(9600);               // et celui pour la communication via les XBees
   XBee_Config(XBee_Team, Other_Team, Network_Adress); // Configure la XBee avec les adresses spécifiées plus haut
   XBee.attachInterrupt(XBee_Receive);                 // La reception des messages fonctionne par interruption
-  /*digitalWrite(sens_act_Montee, descendrePhare);
-  analogWrite(pwm_act_Monter, vitesseDeCroisiereMonter);
-  while(!digitalRead(RUPT_INFO_Bas)) {}
-  analogWrite(pwm_act_Monter, 0);*/
+
 }
 
 void loop() {
-  XBee_Send (XBee_Adress_To_Send, 3, "Moi Phare, toi Robot");
-  if(Data_Text != "") {
-    if(Data_Text == 'A') {
-      Data_Clear();
-      digitalWrite(leds, 1);
-      digitalWrite(state,1);
-      digitalWrite(sens_act_Montee, monterPhare);
-      digitalWrite(sens_act_Tourner, tournerLedsGauche);
-      analogWrite(pwm_act_Monter, vitesseDeCroisiereMonter);
-      analogWrite(pwm_act_Tourner, vitesseDeCroisiereTourner);
-      while(1) {
-        if(digitalRead(RUPT_INFO_DG)) {
-          digitalWrite(sens_act_Tourner, !digitalRead(sens_act_Tourner));
-        }
-        if(digitalRead(RUPT_INFO_Haut)) {
-           analogWrite(pwm_act_Monter, 0);
-        }
-        if(Data_Text != "") {
-          if(Data_Text == 'E') {
-              
-          }
-        }
-      }
-    }
+
+  if (Serial.read() == '\n') {                        // Consigne de l'utilisateur (touche entrée)
+    XBee_Send (XBee_Adress_To_Send, 3, "A");         // Envoit un message de type 3 à l'adresse 2. Le type doit être conpris entre 0 et 255
   }
+
+  if (Data_Text != "") {                                                                                                            // Si message reçu
+    Serial.println("La XBee n " + String(Data_Sender) + " a envoyee un message de type " + String(Data_Type) + " : " + Data_Text);  // Affichage des données reçues
+    Data_Clear();                                                                                                                   // Les données ont été lues : on peut donc les supprimer (sans quoi elles seraient
+  }                                                                                                                                 // de nouveau lues à la prochaine itération si aucun nouveau message n'a été reçu)
+  delay(500);                     // La lécture fonctionnant par interruption, on peut cadencer la boucle principale à la vitesse voulue
+
 }
 
 static void XBee_Config(String Sender, String Receiver, String Network) { // Configure la XBee. Le programme reste bloqué si il ne détecte pas la XBee
+
   char thisByte = 0;
   while (XBee.available() > 0) {
     if (thisByte != '\r') {
@@ -107,7 +57,29 @@ static void XBee_Config(String Sender, String Receiver, String Network) { // Con
   XBee.print("ATMY" + Sender + "\r");
   XBee.print("ATDL" + Receiver + "\r");
   XBee.print("ATID" + Network + "\r");
+  XBee.print("ATCN\r");
+  if (Debug) {
+    Serial.println("XBee Adress : " + String(XBee_Adress));
+    Serial.println("Team ID : " + Sender);
+    Serial.println("Receiving Team ID : " + Receiver);
+    Serial.println("Network Adress : " + Network);
+  }
+
 }
+
+/*
+  Composition de la trame :
+
+  Byte n°: Valeur :
+  0           c (01100011) : début du message
+  1           adresse du destinataire
+  2           adresse de l'envoyeur
+  3           type de message
+  4           N : longueur du message
+  5 -> N+4    message
+  N+5         checksum
+
+*/
 
 static void XBee_Send(int adress, int type, String data0) {   // Envoit un message
 
