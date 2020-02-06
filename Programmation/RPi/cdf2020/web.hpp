@@ -14,21 +14,22 @@
 #include <math.h>
 #include <unistd.h>
 #include "dspic.hpp"
-#include "actuators.hpp"
+#include "actuator.hpp"
 
 #define DEBUG_PID	0
+
+void* thread_HandleConnnection(void *threadid);
+std::string simulateResponse(double i);
 
 struct pointFloat2d{
   float x;
   float y;
 };
 
-void* thread_HandleConnnection(void *threadid);
-std::string simulateResponse(double i);
 class Web
 {
     public:
-        Web(DsPIC *ds, Actuators *a1, Actuators *a2);
+        Web(DsPIC *ds, Actuator *a1, Actuator *a2);
         virtual ~Web();
         bool acceptClient();
 		void closeClient();
@@ -40,8 +41,8 @@ class Web
 		
         std::string s;
 		DsPIC *dspic;
-		Actuators *actFront;
-		Actuators *actBack;
+		Actuator *actScara;
+		Actuator *actBack;
 		bool waitingResponsePID = false;
 		
 		void addLidarPoints(float x, float y);
