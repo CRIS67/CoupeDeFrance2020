@@ -13,6 +13,8 @@
 
 #include <wiringPi.h>
 #include <wiringPiSPI.h>
+#include <ncurses.h>
+#include <opencv/highgui.h>
 
 // DStarIncludes
 #include <utility>
@@ -24,6 +26,9 @@
 #include "mapGeneration.hpp"
 #include "dStarLite.hpp"
 #include "trajectoryHandle.hpp"
+
+#include <fstream>
+#include <sstream>
 
 #include "LK.h"
 
@@ -38,20 +43,30 @@
 
 #define MAP_MM_PER_ARRAY_ELEMENT 10
 
-#define MM_ROWS 2000
-#define MM_COLUMNS 3000
+#define MM_ROWS 				2000
+#define MM_COLUMNS 				3000
 
-#define MM_START_X 29
-#define MM_START_Y 19
+#define MM_START_X 				29
+#define MM_START_Y 				19
 
-#define MM_SIZE_ENNEMY 200
-#define MM_SIZE_ENNEMY_MARGIN 220
+#define MM_SIZE_ENNEMY 			200
+#define MM_SIZE_ENNEMY_MARGIN 	220
 
-#define SIZE_ENNEMY MM_SIZE_ENNEMY / MAP_MM_PER_ARRAY_ELEMENT //size of ennemy /2 4 element in array map -> (here 40cm)WARNING depends of map resolution
-#define SIZE_ENNEMY_MARGIN MM_SIZE_ENNEMY_MARGIN / MAP_MM_PER_ARRAY_ELEMENT
+#define SIZE_ENNEMY 			MM_SIZE_ENNEMY / MAP_MM_PER_ARRAY_ELEMENT //size of ennemy /2 4 element in array map -> (here 40cm)WARNING depends of map resolution
+#define SIZE_ENNEMY_MARGIN 		MM_SIZE_ENNEMY_MARGIN / MAP_MM_PER_ARRAY_ELEMENT
 
-#define ARRAY_START_X MM_START_X / MAP_MM_PER_ARRAY_ELEMENT
-#define ARRAY_START_Y MM_START_Y / MAP_MM_PER_ARRAY_ELEMENT
+#define ARRAY_START_X 			MM_START_X / MAP_MM_PER_ARRAY_ELEMENT
+#define ARRAY_START_Y 			MM_START_Y / MAP_MM_PER_ARRAY_ELEMENT
+
+#define PIN_JUMPER      27
+
+#define HALF_LENGTH     124
+#define HALF_WIDTH      155
+
+#define PI              3.14159
+
+#define FORWARD         0
+#define BACKWARD        1
 
 //DStarGlobal
 int mapRows{MM_ROWS / MAP_MM_PER_ARRAY_ELEMENT};
@@ -122,7 +137,7 @@ int main()
 
     SPI spi(SPI_CHANNEL,SPI_SPEED); //initialise SPI
 
-    Actuator actBack("Actuator Back 2019",&spi,SPI_ID_ACT_BACK,3,0,3,3,0,0,0,0,0);
+    Actuator actBack("Actuator Back",&spi,SPI_ID_ACT_BACK,6,0,0,0,2,0,6,0,0);
     Actuator actScara("Actuator Scara",&spi,SPI_ID_ACT_SCARA,0,2,2,2,0,0,5,3,1);
 
     Web web(&dspic, &actScara, &actBack);
@@ -131,9 +146,7 @@ int main()
     Lidar lidar("Lidar",&spi,SPI_ID_LIDAR,&web);
     Actuator xbee("Xbee",&spi,SPI_ID_XBEE,4,2,0,0,0,1,3,0,0);
 
-    //actScara.reset();
-    actBack.reset();
-    //lidar.stop();
+    lidar.stop();
 
     puts("Hello human ! I, your fervent robot, am initialised. Press <ENTER> to continue.");
     getchar();
@@ -143,7 +156,7 @@ int main()
     web.startThread();
     lidar.startThreadDetection();
     hmi.startThreadDetection();
-    //actFront.startThreadDetection();
+    actScara.startThreadDetection();
     actBack.startThreadDetection();
 
     dspic.setVar8(CODE_VAR_VERBOSE,1);
@@ -392,5 +405,28 @@ int main()
         //startNode = goalNode;
     }
 
+
+
+    dspic.stop();
+    dspic.setVar8(CODE_VAR_VERBOSE,0);
+    dspic.stopThreadReception();
+    puts("verbose set to 0");
+    puts("exiting ...");
+    lidar.stop();
+    lidar.stopThreadDetection();
+    //hmi.stopThreadDetection();
+    actScara.stopThreadDetection();
+    actBack.stopThreadDetection();
+    web.stopThread();
+
+    puts("exiting...");
+
+    delay(200);
+
+    if(hmi.isStopPrgm()) {
+        system("sudo shutdown now");
+    }
+
+    
     return 0;
 }
