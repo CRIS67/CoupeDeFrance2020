@@ -6,8 +6,8 @@ String XBee_Team = "2";           // Adresse de la team de la XBee
 String Other_Team = "1";          // Adresse de la team à laquelle les messages seront envoyés. Ces deux adresses se composent d'un unique caractère au choix
 String Network_Adress = "1234";   // Adresse du réseau
 
-const byte Rx_Pin = 0;            // Le Rx et Tx sont déplacés sur d'autres pins grâce à NeoSerial
-const byte Tx_Pin = 1;
+const byte Rx_Pin = 2;            // Le Rx et Tx sont déplacés sur d'autres pins grâce à NeoSerial
+const byte Tx_Pin = 3;
 
 const boolean Debug = true;        // Affiche sur le moniteur série les adresses après configuration
 

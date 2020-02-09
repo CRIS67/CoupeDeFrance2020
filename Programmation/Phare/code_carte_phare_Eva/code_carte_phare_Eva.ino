@@ -30,7 +30,7 @@ String Network_Adress = "1234";   // Adresse du réseau
 const byte Rx_Pin = 0;            // Le Rx et Tx sont déplacés sur d'autres pins grâce à NeoSerial
 const byte Tx_Pin = 1;
 
-const boolean Debug = true;        // Affiche sur le moniteur série les adresses après configuration
+const boolean Debug = false;        // Affiche sur le moniteur série les adresses après configuration
 
 char Flag = 'c';                  // Caractère indiquant le début d'un message
 

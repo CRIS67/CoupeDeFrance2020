@@ -15,8 +15,7 @@ volatile unsigned long timeLed, timeCS;
   int Valeur_Rupt[NB_RUPT];
 #endif
 #if NB_AX12 > 0
-  //SoftwareSerial 
-  int Ax12[NB_UART];
+  DynamixelClass Dynamixel[NB_AX12];
 #endif
 #if NB_CAPT_DIST > 0
   int Valeur_Dist[NB_CAPT_DIST];
@@ -272,7 +271,19 @@ void InitCrisSpi(void) {
   #endif
   #if NB_AX12 > 0
     for(i_init=0;i_init<NB_MOTEUR4Q;i_init++) {
-      Ax12[i_init] = SoftwareSerial(Pin_ax12_RX[i_init], Pin_ax12_TX[i_init]);
+      Dynamixel[i_init].begin(BAUDRATE_AX_12, PinDir);
+      Dynamixel[i_init].setEndless(IdAx12[i_init], OFF);
+      if(Dynamixel[i_init].ping(IdAx12[i_init])) {
+        Dynamixel[i_init].reset(IdAx12[i_init]);
+        delay(200);
+        if(Dynamixel[i_init].ping(IdAx12[i_init])) {
+          //error
+        } else {
+          Dynamixel[i_init].move(IdAx12[i_init],MID_POS_AX_12);
+        }
+      } else {
+        Dynamixel[i_init].move(IdAx12[i_init],MID_POS_AX_12);
+      }
     }
   #endif
   #if NB_UART > 0
@@ -556,8 +567,7 @@ unsigned char ISRCrisSpi(unsigned char data_spi) {
             #endif
             #if NB_AX12 > 0
               case ACT_CMD_AX12:
-                Serial.write('a');
-                //à faire
+                Dynamixel[TextSpi[0]].move(IdAx12[TextSpi[0]],TextSpi[1]*256+TextSpi[2]);
                 break;
             #endif
             #if NB_LIDAR > 0
@@ -726,4 +736,15 @@ void SendSpi(uint8_t buf, uint8_t leng, uint8_t num) {
   CptPile++;
   CptPile %= TAILLE_SEND;
 }
+
+#ifdef COM_SPI
+  ISR(SPI_STC_vect) {
+    SPDR = ISRCrisSpi(SPDR);
+  }
+#endif
+#ifdef COM_UART
+  void serialEvent() {
+    Serial.write(ISRCrisSpi(Serial.read()));
+  }
+#endif
 

@@ -11,7 +11,7 @@
 #define NB_CAPT_COLOR   0
 #define NB_UART         0
 #define NB_RUPT         0
-#define NB_AX12         0
+#define NB_AX12         2
 #define NB_LIDAR        0
 #define NB_SCREEN       0
 #define NB_CAPT_DIST    0
@@ -50,8 +50,8 @@ const int Pin_Led = 8;
   const int Pin_Rupt[] = {};
 #endif
 #if NB_AX12 > 0
-  const int Pin_ax12_RX[NB_AX12];
-  const int Pin_ax12_TX[NB_AX12];
+  const int IdAx12[NB_AX12] = {1, 2};
+  const int PinDir = 2;
 #endif
 #if NB_LIDAR > 0
 

@@ -5,6 +5,7 @@
 #include <SoftwareSerial.h>
 #include <Arduino.h>
 #include "SPI_CRIS_pin.hpp"
+#include "projet.h"
 
 void InitCrisSpi();
 void LoopCrisSpi();
@@ -88,6 +89,10 @@ unsigned char ISRCrisSpi(unsigned char data_spi);
 #if NB_SCREEN > 0
   #define JAUNE               1
   #define BLEU                2
+#endif
+#if NB_AX12 > 0
+  #define BAUDRATE_AX_12 1000000
+  #define MID_POS_AX_12  512
 #endif
 #if NB_CAPT_COLOR > 0
 	#define CORRECTION_LUM

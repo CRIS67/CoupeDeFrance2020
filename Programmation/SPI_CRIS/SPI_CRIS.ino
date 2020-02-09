@@ -7,7 +7,3 @@ void setup() {
 void loop() {
   LoopCrisSpi();
 }
-
-ISR(SPI_STC_vect) {
-  SPDR = ISRCrisSpi(SPDR);
-}
