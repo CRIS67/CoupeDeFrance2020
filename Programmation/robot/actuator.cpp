@@ -120,7 +120,7 @@ void Actuator::SetMot(int nb_bras, int state) {
 	}
 }
 
-void Actuator::SetMot4Q(int nb_bras, int vit, int sens) {
+void Actuator::SetMot4QVit(int nb_bras, int vit, int sens) {
 	uint8_t buffer[4];
 	if(nb_bras < 0 || nb_bras > m_nb_moteur4Q) {
     	DEBUG_ROBOT_PRINTLN("erreur nb_bras = " << nb_bras)
@@ -131,7 +131,7 @@ void Actuator::SetMot4Q(int nb_bras, int vit, int sens) {
 			if(vit < 0 || vit > 255) {
     			DEBUG_ROBOT_PRINTLN("erreur vit = " << vit)
 			} else {
-				buffer[0] = ACT_CMD_SET_MOT4Q;
+				buffer[0] = ACT_CMD_SET_MOT4QVit;
 				buffer[1] = nb_bras;
 				buffer[2] = sens;
 				buffer[3] = vit;
@@ -304,4 +304,37 @@ bool Actuator::isPhareEteint(void) {
 	m_phareEteint = 0;
 	m_mutex.unlock();
 	return b;
+}
+
+void Actuator::MoveAx12(int nb_bras, int pos) {
+	uint8_t buffer[4];
+	if(nb_bras < 0 || nb_bras > m_nb_ax12) {
+    	DEBUG_ROBOT_PRINTLN("erreur bras = " << nb_bras)
+	} else {
+		if(pos < 600 || pos > 1600) {
+    	DEBUG_ROBOT_PRINTLN("erreur pos = " << pos)
+		} else {
+			buffer[0] = ACT_CMD_AX12;
+			buffer[1] = nb_bras;
+			buffer[2] = (uint8_t)(pos/256);
+			buffer[3] = pos%256;
+			sendSPI(buffer,4);
+		}
+	}
+}
+
+void Actuator::SetMot4QPos(int nb_bras, uint8_t pos) {
+	uint8_t buffer[3];
+	if(nb_bras < 0 || nb_bras > m_nb_ax12) {
+    	DEBUG_ROBOT_PRINTLN("erreur bras = " << nb_bras)
+	} else {
+		if(pos < POS_MOT_MIN || pos > POS_MOT_MAX) {
+    	DEBUG_ROBOT_PRINTLN("erreur pos = " << pos)
+		} else {
+			buffer[0] = ACT_CMD_SET_MOT4QPos;
+			buffer[1] = nb_bras;
+			buffer[2] = pos;
+			sendSPI(buffer,3);
+		}
+	}
 }

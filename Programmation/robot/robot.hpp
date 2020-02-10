@@ -51,7 +51,7 @@
 #define LIDAR_CMD_SET_SPEED             20
 #define LIDAR_CMD_GET_SPEED             21
 #define ACT_CMD_SERVO 					22
-#define ACT_CMD_SET_MOT4Q 				23
+#define ACT_CMD_SET_MOT4QVit			23
 #define ACT_CMD_SET_MOT 				25
 #define ACT_CMD_CUR 					26
 #define ACT_CMD_COLOR 					27
@@ -72,6 +72,7 @@
 #define LIDAR_RET_DEBUG_DEBUG       	42 
 #define LIDAR_RET_DEBUG_START       	43 
 #define LIDAR_RET_DEBUG_STOP        	44
+#define ACT_CMD_SET_MOT4QPos			45
 #define LIDAR_RET_DATA_AVAILABLE    	100
 #define LIDAR_RET_DETECTED_POINTS   	101
 #define LIDAR_RET_RAW_POINT         	102

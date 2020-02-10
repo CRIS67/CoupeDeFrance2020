@@ -23,6 +23,9 @@ volatile unsigned long timeLed, timeCS;
 #if NB_UART > 0
   #define BAUDRATE  9600
 #endif
+#if NB_MOTEUR4Q > 0
+  int StateMot4Q[NB_MOTEUR4Q];
+#endif
 #if NB_SCREEN > 0
   #include <math.h>
   
@@ -258,6 +261,7 @@ void InitCrisSpi(void) {
   #endif
   #if NB_MOTEUR4Q > 0
     for(i_init=0;i_init<NB_MOTEUR4Q;i_init++) {
+      StateMot4Q[i_init] = AUCUN;
       pinMode(Pin_Moteur4Q_SENS[i_init], OUTPUT);
       digitalWrite(Pin_Moteur4Q_SENS[i_init], LOW);
       pinMode(Pin_Moteur4Q_PWM[i_init], OUTPUT);
@@ -265,12 +269,12 @@ void InitCrisSpi(void) {
     }
   #endif
   #if NB_RUPT > 0
-    for(i_init=0;i_init<NB_MOTEUR4Q;i_init++) {
+    for(i_init=0;i_init<NB_RUPT;i_init++) {
       pinMode(Pin_Rupt[i_init], INPUT);
     }
   #endif
   #if NB_AX12 > 0
-    for(i_init=0;i_init<NB_MOTEUR4Q;i_init++) {
+    for(i_init=0;i_init<NB_AX12;i_init++) {
       Dynamixel[i_init].begin(BAUDRATE_AX_12, PinDir);
       Dynamixel[i_init].setEndless(IdAx12[i_init], OFF);
       if(Dynamixel[i_init].ping(IdAx12[i_init])) {
@@ -334,8 +338,11 @@ void LoopCrisSpi(void) {
       Valeur_Cur[i_init] = analogRead(Pin_Capt_Cur[i_init]);
     }
   #endif
+  #if NB_MOTEUR4Q > 0
+    //a voir
+  #endif
   #if NB_RUPT > 0
-    for(i_init=0;i_init<NB_MOTEUR4Q;i_init++) {
+    for(i_init=0;i_init<NB_RUPT;i_init++) {
       Valeur_Rupt[i_init] = digitalRead(Pin_Rupt[i_init]);
     }
   #endif
@@ -529,9 +536,12 @@ unsigned char ISRCrisSpi(unsigned char data_spi) {
                 break;
             #endif
             #if NB_MOTEUR4Q > 0
-              case ACT_CMD_SET_MOT4Q:
+              case ACT_CMD_SET_MOT4QVit:
                 digitalWrite(Pin_Moteur4Q_SENS[TextSpi[0]], TextSpi[1]);
                 analogWrite(Pin_Moteur4Q_PWM[TextSpi[0]],TextSpi[2]);
+                break;
+              case ACT_CMD_SET_MOT4QPos:
+
                 break;
             #endif
             #if NB_CAPT_CUR > 0

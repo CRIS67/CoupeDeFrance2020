@@ -33,6 +33,11 @@
 #define LIM_BLUE_MAX  6
 #define LIM_WHITE_MAX 7
 
+#define POS_MOT_MIN   0
+#define POS_MOT_ECO_L 1
+#define POS_MOT_ECO_H 2
+#define POS_MOT_MAX   3
+
 #define ERROR_VALUE		1025
 
 void* thread_act(void *threadid);
@@ -45,6 +50,7 @@ class Actuator : public Robot {
 		bool startThreadDetection();
 
 		void MoveServo(int nb_bras, int pos);
+		void MoveAx12(int nb_bras, int pos);
 		void SetMot(int nb_bras, int state);
 		void GetColor(int nb_bras);
 		void GetCurrent(int nb_bras);
@@ -54,7 +60,8 @@ class Actuator : public Robot {
 		int Color(int nb_bras);
 		int Dist(int nb_bras);
 		int Rupt(int nb_bras);
-		void SetMot4Q(int nb_bras, int vit, int sens);
+		void SetMot4QVit(int nb_bras, int vit, int sens);
+		void SetMot4QPos(int nb_bras, uint8_t pos);
 		void setSeuilColor(int seuil, int valeur);
 		void resetCptColor();
 		void UartSend(unsigned char Send, unsigned char id_uart);
