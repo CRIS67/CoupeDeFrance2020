@@ -4,7 +4,7 @@
 #include <Servo.h>
 #include <SoftwareSerial.h>
 #include <Arduino.h>
-#include "SPI_CRIS_pin.hpp"
+#include "SPI_CRIS_pin_Xbee.hpp"
 #include "projet.h"
 
 void InitCrisSpi();

@@ -263,12 +263,20 @@ void Actuator::UartSend(unsigned char Send, unsigned char id_uart) {
 	sendSPI(buffer,5);
 }
 
-void Actuator::allumerPhare(void) {
-    UartSend(PHARE_CMD_ALLUMER,UART_ID_PHARE);
-}
-
-void Actuator::eteindrePhare(void) {
-    UartSend(PHARE_CMD_ETEINDRE,UART_ID_PHARE);
+void Actuator::UartSetMot4QPos(int nb_bras, uint8_t pos) {
+	uint8_t buffer[3];
+	if(nb_bras < 0 || nb_bras > m_nb_moteur4Q) {
+    	DEBUG_ROBOT_PRINTLN("erreur bras = " << nb_bras)
+	} else {
+		if(pos < POS_MOT_MIN || pos > POS_MOT_MAX) {
+    	DEBUG_ROBOT_PRINTLN("erreur pos = " << pos)
+		} else {
+			buffer[0] = ACT_CMD_SET_MOT4QPos;
+			buffer[1] = nb_bras;
+			buffer[2] = pos;
+			sendSPI(buffer,3);
+		}
+	}
 }
 
 void Actuator::setSeuilColor(int seuil, int valeur) {
@@ -290,22 +298,6 @@ void Actuator::resetCptColor(void) {
 	sendSPI(buffer,1);
 }
 
-bool Actuator::isPhareAllumee(void) {
-	m_mutex.lock();
-	int b = m_phareAllumee;
-	m_phareAllumee = 0;
-	m_mutex.unlock();
-	return b;
-}
-
-bool Actuator::isPhareEteint(void) {
-	m_mutex.lock();
-	int b = m_phareEteint;
-	m_phareEteint = 0;
-	m_mutex.unlock();
-	return b;
-}
-
 void Actuator::MoveAx12(int nb_bras, int pos) {
 	uint8_t buffer[4];
 	if(nb_bras < 0 || nb_bras > m_nb_ax12) {
@@ -325,7 +317,7 @@ void Actuator::MoveAx12(int nb_bras, int pos) {
 
 void Actuator::SetMot4QPos(int nb_bras, uint8_t pos) {
 	uint8_t buffer[3];
-	if(nb_bras < 0 || nb_bras > m_nb_ax12) {
+	if(nb_bras < 0 || nb_bras > m_nb_moteur4Q) {
     	DEBUG_ROBOT_PRINTLN("erreur bras = " << nb_bras)
 	} else {
 		if(pos < POS_MOT_MIN || pos > POS_MOT_MAX) {
