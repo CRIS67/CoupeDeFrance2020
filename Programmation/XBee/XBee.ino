@@ -5,9 +5,9 @@
 
 #include <NeoSWSerial.h>
 
-int XBee_Adress = 1;              // Adresse propre de la XBee entre 0 et 255
-String XBee_Team = "1";           // Adresse de la team de la XBee
-String Other_Team = "2";          // Adresse de la team à laquelle les messages seront envoyés. Ces deux adresses se composent d'un unique caractère au choix
+int XBee_Adress = 2;              // Adresse propre de la XBee entre 0 et 255
+String XBee_Team = "2";           // Adresse de la team de la XBee
+String Other_Team = "1";          // Adresse de la team à laquelle les messages seront envoyés. Ces deux adresses se composent d'un unique caractère au choix
 String Network_Adress = "1234";   // Adresse du réseau
 
 const byte Rx_Pin = 2;            // Le Rx et Tx sont déplacés sur d'autres pins grâce à NeoSerial

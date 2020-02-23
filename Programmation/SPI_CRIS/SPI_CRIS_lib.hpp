@@ -4,7 +4,8 @@
 #include <Servo.h>
 #include <SoftwareSerial.h>
 #include <Arduino.h>
-#include "SPI_CRIS_pin_Xbee.hpp"
+//#include "SPI_CRIS_pin_Xbee.hpp"
+#include "SPI_CRIS_pin_Act.hpp"
 #include "projet.h"
 
 void InitCrisSpi();
@@ -139,7 +140,7 @@ unsigned char ISRCrisSpi(unsigned char data_spi);
 	#endif
 	
 	#define AUCUNE	0
-	#define ROUGE	1
+	#define ROUGE	 1
 	#define VERT	2
 	#define BLEU 	3
 	#define BLANC 	4

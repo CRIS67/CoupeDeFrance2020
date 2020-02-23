@@ -112,12 +112,13 @@ volatile unsigned long timeLed, timeCS;
     int period, red, green, blue;
     double H, C, m, M, white;
     unsigned char col;
+    Hg[nb_bras] = 12;
     if(cpt_capt_color[nb_bras] < MAX_WAIT_COLOR && nb_bras > -1 && nb_bras < NB_CAPT_COLOR) {
       // temps d'exec : 400-800us
   
       // Lecture de la composante rouge
-      digitalWrite(Pin_Capt_Color_TS2[nb_bras],LOW);
-      digitalWrite(Pin_Capt_Color_TS3[nb_bras],LOW);
+      digitalWrite(Pin_Capt_Color_TS2,LOW);
+      digitalWrite(Pin_Capt_Color_TS3,LOW);
       delayMicroseconds(10);
       period = pulseIn(Pin_Capt_Color_Arm[nb_bras], LOW);
       if(MAP_RED_MIN >= period) {
@@ -128,22 +129,22 @@ volatile unsigned long timeLed, timeCS;
         red = map(period, MAP_RED_MIN, MAP_RED_MAX,MAX_RGB,0);
   
         // Lecture de la composante verte
-        digitalWrite(Pin_Capt_Color_TS2[nb_bras],HIGH);
-        digitalWrite(Pin_Capt_Color_TS3[nb_bras],HIGH);
+        digitalWrite(Pin_Capt_Color_TS2,HIGH);
+        digitalWrite(Pin_Capt_Color_TS3,HIGH);
         delayMicroseconds(10);
         period = pulseIn(Pin_Capt_Color_Arm[nb_bras], LOW);
         green = map(period, MAP_GREEN_MIN,MAP_GREEN_MAX,MAX_RGB,0);
   
         // Lecture de la composante bleue
-        digitalWrite(Pin_Capt_Color_TS2[nb_bras],LOW);
-        digitalWrite(Pin_Capt_Color_TS3[nb_bras],HIGH);
+        digitalWrite(Pin_Capt_Color_TS2,LOW);
+        digitalWrite(Pin_Capt_Color_TS3,HIGH);
         delayMicroseconds(10);
         period = pulseIn(Pin_Capt_Color_Arm[nb_bras], LOW);
         blue = map(period, MAP_BLUE_MIN,MAP_BLUE_MAX,MAX_RGB,0);
 
         // Lecture de la composante blanche
-        digitalWrite(Pin_Capt_Color_TS2[nb_bras],HIGH);
-        digitalWrite(Pin_Capt_Color_TS3[nb_bras],LOW);
+        digitalWrite(Pin_Capt_Color_TS2,HIGH);
+        digitalWrite(Pin_Capt_Color_TS3,LOW);
         delayMicroseconds(10);
         period = pulseIn(Pin_Capt_Color_Arm[nb_bras], LOW);
         white = period;
@@ -199,11 +200,8 @@ volatile unsigned long timeLed, timeCS;
   }
   unsigned char RatioErr(unsigned char nb_bras, int taille) {
     int i, R = 0, G = 0, B = 0, E = 0, C = 0, W = 0, test;
-    double mini = GetColor(nb_bras), maxi = GetColor(nb_bras);
     for(i=0;i<taille;i++) {
       test = GetColor(nb_bras);
-      if(mini > test) {mini = test;}
-      if(maxi < test) {maxi = test;}
       switch(test) {
         case 0:
           E++;
@@ -297,16 +295,16 @@ void InitCrisSpi(void) {
     Serial.begin(BAUDRATE);
   #endif
   #if NB_CAPT_COLOR > 0
-    #if PIN_ENABLE > 0
+    #ifdef PIN_ENABLE
       pinMode(Pin_Capt_Color_Ena,OUTPUT);
       digitalWrite(Pin_Capt_Color_Ena, LOW);
     #endif
-    for(i_init=0;i_init<NB_SERVO;i_init++) {
-      pinMode(Pin_Capt_Color_TS2[i_init],OUTPUT);
-      pinMode(Pin_Capt_Color_TS3[i_init],OUTPUT);
+    pinMode(Pin_Capt_Color_TS2,OUTPUT);
+    pinMode(Pin_Capt_Color_TS3,OUTPUT);
+    digitalWrite(Pin_Capt_Color_TS2,LOW);
+    digitalWrite(Pin_Capt_Color_TS3,LOW);
+    for(i_init=0;i_init<NB_CAPT_COLOR;i_init++) {
       pinMode(Pin_Capt_Color_Arm[i_init],INPUT);
-      digitalWrite(Pin_Capt_Color_TS2[i_init],LOW);
-      digitalWrite(Pin_Capt_Color_TS3[i_init],LOW);
     }
   #endif
 
@@ -465,7 +463,7 @@ void LoopCrisSpi(void) {
     }
   #endif
   #if NB_CAPT_COLOR > 0
-    for(i_init=0;i_init<NB_CAPT_CUR;i_init++) {
+    for(i_init=0;i_init<NB_CAPT_COLOR;i_init++) {
       Valeur_Color[i_init] = RatioErr(i_init, NB_ITERATION_COLOR);
     }
   #endif
@@ -662,7 +660,8 @@ unsigned char ISRCrisSpi(unsigned char data_spi) {
             #endif
             #if NB_CAPT_COLOR > 0
               case ACT_CMD_COLOR:
-                SendNbSpi = (uint8_t)(Valeur_Color[TabTypeSend[CptReadPile]]/256);
+                //SendNbSpi = (uint8_t)(Valeur_Color[TabTypeSend[CptReadPile]]/256);
+                SendNbSpi = (uint8_t)(Hg[TabTypeSend[CptReadPile]]/256);
                 break;
             #endif
             #if NB_RUPT > 0
@@ -707,7 +706,8 @@ unsigned char ISRCrisSpi(unsigned char data_spi) {
             #endif
             #if NB_CAPT_COLOR > 0
               case ACT_CMD_COLOR:
-                SendNbSpi2 = Valeur_Color[TabTypeSend[CptReadPile]]%256;
+                //SendNbSpi2 = Valeur_Color[TabTypeSend[CptReadPile]]%256;
+                SendNbSpi2 = Hg[TabTypeSend[CptReadPile]]%256;
                 break;
             #endif
             #if NB_CAPT_DIST > 0
