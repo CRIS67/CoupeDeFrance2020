@@ -108,19 +108,20 @@ volatile unsigned long timeLed, timeCS;
   //limite des couleurs 40-135(6)-420(1)-3000
   int TabSeuil[] = {15, 39, 39, 100, 195, 350, 32};
   int cpt_capt_color[NB_CAPT_COLOR], Hg[NB_CAPT_COLOR], Valeur_Color[NB_CAPT_COLOR];
+  
   char GetColor(unsigned char nb_bras) {
     int period, red, green, blue;
     double H, C, m, M, white;
     unsigned char col;
-    Hg[nb_bras] = 12;
-    if(cpt_capt_color[nb_bras] < MAX_WAIT_COLOR && nb_bras > -1 && nb_bras < NB_CAPT_COLOR) {
+    if(cpt_capt_color[nb_bras] < MAX_WAIT_COLOR && nb_bras > -1 && nb_bras < NB_CAPT_COLOR) { 
       // temps d'exec : 400-800us
   
       // Lecture de la composante rouge
       digitalWrite(Pin_Capt_Color_TS2,LOW);
       digitalWrite(Pin_Capt_Color_TS3,LOW);
       delayMicroseconds(10);
-      period = pulseIn(Pin_Capt_Color_Arm[nb_bras], LOW);
+      //period = pulseIn(Pin_Capt_Color_Arm[nb_bras], LOW);
+      period = pulseIn(A0, LOW);
       if(MAP_RED_MIN >= period) {
         cpt_capt_color[nb_bras]++;
       } else {
@@ -305,6 +306,7 @@ void InitCrisSpi(void) {
     digitalWrite(Pin_Capt_Color_TS3,LOW);
     for(i_init=0;i_init<NB_CAPT_COLOR;i_init++) {
       pinMode(Pin_Capt_Color_Arm[i_init],INPUT);
+      cpt_capt_color[i_init] = 0;
     }
   #endif
 

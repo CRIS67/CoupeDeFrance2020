@@ -25,7 +25,7 @@ const int Pin_Led = 9;
   #define ADDR_SLAVE      UART_ID_PHARE
 #endif
 #if NB_SERVO > 0
-  const int Pin_Servo[] = {3, 4, 5, 6, 7, 8};
+  const int Pin_Servo[] = {3, 4, 5, 6, 7, 7, 8};
 #endif
 #if NB_MOTEUR > 0
   const int Pin_Moteur[] = {};
@@ -35,7 +35,7 @@ const int Pin_Led = 9;
   const int Pin_Moteur4Q_PWM[] = {};
 #endif
 #if NB_CAPT_CUR > 0
-  const int Pin_Capt_Cur[] = {A5, A6, A7};
+  const int Pin_Capt_Cur[] = {};
 #endif
 #if NB_CAPT_COLOR > 0
   #define PIN_ENABLE

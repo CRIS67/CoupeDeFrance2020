@@ -146,7 +146,7 @@ unsigned char ISRCrisSpi(unsigned char data_spi);
 	#define BLANC 	4
 	#define ERREUR	5
 
-	#define MAX_WAIT_COLOR  	2
+	#define MAX_WAIT_COLOR  	  3
 	#define NB_ITERATION_COLOR	10
 
   #define LIM_RED_MIN   1
