@@ -5,15 +5,15 @@
 
 #include <NeoSWSerial.h>
 
-int XBee_Adress = 2;              // Adresse propre de la XBee entre 0 et 255
-String XBee_Team = "2";           // Adresse de la team de la XBee
-String Other_Team = "1";          // Adresse de la team à laquelle les messages seront envoyés. Ces deux adresses se composent d'un unique caractère au choix
+int XBee_Adress = 1;              // Adresse propre de la XBee entre 0 et 255
+String XBee_Team = "1";           // Adresse de la team de la XBee
+String Other_Team = "2";          // Adresse de la team à laquelle les messages seront envoyés. Ces deux adresses se composent d'un unique caractère au choix
 String Network_Adress = "1234";   // Adresse du réseau
 
-const byte Rx_Pin = 0;            // Le Rx et Tx sont déplacés sur d'autres pins grâce à NeoSerial
-const byte Tx_Pin = 1;
+const byte Rx_Pin = 2;            // Le Rx et Tx sont déplacés sur d'autres pins grâce à NeoSerial
+const byte Tx_Pin = 3;
 
-const boolean Debug = false;        // Affiche sur le moniteur série les adresses après configuration
+const boolean Debug = true;        // Affiche sur le moniteur série les adresses après configuration
 
 char Flag = 'c';                  // Caractère indiquant le début d'un message
 
@@ -25,8 +25,6 @@ int Data_Sender = 0;              // Adresse proprede la XBee qui à envoyé led
 boolean Data_Reading = false;
 
 void setup() {
-  pinMode(13, OUTPUT);
-  digitalWrite(13, 1);
 
   if (Debug)
     Serial.begin(9600);             // Deux serial sont initialisés : celui pour la communication USB
@@ -39,11 +37,10 @@ void setup() {
 
 void loop() {
 
-XBee_Send (1, 1, "Coucou je suis numero 2");
+XBee_Send (2, 1, "Coucou je suis numero 1");
 
   if (Data_Text != "") {                                                                                                         // Si message reçu
-    //Serial.println("La XBee n " + String(Data_Sender) + " a envoyee un message de type " + String(Data_Type) + " : " + Data_Text);  // Affichage des données reçues
-    digitalWrite(13, 0);
+    Serial.println("La XBee n " + String(Data_Sender) + " a envoyee un message de type " + String(Data_Type) + " : " + Data_Text);  // Affichage des données reçues
     Data_Clear();                                                                                                                   // Les données ont été lues : on peut donc les supprimer (sans quoi elles seraient
   }                                                                                                                                 // de nouveau lues à la prochaine itération si aucun nouveau message n'a été reçu)
   delay(1000);                     // La lécture fonctionnant par interruption, on peut cadencer la boucle principale à la vitesse voulue
