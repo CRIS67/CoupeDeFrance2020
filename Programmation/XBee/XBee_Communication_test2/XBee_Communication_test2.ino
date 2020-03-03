@@ -22,11 +22,11 @@ NeoSWSerial XBee(Rx_Pin, Tx_Pin);
 String Data_Text = "";            // Chaine contenant le dernier message reçu
 int Data_Type = 0;                // Type du dernier message reçu
 int Data_Sender = 0;              // Adresse proprede la XBee qui à envoyé ledit message
-boolean Data_Reading = false;
+boolean Data_Reading = true;
 
 void setup() {
-  pinMode(13, OUTPUT);
-  digitalWrite(13, 1);
+  pinMode(2, OUTPUT);
+  digitalWrite(2, 0);
 
   if (Debug)
     Serial.begin(9600);             // Deux serial sont initialisés : celui pour la communication USB
@@ -35,6 +35,7 @@ void setup() {
   XBee_Config(XBee_Team, Other_Team, Network_Adress); // Configure la XBee avec les adresses spécifiées plus haut
   XBee.attachInterrupt(XBee_Receive);                 // La reception des messages fonctionne par interruption
 
+  digitalWrite(2, 1);
 }
 
 void loop() {
@@ -43,9 +44,11 @@ XBee_Send (1, 1, "Coucou je suis numero 2");
 
   if (Data_Text != "") {                                                                                                         // Si message reçu
     //Serial.println("La XBee n " + String(Data_Sender) + " a envoyee un message de type " + String(Data_Type) + " : " + Data_Text);  // Affichage des données reçues
-    digitalWrite(13, 0);
+    digitalWrite(2, 0);
     Data_Clear();                                                                                                                   // Les données ont été lues : on peut donc les supprimer (sans quoi elles seraient
-  }                                                                                                                                 // de nouveau lues à la prochaine itération si aucun nouveau message n'a été reçu)
+  }   
+  
+  digitalWrite(2, !digitalRead(2));// de nouveau lues à la prochaine itération si aucun nouveau message n'a été reçu)
   delay(1000);                     // La lécture fonctionnant par interruption, on peut cadencer la boucle principale à la vitesse voulue
 
 }
