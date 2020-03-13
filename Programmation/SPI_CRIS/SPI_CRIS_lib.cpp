@@ -26,6 +26,8 @@ volatile unsigned long timeLed, timeCS;
 #endif
 #if NB_MOTEUR4Q > 0
   int StateMot4Q[NB_MOTEUR4Q];
+  int RuptGo[NB_MOTEUR4Q];
+  int RuptNow[NB_MOTEUR4Q];
 #endif
 #if NB_SCREEN > 0
   #include <math.h>
@@ -266,6 +268,8 @@ void InitCrisSpi(void) {
       digitalWrite(Pin_Moteur4Q_SENS[i_init], LOW);
       pinMode(Pin_Moteur4Q_PWM[i_init], OUTPUT);
       analogWrite(Pin_Moteur4Q_PWM[i_init], MOTEUR_STOP);
+      RuptGo[i_init] = AUCUN;
+      RuptNow[i_init] = 0;
     }
   #endif
   #if NB_RUPT > 0
@@ -347,7 +351,11 @@ void LoopCrisSpi(void) {
     }
   #endif
   #if NB_MOTEUR4Q > 0
-    //a voir
+    for(i_init = 1;i_init<NB_MOTEUR4Q;i_init++) {
+      if(RuptGo[i_init] == AUCUN) {
+        
+      }
+    }
   #endif
   #if NB_RUPT > 0
     for(i_init=0;i_init<NB_RUPT;i_init++) {

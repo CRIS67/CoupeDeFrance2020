@@ -44,13 +44,13 @@ const int Pin_Led = 9;
   #endif
   const int Pin_Capt_Color_TS2 = 1;
   const int Pin_Capt_Color_TS3 = 2;
-  const int Pin_Capt_Color_Arm[NB_CAPT_COLOR] = {A6, A7};
+  const int Pin_Capt_Color_Arm[NB_CAPT_COLOR] = {A0, A1};
 #endif
 #if NB_RUPT > 0
-  const int Pin_Rupt[] = {A0, A1, A2, A3, A4, A5};
+  const int Pin_Rupt[] = {A6, A7, A2, A3, A4, A5};
 #endif
 #if NB_AX12 > 0
-  const int IdAx12[NB_AX12] = {1, 2};
+  const int IdAx12[NB_AX12] = {};
   const int PinDir = 2;
 #endif
 #if NB_LIDAR > 0

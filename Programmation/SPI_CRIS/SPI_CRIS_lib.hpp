@@ -4,8 +4,8 @@
 #include <Servo.h>
 #include <SoftwareSerial.h>
 #include <Arduino.h>
-#include "SPI_CRIS_pin_Xbee.hpp"
-//#include "SPI_CRIS_pin_Act.hpp"
+//#include "SPI_CRIS_pin_Xbee.hpp"
+#include "SPI_CRIS_pin_Act.hpp"
 //#include "SPI_CRIS_pin_Scara.hpp"
 #include "projet.h"
 
@@ -44,7 +44,7 @@ unsigned char ISRCrisSpi(unsigned char data_spi);
 #define TAILLE_SEND         10
 
 //------------ CMD -------------------//
-#define AUCUN             0
+#define AUCUN                           0
 #define LIDAR_CMD_DEBUG                 1
 #define LIDAR_CMD_START                 2
 #define LIDAR_CMD_STOP                  3

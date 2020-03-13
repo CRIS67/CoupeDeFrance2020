@@ -97,7 +97,7 @@ std::vector<Node> completePath;
 
 int main() {
 
-    std::cout << std::endl << "     Coupe de France 2019 by CRIS" << std::endl << std::endl;
+    std::cout << std::endl << "     Coupe de France 2020 by CRIS" << std::endl << std::endl;
     wiringPiSetup();
 
     std::cout << "Initialisation..." << std::endl;
@@ -119,23 +119,22 @@ int main() {
     Lidar lidar("Lidar",&spi,SPI_ID_LIDAR,&web);
     Actuator xbee("Xbee",&spi,SPI_ID_XBEE,4,2,0,0,0,1,3,0,0);
 
-    //actScara.reset();
-    actScara.reset();
-    //lidar.stop();
+    lidar.stop();
 
     puts("Hello human ! I, your fervent robot, am initialised. Press <ENTER> to continue.");
     getchar();
 
-    /*lidar.start();
+    lidar.start();
     dspic.start();
     dspic.startThreadReception();
     web.startThread();
     lidar.startThreadDetection();
     hmi.startThreadDetection();
-    actScara.startThreadDetection();*/
-    //actBack.startThreadDetection();
+    actScara.startThreadDetection();
+    actBack.startThreadDetection();
+    xbee.startThreadDetection();
 
-    /*dspic.setVar8(CODE_VAR_VERBOSE,1);
+    dspic.setVar8(CODE_VAR_VERBOSE,1);
     puts("verbose set to 1");
     dspic.getVar(CODE_VAR_BAT);
     dspic.loadVarDspicFromFile("config.txt");
@@ -152,21 +151,12 @@ int main() {
 
     dspic.go(1445, 1500, 0, 0);
     xbee.allumerPhare();
-    delay(4000);*/
-    //hmi.setScore(666);
-    //hmi.SetPos(10,27);
-    //hmi.startThreadDetection();
-    actScara.startThreadDetection();
+    delay(4000);
+    hmi.setScore(666);
+    xbee.startThreadDetection();
 
     while(!hmi.isStopMain()){
-    	//actBack.GetColor(0);
-    	//actBack.GetColor(1);
-        //actScara.SetAx12(1, 820);
-        //std::cout << "1 = " << actBack.Color(1) << std::endl;
-        delay(1000);
-        actScara.SetAx12(1, 600);
-        delay(1000);
-        actScara.SetAx12(1, 800);
+    	
 	}
 
     dspic.stop();
