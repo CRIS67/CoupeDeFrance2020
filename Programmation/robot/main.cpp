@@ -109,8 +109,8 @@ int main() {
 
     SPI spi(SPI_CHANNEL,SPI_SPEED); //initialise SPI
 
-    //Robot actBack("Actuator Back",&spi,SPI_ID_ACT_BACK,6,0,0,0,2,0,6,0,0,0,0,NULL);
-    Actuator actBack("Actuator Back 2019",&spi,SPI_ID_ACT_BACK,3,0,3,3,0,0,0,0,0);
+    Actuator actBack("Actuator Back",&spi,SPI_ID_ACT_BACK,6,0,0,0,2,0,6,0,0);
+    //Actuator actBack("Actuator Back 2019",&spi,SPI_ID_ACT_BACK,3,0,3,3,0,0,0,0,0);
     Actuator actScara("Actuator Scara",&spi,SPI_ID_ACT_SCARA,0,2,2,2,0,0,5,3,1);
 
     Web web(&dspic, &actScara, &actBack);
@@ -120,7 +120,7 @@ int main() {
     Actuator xbee("Xbee",&spi,SPI_ID_XBEE,4,2,0,0,0,1,3,0,0);
 
     //actScara.reset();
-    actBack.reset();
+    actScara.reset();
     //lidar.stop();
 
     puts("Hello human ! I, your fervent robot, am initialised. Press <ENTER> to continue.");
@@ -156,14 +156,17 @@ int main() {
     //hmi.setScore(666);
     //hmi.SetPos(10,27);
     //hmi.startThreadDetection();
-    actBack.startThreadDetection();
-    actBack.MoveServo(0,800);
+    actScara.startThreadDetection();
 
     while(!hmi.isStopMain()){
-        std::cout << "0 = " << actBack.Cur(0) << std::endl;
-        std::cout << "1 = " << actBack.Cur(1) << std::endl;
-        std::cout << "2 = " << actBack.Cur(2) << std::endl;
-        //delay(1000);
+    	//actBack.GetColor(0);
+    	//actBack.GetColor(1);
+        //actScara.SetAx12(1, 820);
+        //std::cout << "1 = " << actBack.Color(1) << std::endl;
+        delay(1000);
+        actScara.SetAx12(1, 600);
+        delay(1000);
+        actScara.SetAx12(1, 800);
 	}
 
     dspic.stop();

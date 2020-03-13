@@ -15,7 +15,8 @@ volatile unsigned long timeLed, timeCS;
   int Valeur_Rupt[NB_RUPT];
 #endif
 #if NB_AX12 > 0
-  DynamixelClass Dynamixel[NB_AX12];
+  DynamixelClass Dynamixel;
+  int ax12_pos[NB_AX12];
 #endif
 #if NB_CAPT_DIST > 0
   int Valeur_Dist[NB_CAPT_DIST];
@@ -273,19 +274,21 @@ void InitCrisSpi(void) {
     }
   #endif
   #if NB_AX12 > 0
-    for(i_init=0;i_init<NB_AX12;i_init++) {
-      Dynamixel[i_init].begin(BAUDRATE_AX_12, PinDir);
-      Dynamixel[i_init].setEndless(IdAx12[i_init], OFF);
-      if(Dynamixel[i_init].ping(IdAx12[i_init])) {
-        Dynamixel[i_init].reset(IdAx12[i_init]);
+    for(i_init=1;i_init<NB_AX12+1;i_init++) {
+      Dynamixel.begin(BAUDRATE_AX_12, PinDir);
+      Dynamixel.setEndless(i_init, OFF);
+      if(Dynamixel.ping(i_init)) {
+        Dynamixel.reset(i_init);
         delay(200);
-        if(Dynamixel[i_init].ping(IdAx12[i_init])) {
+        if(Dynamixel.ping(i_init)) {
           //error
         } else {
-          Dynamixel[i_init].move(IdAx12[i_init],MID_POS_AX_12);
+          Dynamixel.move(i_init,MID_POS_AX_12);
+          ax12_pos[i_init-1] = MID_POS_AX_12;
         }
       } else {
-        Dynamixel[i_init].move(IdAx12[i_init],MID_POS_AX_12);
+        Dynamixel.move(i_init,MID_POS_AX_12);
+        ax12_pos[i_init-1] = MID_POS_AX_12;
       }
     }
   #endif
@@ -333,6 +336,11 @@ void InitCrisSpi(void) {
 
 void LoopCrisSpi(void) {
   int i_init;
+  #if NB_AX12 > 0
+    for(i_init = 1;i_init < NB_AX12+1;i_init++) {
+      Dynamixel.move(i_init,ax12_pos[i_init-1]);
+    }
+  #endif
   #if NB_CAPT_CUR > 0
     for(i_init=0;i_init<NB_CAPT_CUR;i_init++) {
       Valeur_Cur[i_init] = analogRead(Pin_Capt_Cur[i_init]);
@@ -461,7 +469,7 @@ void LoopCrisSpi(void) {
   #else
     if(millis() - timeLed > 1000){ 
       timeLed = millis();
-      digitalWrite(Pin_Led,!digitalRead(Pin_Led));
+      //digitalWrite(Pin_Led,!digitalRead(Pin_Led));
     }
   #endif
   #if NB_CAPT_COLOR > 0
@@ -577,7 +585,8 @@ unsigned char ISRCrisSpi(unsigned char data_spi) {
             #endif
             #if NB_AX12 > 0
               case ACT_CMD_AX12:
-                Dynamixel[TextSpi[0]].move(IdAx12[TextSpi[0]],TextSpi[1]*256+TextSpi[2]);
+                //Dynamixel.move(TextSpi[0],TextSpi[1]*256+TextSpi[2]);
+                ax12_pos[TextSpi[0]-1] = TextSpi[1]*256+TextSpi[2];
                 break;
             #endif
             #if NB_LIDAR > 0
