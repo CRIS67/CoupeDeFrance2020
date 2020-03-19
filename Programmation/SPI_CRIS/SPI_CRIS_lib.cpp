@@ -17,6 +17,7 @@ volatile unsigned long timeLed, timeCS;
 #if NB_AX12 > 0
   DynamixelClass Dynamixel;
   int ax12_pos[NB_AX12];
+  int IsAx12Ok[NB_AX12];
 #endif
 #if NB_CAPT_DIST > 0
   int Valeur_Dist[NB_CAPT_DIST];
@@ -25,9 +26,8 @@ volatile unsigned long timeLed, timeCS;
   #define BAUDRATE  9600
 #endif
 #if NB_MOTEUR4Q > 0
-  int StateMot4Q[NB_MOTEUR4Q];
-  int RuptGo[NB_MOTEUR4Q];
-  int RuptNow[NB_MOTEUR4Q];
+  int MoveP[NB_MOTEUR4Q];
+  volatile unsigned long PosGo[NB_MOTEUR4Q];
 #endif
 #if NB_SCREEN > 0
   #include <math.h>
@@ -263,13 +263,11 @@ void InitCrisSpi(void) {
   #endif
   #if NB_MOTEUR4Q > 0
     for(i_init=0;i_init<NB_MOTEUR4Q;i_init++) {
-      StateMot4Q[i_init] = AUCUN;
       pinMode(Pin_Moteur4Q_SENS[i_init], OUTPUT);
       digitalWrite(Pin_Moteur4Q_SENS[i_init], LOW);
       pinMode(Pin_Moteur4Q_PWM[i_init], OUTPUT);
       analogWrite(Pin_Moteur4Q_PWM[i_init], MOTEUR_STOP);
-      RuptGo[i_init] = AUCUN;
-      RuptNow[i_init] = 0;
+      MoveP[i_init] = SPEED;
     }
   #endif
   #if NB_RUPT > 0
@@ -285,14 +283,16 @@ void InitCrisSpi(void) {
         Dynamixel.reset(i_init);
         delay(200);
         if(Dynamixel.ping(i_init)) {
-          //error
+          IsAx12Ok[i_init-1] = ERREUR;
         } else {
           Dynamixel.move(i_init,MID_POS_AX_12);
           ax12_pos[i_init-1] = MID_POS_AX_12;
+          IsAx12Ok[i_init-1] = OK;
         }
       } else {
         Dynamixel.move(i_init,MID_POS_AX_12);
         ax12_pos[i_init-1] = MID_POS_AX_12;
+        IsAx12Ok[i_init-1] = OK;
       }
     }
   #endif
@@ -342,7 +342,9 @@ void LoopCrisSpi(void) {
   int i_init;
   #if NB_AX12 > 0
     for(i_init = 1;i_init < NB_AX12+1;i_init++) {
-      Dynamixel.move(i_init,ax12_pos[i_init-1]);
+      if(IsAx12Ok[i_init-1] == OK) {
+        Dynamixel.move(i_init,ax12_pos[i_init-1]);
+      }
     }
   #endif
   #if NB_CAPT_CUR > 0
@@ -351,9 +353,10 @@ void LoopCrisSpi(void) {
     }
   #endif
   #if NB_MOTEUR4Q > 0
-    for(i_init = 1;i_init<NB_MOTEUR4Q;i_init++) {
-      if(RuptGo[i_init] == AUCUN) {
-        
+    for(i_init = 0;i_init<NB_MOTEUR4Q;i_init++) {
+      if(digitalRead(Pin_RuptEnd4Q[i_init][0]) || digitalRead(Pin_RuptEnd4Q[i_init][1]) || (PosGo[i_init] <= millis() && MoveP[i_init] == DIST)) {
+        analogWrite(Pin_Moteur4Q_PWM[i_init],MOTEUR_STOP);
+        MoveP[i_init] = SPEED;
       }
     }
   #endif
@@ -477,7 +480,7 @@ void LoopCrisSpi(void) {
   #else
     if(millis() - timeLed > 1000){ 
       timeLed = millis();
-      //digitalWrite(Pin_Led,!digitalRead(Pin_Led));
+      digitalWrite(Pin_Led,!digitalRead(Pin_Led));
     }
   #endif
   #if NB_CAPT_COLOR > 0
@@ -557,7 +560,10 @@ unsigned char ISRCrisSpi(unsigned char data_spi) {
                 analogWrite(Pin_Moteur4Q_PWM[TextSpi[0]],TextSpi[2]);
                 break;
               case ACT_CMD_SET_MOT4QPos:
-
+                digitalWrite(Pin_Moteur4Q_SENS[TextSpi[0]], TextSpi[1]);
+                analogWrite(Pin_Moteur4Q_PWM[TextSpi[0]],TextSpi[2]);
+                MoveP[TextSpi[0]] = DIST;
+                PosGo[TextSpi[0]] = millis() + (TextSpi[3]*256+TextSpi[4]);
                 break;
             #endif
             #if NB_CAPT_CUR > 0
@@ -593,7 +599,6 @@ unsigned char ISRCrisSpi(unsigned char data_spi) {
             #endif
             #if NB_AX12 > 0
               case ACT_CMD_AX12:
-                //Dynamixel.move(TextSpi[0],TextSpi[1]*256+TextSpi[2]);
                 ax12_pos[TextSpi[0]-1] = TextSpi[1]*256+TextSpi[2];
                 break;
             #endif

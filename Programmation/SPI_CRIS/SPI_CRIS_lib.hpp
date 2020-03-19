@@ -5,8 +5,8 @@
 #include <SoftwareSerial.h>
 #include <Arduino.h>
 //#include "SPI_CRIS_pin_Xbee.hpp"
-#include "SPI_CRIS_pin_Act.hpp"
-//#include "SPI_CRIS_pin_Scara.hpp"
+//#include "SPI_CRIS_pin_Act.hpp"
+#include "SPI_CRIS_pin_Scara.hpp"
 #include "projet.h"
 
 void InitCrisSpi();
@@ -89,6 +89,8 @@ unsigned char ISRCrisSpi(unsigned char data_spi);
 
 #if NB_MOTEUR4Q > 0
   #define MOTEUR_STOP     0
+  #define SPEED 		  0
+  #define DIST 			  1
 #endif
 #if NB_SCREEN > 0
   #define JAUNE               1
@@ -97,6 +99,8 @@ unsigned char ISRCrisSpi(unsigned char data_spi);
 #if NB_AX12 > 0
   #define BAUDRATE_AX_12 1000000
   #define MID_POS_AX_12  512
+  #define ERREUR         0
+  #define OK             1
 #endif
 #if NB_CAPT_COLOR > 0
 	#define CORRECTION_LUM
