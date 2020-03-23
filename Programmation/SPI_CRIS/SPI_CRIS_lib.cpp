@@ -341,7 +341,7 @@ void InitCrisSpi(void) {
 void LoopCrisSpi(void) {
   int i_init;
   #if NB_AX12 > 0
-    for(i_init = 1;i_init < NB_AX12+1;i_init++) {
+    for(i_init = 1;i_init < NB_AX12;i_init++) {
       if(IsAx12Ok[i_init-1] == OK) {
         Dynamixel.move(i_init,ax12_pos[i_init-1]);
       }
@@ -606,8 +606,8 @@ unsigned char ISRCrisSpi(unsigned char data_spi) {
               //à faire peut être
             #endif
             #if NB_SCREEN > 0
-              FlagSpi = 1;
               case HMI_CMD_POS:
+              	FlagSpi = 1;
                 PosX = TextSpi[0];
                 PosX = PosX << 8;
                 PosX += TextSpi[1];
@@ -622,11 +622,13 @@ unsigned char ISRCrisSpi(unsigned char data_spi) {
                 }
                 break;
               case HMI_CMD_TXT:
+              	FlagSpi = 1;
                 for(i_int=0;i_int<TAILLE_SPI_CHAINE-3;i_int++) {
                   Text[i_int][TextSpi[2]] = TextSpi[i_int+3];
                 }
                 break;
               case HMI_CMD_SCORE:
+              	FlagSpi = 1;
                 Score = TextSpi[0];
                 Score *= 256;
                 Score += TextSpi[1];
