@@ -1,27 +1,9 @@
-//#include <SoftwareSerial.h>
-
-/*
-  Chaque XBee possède une adresse propre et un n° de team. Elle peut unquement communiquer avec une seule et autre team,
-  car elles sont utilisé en mode transparent.
-*/
-
-#include <NeoSWSerial.h>
-
-
 int XBee_Adress = 2;              // Adresse propre de la XBee entre 0 et 255
 String XBee_Team = "2";           // Adresse de la team de la XBee
 String Other_Team = "1";          // Adresse de la team à laquelle les messages seront envoyés. Ces deux adresses se composent d'un unique caractère au choix
 String Network_Adress = "1234";   // Adresse du réseau
 
-const byte Rx_Pin = 2;            // Le Rx et Tx sont déplacés sur d'autres pins grâce à NeoSerial
-const byte Tx_Pin = 3;
-
-const boolean Debug = true;        // Affiche sur le moniteur série les adresses après configuration
-
 char Flag = 'c';                  // Caractère indiquant le début d'un message
-
-NeoSWSerial XBee(Rx_Pin, Tx_Pin);
-//SoftwareSerial XBee(Rx_Pin, Tx_Pin);
 
 String Data_Text = "";            // Chaine contenant le dernier message reçu
 int Data_Type = 0;                // Type du dernier message reçu
@@ -29,79 +11,51 @@ int Data_Sender = 0;              // Adresse proprede la XBee qui à envoyé led
 boolean Data_Reading = false;
 
 void setup() {
-
-  if (Debug)
-    Serial.begin(9600);             // Deux serial sont initialisés : celui pour la communication USB
-
-  XBee.begin(9600);               // et celui pour la communication via les XBees
+  Serial.begin(9600);
   XBee_Config(XBee_Team, Other_Team, Network_Adress); // Configure la XBee avec les adresses spécifiées plus haut
-  XBee.attachInterrupt(XBee_Receive);                 // La reception des messages fonctionne par interruption
-
+  pinMode(13, OUTPUT);
+  digitalWrite(13,0);
 }
 
 void loop() {
-
-XBee_Send (1, 1, "Coucou je suis numero 1");
-  /*if(XBee.available()) {
-    XBee_Receive(XBee.read());
-  }*/
-
-  if (Data_Text != "") {                                                                                                         // Si message reçu
-    Serial.println("La XBee n " + String(Data_Sender) + " a envoyee un message de type " + String(Data_Type) + " : " + Data_Text);  // Affichage des données reçues
+  XBee_Send (1, 1, "Coucou je suis numero 2");
+  if (Data_Text != "") {    
+    digitalWrite(13,1);// Si message reçu
+    //Serial.println("La XBee n " + String(Data_Sender) + " a envoyee un message de type " + String(Data_Type) + " : " + Data_Text);  // Affichage des données reçues
+    delay(1000);
     Data_Clear();                                                                                                                   // Les données ont été lues : on peut donc les supprimer (sans quoi elles seraient
-  }                                                                                                                                 // de nouveau lues à la prochaine itération si aucun nouveau message n'a été reçu)
-  delay(1000);                     // La lécture fonctionnant par interruption, on peut cadencer la boucle principale à la vitesse voulue
-
+  } else {                                                                                                                               // de nouveau lues à la prochaine itération si aucun nouveau message n'a été reçu)
+    delay(1000);
+  }
 }
 
 static void XBee_Config(String Sender, String Receiver, String Network) { // Configure la XBee. Le programme reste bloqué si il ne détecte pas la XBee
 
   char thisByte = 0;
-  while (XBee.available() > 0) {
+  while (Serial.available() > 0) {
     if (thisByte != '\r') {
-      thisByte = XBee.read();
+      thisByte = Serial.read();
     }
   }
-  XBee.print("ATRE\r");
-  XBee.print("ATMY" + Sender + "\r");
-  XBee.print("ATDL" + Receiver + "\r");
-  XBee.print("ATID" + Network + "\r");
-  XBee.print("ATCN\r");
-  if (Debug) {
-    Serial.println("XBee Adress : " + String(XBee_Adress));
-    Serial.println("Team ID : " + Sender);
-    Serial.println("Receiving Team ID : " + Receiver);
-    Serial.println("Network Adress : " + Network);
-  }
-
+  Serial.print("ATRE\r");
+  Serial.print("ATMY" + Sender + "\r");
+  Serial.print("ATDL" + Receiver + "\r");
+  Serial.print("ATID" + Network + "\r");
+  Serial.print("ATCN\r");
 }
 
-/*
-  Composition de la trame :
-
-  Byte n°: Valeur :
-  0           c (01100011) : début du message
-  1           adresse du destinataire
-  2           adresse de l'envoyeur
-  3           type de message
-  4           N : longueur du message
-  5 -> N+4    message
-  N+5         checksum
-
-*/
-
 static void XBee_Send(int adress, int type, String data0) {   // Envoit un message
-
   int n = data0.length();
   String data;
   data = String(Flag) + char(adress) + char(XBee_Adress) + char(type) + char(n)  + data0;
   int chk = data.length();
   data = data + char(chk);
-  XBee.print(data);
-
+  Serial.print(data);
 }
 
-static void XBee_Receive( uint8_t c) {    // Programme d'interuption permettant de gérer la réception
+//static void XBee_Receive( uint8_t c) {    // Programme d'interuption permettant de gérer la réception
+void serialEvent() {
+  uint8_t c = Serial.read();
 
   static String received;
   static int i;           // Emplacement du caractère dans le message
@@ -133,9 +87,10 @@ static void XBee_Receive( uint8_t c) {    // Programme d'interuption permettant 
 }
 
 static void Data_Clear() {      // Supprime les données reçues
-
   Data_Text = "";
   Data_Type = 0;
   Data_Sender = 0;
-
+  digitalWrite(13,0);
 }
+
+

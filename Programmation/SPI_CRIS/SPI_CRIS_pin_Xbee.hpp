@@ -4,13 +4,13 @@
 #define COM_SPI
 //#define COM_UART
 
-#define NB_SERVO        4
-#define NB_MOTEUR4Q     2
+#define NB_SERVO        0 //4
+#define NB_MOTEUR4Q     0 //2
 #define NB_MOTEUR       0
 #define NB_CAPT_CUR     0
 #define NB_CAPT_COLOR   0
 #define NB_UART         1
-#define NB_RUPT         3
+#define NB_RUPT         0 //3
 #define NB_AX12         0
 #define NB_LIDAR        0
 #define NB_SCREEN       0
@@ -61,6 +61,13 @@ const int Pin_Led = 2;
 #endif
 #if NB_CAPT_DIST > 0
 
+#endif
+#if NB_UART > 0
+  const int XBee_Adress = 1;
+  const int Xbee_Id = 2;
+  const String XBee_Team = "1";
+  const String Other_Team = "2";
+  const String Network_Adress = "1234";
 #endif
 
 #endif // SPI_CRIS_PIN_H
