@@ -8,6 +8,9 @@ CptSpiSend = SPI_SEND_IDLE, Checksum = 0,CS_fault = 0, SendNbSpi2 = 0;
 unsigned char TextSpi[TAILLE_SPI_CHAINE], TabPileSend[TAILLE_SEND], TabTypeSend[TAILLE_SEND], TabTailleSend[TAILLE_SEND];
 volatile unsigned long timeLed, timeCS;
 
+#ifdef COM_UART
+  uint8_t PhareState = PHARE_OFF;
+#endif
 #if NB_CAPT_CUR > 0
   int Valeur_Cur[NB_CAPT_CUR];
 #endif
@@ -113,7 +116,6 @@ volatile unsigned long timeLed, timeCS;
   int Data_Type = 0;                // Type du dernier message reçu
   int Data_Sender = 0;              // Adresse proprede la XBee qui à envoyé ledit message
   boolean Data_Reading = false;
-  String inp = "";
   static void XBee_Config(String Sender, String Receiver, String Network) { // Configure la XBee. Le programme reste bloqué si il ne détecte pas la XBee
     char thisByte = 0;
     while (Serial.available() > 0) {
@@ -160,10 +162,10 @@ volatile unsigned long timeLed, timeCS;
         int l = received.length();  // Longueur totale de la trame
         if (adress == char(XBee_Adress) && l == int(received.charAt(l - 1)) ) // Le message n'est validé que si l'adresse et la longueur sont correctes
           Data_Text = received.substring(4, l - 1);
-        Data_Type = int(received.charAt(2));
-        Data_Sender = int(received.charAt(1));
+          Data_Type = int(received.charAt(2));
+          Data_Sender = int(received.charAt(1));
+        }
       }
-    }
   }
   static void Data_Clear() {      // Supprime les données reçues
     Data_Text = "";
@@ -362,7 +364,10 @@ void InitCrisSpi(void) {
   #endif
   #if NB_UART > 0
     Serial.begin(BAUDRATE);
-    XBee_Config(XBee_Team, Other_Team, Network_Adress);
+    String inO = "", inX = "";
+    inX = (char)(XBee_Adress+'0');
+    inO = (char)(Other_Adress+'0');
+    XBee_Config(inX, inO, Network_Adress);
   #endif
   #if NB_SCREEN > 0
     Serial.begin(BAUDRATE);
@@ -395,9 +400,6 @@ void InitCrisSpi(void) {
     SPCR = _BV(SPE);    // turn on SPI in slave mode
     SPCR |= _BV(SPIE);  // turn on interrupts
     SPDR = 0;           //clear buffer SPI
-  #endif
-  #ifdef COM_UART
-    Serial.begin(BAUDRATE_UART);
   #endif
 
   timeLed = millis();
@@ -553,8 +555,48 @@ void LoopCrisSpi(void) {
       Valeur_Color[i_init] = RatioErr(i_init, NB_ITERATION_COLOR);
     }
   #endif
+  #if NB_UART > 0
   #ifdef COM_UART
-    
+    if(PhareState == PHARE_ON) {
+    	digitalWrite(LED_PHARE, 1);
+    } else {
+    	digitalWrite(LED_PHARE, 0);
+    }
+    if(Data_Text != "") {
+    	switch(Data_Type) {
+    		case CMD_RST:
+    			resetFunc();;
+    			break;
+    		case CMD_PING:
+    			XBee_Send(Data_Sender, CMD_PING_UART, "0");
+    			break;
+    		case PHARE_STATE:
+    			if(Data_Text.substring(0,2) == "49") {
+    				PhareState = PHARE_ON;
+    			} else {
+    				PhareState = PHARE_OFF;
+    			}
+    			break;
+    		default:
+    			XBee_Send(Data_Sender, MSG_NON_PRIS_EN_CHARGE_UART, "0");
+    			break;
+    	}
+    }
+  #else
+    if(Data_Text  != "") {
+    	switch(Data_Type) {
+    		case CMD_PING_UART:
+    			SendSpi(CMD_PING_UART,3,0);
+    			break;
+    		case MSG_NON_PRIS_EN_CHARGE_UART:
+    			SendSpi(MSG_NON_PRIS_EN_CHARGE_UART,3,0);
+    			break;
+    		default:
+    			SendSpi(MSG_NON_PRIS_EN_CHARGE_UART,3,0);
+    			break;
+    	}
+    }
+  #endif
   #endif
   if(CS_fault) {
     if(millis() - timeCS > 100){ 
@@ -594,21 +636,10 @@ unsigned char ISRCrisSpi(unsigned char data_spi) {
         break;
       case SPI_CHECKSUM:
         if((unsigned char)(Checksum%256) == (unsigned char)(data_spi)) {
+          String inp;
           int i_int = 0;
           CptSpi = 0;
           switch(TypeVarSpi) {
-            #ifdef COM_UART
-              case PHARE_CMD_ALLUMER:
-                if(UART_ID_PHARE == TextSpi[0]) {
-                  //do
-                }
-                break;
-              case PHARE_CMD_ETEINDRE:
-                if(UART_ID_PHARE == TextSpi[0]) {
-                  //do
-                }
-                break;
-            #endif
             #if NB_SERVO > 0
               case ACT_CMD_SERVO:
                 S[TextSpi[0]].writeMicroseconds(TextSpi[1]*256+TextSpi[2]);
@@ -650,16 +681,17 @@ unsigned char ISRCrisSpi(unsigned char data_spi) {
                 break;
             #endif
             #if NB_UART > 0
+            #ifndef COM_UART
               case ACT_CMD_UART_SEND:
-                i_int = 0;
+                i_int = 2;
                 inp = "";
                 while(TextSpi[i_int] != '\0') {
                   inp += TextSpi[i_int];
                   i_int++;
                 }
-                inp = "test1";
-                XBee_Send (XBee_Adress, 1, inp);
+                XBee_Send(TextSpi[1], TextSpi[0], inp);
                 break;
+            #endif
             #endif
             #if NB_RUPT > 0
               case ACT_CMD_RUPT:
@@ -845,11 +877,6 @@ void SendSpi(uint8_t buf, uint8_t leng, uint8_t num) {
 #ifdef COM_SPI
   ISR(SPI_STC_vect) {
     SPDR = ISRCrisSpi(SPDR);
-  }
-#endif
-#ifdef COM_UART
-  void serialEvent() {
-    Serial.write(ISRCrisSpi(Serial.read()));
   }
 #endif
 

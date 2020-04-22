@@ -4,7 +4,8 @@
 #include <Servo.h>
 #include <SoftwareSerial.h>
 #include <Arduino.h>
-#include "SPI_CRIS_pin_Xbee.hpp"
+//#include "SPI_CRIS_pin_Xbee.hpp"
+#include "SPI_CRIS_pin_Phare.hpp"
 //#include "SPI_CRIS_pin_Act.hpp"
 //#include "SPI_CRIS_pin_Scara.hpp"
 //#include "SPI_CRIS_pin_HMI.hpp"
@@ -19,13 +20,9 @@ unsigned char ISRCrisSpi(unsigned char data_spi);
 #define MISO            12
 #define SCK             13
 
-#define UART_ID_PHARE    1
+#define UART_ID_PHARE     1
 #define UART_ID_HOLONOME  2
 #define UART_ID_BALISE    3
-
-//cmd uart
-#define PHARE_CMD_ALLUMER 1
-#define PHARE_CMD_ETEINDRE  2
 
 //etat machine spi
 #define SPI_IDLE        0
@@ -83,6 +80,9 @@ unsigned char ISRCrisSpi(unsigned char data_spi);
 #define LIDAR_RET_DEBUG_START           43 
 #define LIDAR_RET_DEBUG_STOP            44
 #define ACT_CMD_SET_MOT4QPos            45
+#define PHARE_STATE                     46
+#define CMD_PING_UART                   47
+#define MSG_NON_PRIS_EN_CHARGE_UART     48
 #define LIDAR_RET_DATA_AVAILABLE        100
 #define LIDAR_RET_DETECTED_POINTS       101
 #define LIDAR_RET_RAW_POINT             102
@@ -162,6 +162,12 @@ unsigned char ISRCrisSpi(unsigned char data_spi);
   #define LIM_BLUE_MIN  5
   #define LIM_BLUE_MAX  6
   #define LIM_WHITE_MAX 7
+#endif
+#if NB_UART > 0
+  #define BAUDRATE  9600
+  
+  #define PHARE_OFF 0
+  #define PHARE_ON  1
 #endif
 
 #endif //SPI_CRIS_LIB_H

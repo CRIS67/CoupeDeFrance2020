@@ -116,10 +116,11 @@ int main() {
     Web web(&dspic, &actScara, &actBack);
 
     Hmi hmi("HMI",&spi,SPI_ID_HMI);
-    Lidar lidar("Lidar",&spi,SPI_ID_LIDAR,&web);
     Actuator xbee("Xbee",&spi,SPI_ID_XBEE,4,2,0,0,0,1,3,0,0);
+    Lidar lidar("Lidar",&spi,SPI_ID_LIDAR,&web);
 
     lidar.stop();
+    delay(1000);
 
     puts("Hello human ! I, your fervent robot, am initialised. Press <ENTER> to continue.");
     getchar();
@@ -145,18 +146,70 @@ int main() {
     //double tInit = 0;
     dspic.initPos(1045,1500,0);
     
-    std::cout << "Press enter to dspic.start() " << std::endl; 
+    //std::cout << "Press enter to dspic.start() " << std::endl; 
+    actBack.MoveServo(2, 980);
+    actBack.MoveServo(0, 1600);
+    actBack.MoveServo(1, 1800);
+    std::cout << "Reamorcer le drapeau ! ensuite appuyer sur entrée" << std::endl;
     hmi.setScore(666);
     getchar();
+    actBack.MoveServo(2, 1100);
 
-    dspic.go(1445, 1500, 0, 0);
-    xbee.allumerPhare();
-    delay(4000);
-    hmi.setScore(666);
-    xbee.startThreadDetection();
+    
 
-    while(!hmi.isStopMain()){
-    	
+
+    //dspic.go(1445, 1500, 0, 0);
+
+    //actBack.MoveServo(2, 1100); //drapeau haut/bas
+    //actBack.MoveServo(2, 980);
+
+    //actBack.MoveServo(0, 1600); //prehenseur haut/bas
+    //actBack.MoveServo(0, 850);
+
+    //actBack.MoveServo(1, 1800); //orienter prehenseur
+    //actBack.MoveServo(1, 1400);
+
+    //actScara.SetMot(0, 0); //Scara
+    //actScara.SetAx12(1, 400); //pump droite
+    //actScara.SetAx12(2, 600);
+    //actScara.SetAx12(3, 800);  //pump droite
+    //delay(2000);
+    //delay(2000);
+    //actScara.SetMot4QPos(0, 200, 1, 400); //ascensseur
+    /*actScara.SetMot4QVit(0, 200, 0);
+    delay(200);
+    actScara.SetMot4QVit(0, 0, 0);*/
+
+    /*actBack.MoveServo(1, 1800);
+    actScara.SetMot4QPos(1, 150, 0, 4000);
+    delay(5000);
+    actBack.MoveServo(0, 800);
+    delay(1000);
+    actScara.SetMot4QPos(1, 150, 1, 4000);
+    delay(5000);
+    actBack.MoveServo(1, 1400);*/
+    
+    
+
+
+
+
+
+
+    //actScara.SetMot4QVit(1,255,0);
+    /*std::cout << "arret ?" << std::endl;
+    while(actScara.Rupt(0) != 1) {}
+    std::cout << "ok" << std::endl;*/
+    //getchar();
+    //actScara.SetMot4QVit(1,0,1);
+    std::cout << "main" << std::endl;
+    while(!hmi.isStopMain()) {
+        xbee.allumerPhare();
+        delay(1000);
+        xbee.eteindrePhare();
+    	//std::cout << actBack.ColorOne(0) << std::endl;
+    	//std::cout << actBack.ColorOne(1) << std::endl;
+    	delay(1000);
 	}
 
     dspic.stop();
@@ -169,6 +222,8 @@ int main() {
     //hmi.stopThreadDetection();
     actScara.stopThreadDetection();
     actBack.stopThreadDetection();
+    xbee.stopThreadDetection();
+    hmi.stopThreadDetection();
     web.stopThread();
 
     puts("exiting...");

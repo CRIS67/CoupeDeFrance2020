@@ -25,7 +25,7 @@ void* thread_Lidar(void *threadid){
 		lidar->sendGetDetectedPoints();
 		lidar->flush(255);
 		lidar->checkMessages();
-		delay(1);
+		delay(10);
 	}
 	pthread_exit(NULL);
 }

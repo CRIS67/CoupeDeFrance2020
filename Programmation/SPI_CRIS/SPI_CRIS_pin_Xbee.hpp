@@ -20,10 +20,6 @@
 #define SERVO_MAX     1600
 
 const int Pin_Led = 2;
-#ifdef COM_UART
-  #define BAUDRATE_UART   9600
-  #define ADDR_SLAVE      UART_ID_PHARE
-#endif
 #if NB_SERVO > 0
   const int Pin_Servo[] = {7, 8, 9, A0};
 #endif
@@ -63,10 +59,8 @@ const int Pin_Led = 2;
 
 #endif
 #if NB_UART > 0
-  const int XBee_Adress = 1;
-  const int Xbee_Id = 2;
-  const String XBee_Team = "1";
-  const String Other_Team = "2";
+  const int XBee_Adress = 2;
+  const int Other_Adress = 1;
   const String Network_Adress = "1234";
 #endif
 

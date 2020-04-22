@@ -28,7 +28,7 @@
 
 #define SIZE_BUFFER_RX	1000
 
-#define NB_FLUSH_MIN	10
+#define NB_FLUSH_MIN	20
 #define TEMP_MAX_FLUSH	1000
 
 #define LOW 	0
@@ -73,6 +73,9 @@
 #define LIDAR_RET_DEBUG_START           43 
 #define LIDAR_RET_DEBUG_STOP            44
 #define ACT_CMD_SET_MOT4QPos            45
+#define PHARE_STATE                     46
+#define CMD_PING_UART                   47
+#define MSG_NON_PRIS_EN_CHARGE_UART     48
 #define LIDAR_RET_DATA_AVAILABLE        100
 #define LIDAR_RET_DETECTED_POINTS       101
 #define LIDAR_RET_RAW_POINT             102

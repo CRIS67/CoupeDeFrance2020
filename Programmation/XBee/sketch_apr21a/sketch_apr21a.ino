@@ -13,19 +13,21 @@ boolean Data_Reading = false;
 void setup() {
   Serial.begin(9600);
   XBee_Config(XBee_Team, Other_Team, Network_Adress); // Configure la XBee avec les adresses spécifiées plus haut
-  pinMode(13, OUTPUT);
-  digitalWrite(13,0);
+  pinMode(2, OUTPUT);
+  digitalWrite(2,0);
+  pinMode(6, OUTPUT);
+  digitalWrite(6, 0);
 }
 
 void loop() {
   XBee_Send (2, 1, "test2");
   if (Data_Text == "test1") {    
-    digitalWrite(13,1);// Si message reçu
+    digitalWrite(2,1);// Si message reçu
     //Serial.println("La XBee n " + String(Data_Sender) + " a envoyee un message de type " + String(Data_Type) + " : " + Data_Text);  // Affichage des données reçues
     delay(1000);
     Data_Clear();                                                                                                                   // Les données ont été lues : on peut donc les supprimer (sans quoi elles seraient
   } else {      
-    digitalWrite(13,0);// de nouveau lues à la prochaine itération si aucun nouveau message n'a été reçu)
+    digitalWrite(2,0);// de nouveau lues à la prochaine itération si aucun nouveau message n'a été reçu)
     delay(1000);
   }
 }
@@ -91,7 +93,7 @@ static void Data_Clear() {      // Supprime les données reçues
   Data_Text = "";
   Data_Type = 0;
   Data_Sender = 0;
-  digitalWrite(13,0);
+  digitalWrite(2,0);
 }
 
 

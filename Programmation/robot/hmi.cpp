@@ -48,7 +48,7 @@ void* thread_Hmi(void *threadid){
 	while(hmi->isContinueThread()){
 		hmi->flush(10);
 		hmi->checkMessages();
-		delay(100);
+		delay(1000);
 	}
 	pthread_exit(NULL);
 }

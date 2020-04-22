@@ -5,6 +5,7 @@ Robot::Robot(std::string nom, SPI *pSpi, uint8_t id) {
 	m_pSpi = pSpi;
 	m_id = id;
 	GetPing();
+	delay(500);
 	checkMessages();
 	if(m_ping) {
 		DEBUG_ROBOT_PRINTLN(" connecté")
@@ -186,7 +187,7 @@ void Robot::reset(void) {
 	digitalWrite(PinRst[m_id],LOW);
 	delay(200);
 	digitalWrite(PinRst[m_id],HIGH);
-	delay(500);
+	delay(2000);
 }
 
 void Robot::GetPing() {

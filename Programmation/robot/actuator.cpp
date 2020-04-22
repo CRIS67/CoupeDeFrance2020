@@ -33,7 +33,6 @@ void Actuator::DecodMsg(uint8_t buf[]) {
 			break;
 		case ACT_CMD_COLOR:
 			m_color[buf[2]] = buf[3]*256+buf[4];
-			std::cout << m_color[buf[2]] << std::endl;
 			break;
 		case ACT_CMD_RUPT:
 			m_rupt[buf[2]] = buf[3];
@@ -45,10 +44,8 @@ void Actuator::DecodMsg(uint8_t buf[]) {
 			if(buf[6] == (buf[2]+buf[3]+buf[4]+buf[5])%256) { //test CS
 				if(buf[2] == 5) {
 					if(buf[3] == UART_ID_PHARE) {
-						if(buf[4] == PHARE_CMD_ALLUMER) {
+						if(buf[4] == PHARE_STATE) {
 							m_phareAllumee = buf[5];
-						} else if(buf[4] == PHARE_CMD_ETEINDRE) {
-							m_phareEteint = buf[5];
 						} else {
     						DEBUG_ROBOT_PRINTLN("erreur type message")
 						}
@@ -93,7 +90,7 @@ void Actuator::MoveServo(int nb_bras, int pos) {
 	if(nb_bras < 0 || nb_bras > m_nb_servo) {
     	DEBUG_ROBOT_PRINTLN("erreur bras = " << nb_bras)
 	} else {
-		if(pos < 600 || pos > 1600) {
+		if(pos < 600 || pos > 1800) {
     	DEBUG_ROBOT_PRINTLN("erreur pos = " << pos)
 		} else {
 			buffer[0] = ACT_CMD_SERVO;
@@ -137,6 +134,33 @@ void Actuator::SetMot4QVit(int nb_bras, int vit, int sens) {
 				buffer[2] = sens;
 				buffer[3] = vit;
 				sendSPI(buffer,4);
+			}
+		}
+	}
+}
+
+void Actuator::SetMot4QPos(int nb_bras, int vit, int sens, int temps) {
+	uint8_t buffer[6];
+	if(nb_bras < 0 || nb_bras > m_nb_moteur4Q) {
+    	DEBUG_ROBOT_PRINTLN("erreur nb_bras = " << nb_bras)
+	} else {
+		if(sens < 0 || sens > 1) {
+    		DEBUG_ROBOT_PRINTLN("erreur sens = " << sens)
+		} else {
+			if(vit < 0 || vit > 255) {
+    			DEBUG_ROBOT_PRINTLN("erreur vit = " << vit)
+			} else {
+				if(temps < 0 || temps > 10000) {
+					DEBUG_ROBOT_PRINTLN("erreur temps = " << temps)
+				} else {
+					buffer[0] = ACT_CMD_SET_MOT4QPos;
+					buffer[1] = nb_bras;
+					buffer[2] = sens;
+					buffer[3] = vit;
+					buffer[4] = (uint8_t)(temps/256);
+					buffer[5] = temps%256;
+					sendSPI(buffer,6);
+				}
 			}
 		}
 	}
@@ -258,35 +282,55 @@ int Actuator::Dist(int nb_bras) {
 int Actuator::Rupt(int nb_bras) {
 	m_mutex.lock();
 	int cpt = 0;
-	do{
-		GetRupt(nb_bras);
-		delay(20);
+	GetRupt(nb_bras);
+	while(m_rupt[nb_bras] == ERROR_VALUE && cpt < 20) {
+		delay(1);
 		cpt++;
-	}while(m_rupt[nb_bras] == ERROR_VALUE && cpt < 10);
+	}
 	if(cpt > 1) {DEBUG_ROBOT_PRINTLN("plusieur essais " << cpt)}
-	if(m_rupt[nb_bras] == ERROR_VALUE) {DEBUG_ROBOT_PRINTLN("ERROR couleur")}
+	if(m_rupt[nb_bras] == ERROR_VALUE) {DEBUG_ROBOT_PRINTLN("ERROR rupteur")}
 	int b = m_rupt[nb_bras];
 	m_rupt[nb_bras] = ERROR_VALUE;
 	m_mutex.unlock();
 	return b;
 }
 
-void Actuator::UartSend(unsigned char Send, unsigned char id_uart) {
+int Actuator::RuptOne(int nb_bras) {
+	m_mutex.lock();
+	GetRupt(nb_bras);
+	delay(20);
+	int b = m_rupt[nb_bras];
+	m_rupt[nb_bras] = ERROR_VALUE;
+	m_mutex.unlock();
+	return b;
+}
+
+int Actuator::ColorOne(int nb_bras) {
+	m_mutex.lock();
+	GetColor(nb_bras);
+	delay(20);
+	int b = m_color[nb_bras];
+	m_color[nb_bras] = ERROR_VALUE;
+	m_mutex.unlock();
+	return b;
+}
+
+void Actuator::UartSend(unsigned char Send, unsigned char id_uart, unsigned char msg) {
 	uint8_t buffer[5];
 	buffer[0] = ACT_CMD_UART_SEND;
-	buffer[1] = 3;
+	buffer[1] = Send;
 	buffer[2] = id_uart;
-	buffer[3] = Send;
-	buffer[4] = (3+id_uart+Send)%256;
+	buffer[3] = msg;
+	buffer[4] = (ACT_CMD_UART_SEND+id_uart+Send+msg)%256;
 	sendSPI(buffer,5);
 }
 
 void Actuator::allumerPhare(void) {
-    UartSend(PHARE_CMD_ALLUMER,UART_ID_PHARE);
+    UartSend(PHARE_STATE,UART_ID_PHARE, '1');
 }
 
 void Actuator::eteindrePhare(void) {
-    UartSend(PHARE_CMD_ETEINDRE,UART_ID_PHARE);
+    UartSend(PHARE_STATE,UART_ID_PHARE, '0');
 }
 
 void Actuator::setSeuilColor(int seuil, int valeur) {

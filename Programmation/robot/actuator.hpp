@@ -18,12 +18,9 @@
 #define SERVO_VALUE_LOW		1600
 
 #define UART_ID_PHARE		1
-#define UART_ID_HOLONOME	2
-#define UART_ID_BALISE		3
-
-//cmd uart
-#define PHARE_CMD_ALLUMER	1
-#define PHARE_CMD_ETEINDRE	2
+#define UART_ID_GR			2
+#define UART_ID_HOLONOME	3
+#define UART_ID_BALISE		4
 
 #define LIM_RED_MIN   1
 #define LIM_RED_MAX   2
@@ -53,12 +50,15 @@ class Actuator : public Robot {
 		void GetDist(int nb_bras);
 		int Cur(int nb_bras);
 		int Color(int nb_bras);
+		int ColorOne(int nb_bras);
 		int Dist(int nb_bras);
 		int Rupt(int nb_bras);
+		int RuptOne(int nb_bras);
 		void SetMot4QVit(int nb_bras, int vit, int sens);
+		void SetMot4QPos(int nb_bras, int vit, int sens, int temps);
 		void setSeuilColor(int seuil, int valeur);
 		void resetCptColor();
-		void UartSend(unsigned char Send, unsigned char id_uart);
+		void UartSend(unsigned char Send, unsigned char id_uart, unsigned char msg);
 		void allumerPhare();
 		void eteindrePhare();
 		bool isPhareAllumee();

@@ -46,8 +46,14 @@ XBee_Send (2, 1, "Coucou je suis numero 1");
     XBee_Receive(XBee.read());
   }*/
 
-  if (Data_Text != "") {                                                                                                         // Si message reçu
-    Serial.println("La XBee n " + String(Data_Sender) + " a envoyee un message de type " + String(Data_Type) + " : " + Data_Text);  // Affichage des données reçues
+  if (Data_Text != "") {
+    // Si message reçu
+    if(Data_Text.substring(0,2) == "49") {
+      Serial.println("ON");
+    } else {
+      Serial.println("OFF");
+    }
+    //Serial.println("La XBee n " + String(Data_Sender) + " a envoyee un message de type " + String(Data_Type) + " : " + Data_Text);  // Affichage des données reçues
     Data_Clear();                                                                                                                   // Les données ont été lues : on peut donc les supprimer (sans quoi elles seraient
   }                                                                                                                                 // de nouveau lues à la prochaine itération si aucun nouveau message n'a été reçu)
   delay(1000);                     // La lécture fonctionnant par interruption, on peut cadencer la boucle principale à la vitesse voulue

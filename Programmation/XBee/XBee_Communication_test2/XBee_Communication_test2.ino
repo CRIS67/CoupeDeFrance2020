@@ -39,9 +39,17 @@ void setup() {
 
 }
 
+int Vblink = 0;
+
 void loop() {
 
-XBee_Send (1, 1, "Coucou je suis numero 1");
+  Vblink = ~Vblink;
+  if(Vblink) {
+    XBee_Send (1, 46, "1");
+  } else {
+    XBee_Send (1, 46, "0");
+  }
+
   /*if(XBee.available()) {
     XBee_Receive(XBee.read());
   }*/
