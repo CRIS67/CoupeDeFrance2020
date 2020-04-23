@@ -4,8 +4,8 @@
 #include <Servo.h>
 #include <SoftwareSerial.h>
 #include <Arduino.h>
-//#include "SPI_CRIS_pin_Xbee.hpp"
-#include "SPI_CRIS_pin_Phare.hpp"
+#include "SPI_CRIS_pin_Xbee.hpp"
+//#include "SPI_CRIS_pin_Phare.hpp"
 //#include "SPI_CRIS_pin_Act.hpp"
 //#include "SPI_CRIS_pin_Scara.hpp"
 //#include "SPI_CRIS_pin_HMI.hpp"
@@ -89,9 +89,10 @@ unsigned char ISRCrisSpi(unsigned char data_spi);
 #define LIDAR_RET_SPEED                 121
 
 #if NB_MOTEUR4Q > 0
+  #define TIMER_CN 193
+  
   #define MOTEUR_STOP     0
-  #define SPEED 		  0
-  #define DIST 			  1
+  #define SPEED 		      (-1)
 #endif
 #if NB_SCREEN > 0
   #define JAUNE               1

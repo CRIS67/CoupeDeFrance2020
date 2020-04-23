@@ -120,6 +120,7 @@ int main() {
     Lidar lidar("Lidar",&spi,SPI_ID_LIDAR,&web);
 
     lidar.stop();
+    xbee.reset();
     delay(1000);
 
     puts("Hello human ! I, your fervent robot, am initialised. Press <ENTER> to continue.");
@@ -176,7 +177,7 @@ int main() {
     //delay(2000);
     //delay(2000);
     //actScara.SetMot4QPos(0, 200, 1, 400); //ascensseur
-    /*actScara.SetMot4QVit(0, 200, 0);
+    /*actScara.SetMot4QVit(0, 115, 0);
     delay(200);
     actScara.SetMot4QVit(0, 0, 0);*/
 

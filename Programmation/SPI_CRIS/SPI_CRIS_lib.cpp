@@ -29,8 +29,7 @@ volatile unsigned long timeLed, timeCS;
   #define BAUDRATE  9600
 #endif
 #if NB_MOTEUR4Q > 0
-  int MoveP[NB_MOTEUR4Q];
-  volatile unsigned long PosGo[NB_MOTEUR4Q];
+  int PosGo[NB_MOTEUR4Q];
 #endif
 #if NB_SCREEN > 0
   #include <math.h>
@@ -328,12 +327,17 @@ void InitCrisSpi(void) {
     }
   #endif
   #if NB_MOTEUR4Q > 0
+    TCCR2A = 0;
+    TCCR2B = 0b00000110; // 1/256
+    TIMSK2 = 0b00000001;
+    TCNT2 = TIMER_CN;
+    sei();
     for(i_init=0;i_init<NB_MOTEUR4Q;i_init++) {
       pinMode(Pin_Moteur4Q_SENS[i_init], OUTPUT);
       digitalWrite(Pin_Moteur4Q_SENS[i_init], LOW);
       pinMode(Pin_Moteur4Q_PWM[i_init], OUTPUT);
       analogWrite(Pin_Moteur4Q_PWM[i_init], MOTEUR_STOP);
-      MoveP[i_init] = SPEED;
+      PosGo[i_init] = SPEED;
     }
   #endif
   #if NB_RUPT > 0
@@ -364,6 +368,7 @@ void InitCrisSpi(void) {
   #endif
   #if NB_UART > 0
     Serial.begin(BAUDRATE);
+    delay(1000);
     String inO = "", inX = "";
     inX = (char)(XBee_Adress+'0');
     inO = (char)(Other_Adress+'0');
@@ -403,6 +408,11 @@ void InitCrisSpi(void) {
   #endif
 
   timeLed = millis();
+
+
+  #ifdef COM_UART
+    digitalWrite(LED_PHARE, 1);
+  #endif
 }
 
 void LoopCrisSpi(void) {
@@ -421,9 +431,9 @@ void LoopCrisSpi(void) {
   #endif
   #if NB_MOTEUR4Q > 0
     for(i_init = 0;i_init<NB_MOTEUR4Q;i_init++) {
-      if(digitalRead(Pin_RuptEnd4Q[i_init][0]) || digitalRead(Pin_RuptEnd4Q[i_init][1]) || (PosGo[i_init] <= millis() && MoveP[i_init] == DIST)) {
+      if(digitalRead(Pin_RuptEnd4Q[i_init][0]) || digitalRead(Pin_RuptEnd4Q[i_init][1])) {
         analogWrite(Pin_Moteur4Q_PWM[i_init],MOTEUR_STOP);
-        MoveP[i_init] = SPEED;
+        PosGo[i_init] = SPEED;
       }
     }
   #endif
@@ -565,7 +575,7 @@ void LoopCrisSpi(void) {
     if(Data_Text != "") {
     	switch(Data_Type) {
     		case CMD_RST:
-    			resetFunc();;
+    			resetFunc();
     			break;
     		case CMD_PING:
     			XBee_Send(Data_Sender, CMD_PING_UART, "0");
@@ -658,8 +668,7 @@ unsigned char ISRCrisSpi(unsigned char data_spi) {
               case ACT_CMD_SET_MOT4QPos:
                 digitalWrite(Pin_Moteur4Q_SENS[TextSpi[0]], TextSpi[1]);
                 analogWrite(Pin_Moteur4Q_PWM[TextSpi[0]],TextSpi[2]);
-                MoveP[TextSpi[0]] = DIST;
-                PosGo[TextSpi[0]] = millis() + (TextSpi[3]*256+TextSpi[4]);
+                PosGo[TextSpi[0]] = TextSpi[3]*256+TextSpi[4];
                 break;
             #endif
             #if NB_CAPT_CUR > 0
@@ -880,3 +889,17 @@ void SendSpi(uint8_t buf, uint8_t leng, uint8_t num) {
   }
 #endif
 
+#if NB_MOTEUR4Q > 0
+  ISR (TIMER2_OVF_vect) {
+  TCNT2 = TIMER_CN;
+  int i_intT;
+  for(i_intT=0;i_intT<NB_MOTEUR4Q;i_intT++) {
+  	if(PosGo[i_intT] > 0) {
+      PosGo[i_intT]--;
+    } else if(PosGo[i_intT] == 0) {
+      analogWrite(Pin_Moteur4Q_PWM[i_intT],MOTEUR_STOP);
+      PosGo[i_intT] = SPEED;
+    }
+  }
+}
+#endif
