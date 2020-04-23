@@ -1,0 +1,26 @@
+#Fichier de configuration
+#PID Vitesse roue droite
+PidSpeedRightKp=0.05
+PidSpeedRightKi=0.35
+PidSpeedRightKd=0
+#PID Vitesse roue gauche
+PidSpeedLeftKp=0.05
+PidSpeedLeftKi=0.35
+PidSpeedLeftKd=0
+#PID Distance
+PidDistanceKp=2
+PidDistanceKi=0
+PidDistanceKd=0
+#PID Angle
+PidAngleKp=1000
+PidAngleKi=0
+PidAngleKd=1
+#Odometrie
+coefDissymetry=0.98392
+mmPerTick=0.03362291183834880
+radPerTick=0.000115856332021
+#Acceleration et vitesse (génération de trajectoire)
+linSpeed=200
+linAcc=1000
+rotSpeed=3
+rotAcc=1
