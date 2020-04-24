@@ -33,6 +33,7 @@ const int Pin_Led = 8;
 #if NB_MOTEUR4Q > 0
   const int Pin_Moteur4Q_SENS[] = {};
   const int Pin_Moteur4Q_PWM[] = {};
+  const int Pin_RuptEnd4Q[][2] = {{7, A0},{A1, A2}};
 #endif
 #if NB_CAPT_CUR > 0
   const int Pin_Capt_Cur[] = {A5, A6, A7};
