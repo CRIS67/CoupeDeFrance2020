@@ -5,7 +5,7 @@
 #define COM_UART
 
 #define NB_SERVO        2
-#define NB_MOTEUR4Q     0
+#define NB_MOTEUR4Q     2
 #define NB_MOTEUR       1
 #define NB_CAPT_CUR     0
 #define NB_CAPT_COLOR   0
@@ -29,6 +29,7 @@ const int Pin_Led = 2;
 #if NB_MOTEUR4Q > 0
   const int Pin_Moteur4Q_SENS[] = {A2, A3};
   const int Pin_Moteur4Q_PWM[] = {3, 5};
+  const int Pin_RuptEnd4Q[][2] = {{4, A4},{A5, A5}};
 #endif
 #if NB_CAPT_CUR > 0
   const int Pin_Capt_Cur[] = {};

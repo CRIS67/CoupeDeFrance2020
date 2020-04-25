@@ -10,6 +10,7 @@ volatile unsigned long timeLed, timeCS;
 
 #ifdef COM_UART
   uint8_t PhareState = PHARE_OFF;
+  uint8_t BlinkPhare = 0;
 #endif
 #if NB_CAPT_CUR > 0
   int Valeur_Cur[NB_CAPT_CUR];
@@ -558,6 +559,9 @@ void LoopCrisSpi(void) {
     if(millis() - timeLed > 1000){ 
       timeLed = millis();
       digitalWrite(Pin_Led,!digitalRead(Pin_Led));
+      #ifdef COM_UART
+        BlinkPhare = ~BlinkPhare;
+      #endif
     }
   #endif
   #if NB_CAPT_COLOR > 0
@@ -568,7 +572,19 @@ void LoopCrisSpi(void) {
   #if NB_UART > 0
   #ifdef COM_UART
     if(PhareState == PHARE_ON) {
-    	digitalWrite(LED_PHARE, 1);
+      if(digitalRead(Pin_Rupt[0])) {
+        analogWrite(Pin_Moteur4Q_PWM[0], 0);
+        if(BlinkPhare) {
+          digitalWrite(LED_PHARE, 1);
+          S[0].writeMicroseconds(SERVO_MIN);
+        } else {
+          digitalWrite(LED_PHARE, 0);
+          S[0].writeMicroseconds(SERVO_MAX);
+        }
+      } else {
+        digitalWrite(Pin_Moteur4Q_SENS[0], 1);
+        analogWrite(Pin_Moteur4Q_PWM[0], 150);
+      }
     } else {
     	digitalWrite(LED_PHARE, 0);
     }
@@ -583,6 +599,8 @@ void LoopCrisSpi(void) {
     		case PHARE_STATE:
     			if(Data_Text.substring(0,2) == "49") {
     				PhareState = PHARE_ON;
+            digitalWrite(Pin_Moteur4Q_SENS[0], 1);
+            analogWrite(Pin_Moteur4Q_PWM[0], 150);
     			} else {
     				PhareState = PHARE_OFF;
     			}
