@@ -409,11 +409,6 @@ void InitCrisSpi(void) {
   #endif
 
   timeLed = millis();
-
-
-  #ifdef COM_UART
-    digitalWrite(LED_PHARE, 1);
-  #endif
 }
 
 void LoopCrisSpi(void) {
@@ -573,17 +568,16 @@ void LoopCrisSpi(void) {
   #ifdef COM_UART
     if(PhareState == PHARE_ON) {
       if(digitalRead(Pin_Rupt[0])) {
-        analogWrite(Pin_Moteur4Q_PWM[0], 0);
+        analogWrite(Pin_Moteur4Q_PWM[1], 0);
+        digitalWrite(LED_PHARE, 1);
         if(BlinkPhare) {
-          digitalWrite(LED_PHARE, 1);
           S[0].writeMicroseconds(SERVO_MIN);
         } else {
-          digitalWrite(LED_PHARE, 0);
           S[0].writeMicroseconds(SERVO_MAX);
         }
       } else {
-        digitalWrite(Pin_Moteur4Q_SENS[0], 1);
-        analogWrite(Pin_Moteur4Q_PWM[0], 150);
+        digitalWrite(Pin_Moteur4Q_SENS[1], 1);
+        analogWrite(Pin_Moteur4Q_PWM[1], 200);
       }
     } else {
     	digitalWrite(LED_PHARE, 0);

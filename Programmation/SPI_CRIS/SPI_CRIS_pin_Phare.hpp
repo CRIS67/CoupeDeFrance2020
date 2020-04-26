@@ -17,7 +17,7 @@
 #define NB_CAPT_DIST    0
 
 #define SERVO_MIN     700
-#define SERVO_MAX     1600
+#define SERVO_MAX     2300
 
 const int Pin_Led = 2;
 #if NB_SERVO > 0
