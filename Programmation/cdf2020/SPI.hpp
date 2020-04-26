@@ -8,19 +8,11 @@
 
 #define PIN_MUX_A	28		//pin 38 / BCM 20 / WiringPi 28
 #define PIN_MUX_B	29		//pin 40 / BCM 21 / WiringPi 29
-#define PIN_MUX_C	26
-
-#define HIGH 	1
 
 #define SPI_ID_LIDAR		0
-#define SPI_ID_ACT_BACK		1
-#define SPI_ID_ACT_SCARA	2
+#define SPI_ID_ACT_FRONT	1
+#define SPI_ID_ACT_BACK		2
 #define SPI_ID_HMI			3
-#define SPI_ID_XBEE			4
-
-#define NB_CARTE			5
-
-const int PinRst[] = {22, 24, 25, 23, 21}; //lidar, act0, act1, hmi, xbee
 
 #include <wiringPi.h>
 #include <wiringPiSPI.h>

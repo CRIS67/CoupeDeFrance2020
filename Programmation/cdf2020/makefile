@@ -1,5 +1,5 @@
-CDF: web.o dspic.o SPI.o lidar.o actuators.o hmi.o mapGeneration.o robot.o dStarLite.o trajectoryHandle.o LK.o main.o
-	g++ -O3 -o cdf web.o dspic.o SPI.o robot.o lidar.o actuators.o hmi.o mapGeneration.o dStarLite.o trajectoryHandle.o LK.o main.o -Wall -lwiringPi -pthread
+CDF: web.o dspic.o SPI.o lidar.o actuators.o hmi.o mapGeneration.o dStarLite.o trajectoryHandle.o LK.o main.o
+	g++ -O3 -o cdf web.o dspic.o SPI.o lidar.o actuators.o hmi.o mapGeneration.o dStarLite.o trajectoryHandle.o LK.o main.o -Wall -lwiringPi -pthread
 
 web.o: web.cpp
 	g++ -O3 -o web.o -c web.cpp -Wall -lwiringPi -pthread
@@ -9,9 +9,6 @@ dspic.o: dspic.cpp
 
 SPI.o: SPI.cpp
 	g++ -O3 -o SPI.o -c SPI.cpp -Wall -lwiringPi -pthread
-
-robot.o: robot.cpp 
-	g++ -O3 -o robot.o -c robot.cpp -Wall -lwiringPi -pthread
 
 lidar.o: lidar.cpp
 	g++ -O3 -o lidar.o -c lidar.cpp -Wall -lwiringPi -pthread
@@ -34,5 +31,5 @@ LK.o: LK.cpp
 hmi.o: hmi.cpp
 	g++ -O3 -o hmi.o -c hmi.cpp -Wall -lwiringPi -pthread
 
-main.o: main.cpp web.hpp dspic.hpp SPI.hpp robot.hpp lidar.hpp actuators.hpp hmi.hpp mapGeneration.hpp dStarLite.hpp trajectoryHandle.hpp LK.h
+main.o: main.cpp web.hpp dspic.hpp SPI.hpp lidar.hpp actuators.hpp hmi.hpp mapGeneration.hpp dStarLite.hpp trajectoryHandle.hpp LK.h
 	g++ -I /home/pi/boost_1_68_0/ -O3 -o main.o -c main.cpp -Wall -lwiringPi -pthread

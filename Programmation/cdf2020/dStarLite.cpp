@@ -97,17 +97,17 @@ void initialize(std::vector<std::vector<int>>& randomMap, mappedNodes& knownNode
     int rows = randomMap.size();
     int columns = randomMap[0].size();
 
-    for (int i = 0; i < rows; ++i)
+    for (int y = 0; y < rows; ++y)
     {
-        for (int j = 0; j < columns; ++j)
+        for (int x = 0; x < columns; ++x)
         {
-            std::pair<int,int> coord(i,j);
+            std::pair<int,int> coord(x,y);
             Node tmp;
             tmp.costG =INT_MAX;
             tmp.costRHS = INT_MAX;
             tmp.coord = coord;
             tmp.key = calculateKey(tmp, startNode, uList);
-            if(randomMap[i][j] == 1)
+            if(randomMap[y][x] == 1)
                 tmp.isObstacle = true;
 
             knownNodes[coord] = tmp;
@@ -184,19 +184,18 @@ int minSuccessor(Node node, mappedNodes& knownNodes){
 
     std::vector<int> rhsValues;
     // Search the possible successors
-    for (int i = node.coord.first -1 ; i <= node.coord.first +1 ; i++)
+    for (int y = node.coord.second-1 ; y <= node.coord.second +1; y++)
     {
-        if( (i<0) || (i>=mapRows)) // outside of the map
+        if( (y<0) || (y>= mapRows)) // outside of the map
             continue;
-
-        for (int j = node.coord.second-1 ; j <= node.coord.second +1; j++)
+        for (int x = node.coord.first -1 ; x <= node.coord.first +1 ; x++)
         {
-            if( (j<0) || (j>= mapColumns)) // outside of the map
+            if( (x<0) || (x>=mapColumns)) // outside of the map
                 continue;
-            if( (i == node.coord.first ) && (j == node.coord.second) ) // current position
+            if( (x == node.coord.first ) && (y == node.coord.second) ) // current position
                 continue;
 
-            std::pair<int,int> nodeCoord(i,j);
+            std::pair<int,int> nodeCoord(x,y);
             if(knownNodes.at(nodeCoord).isObstacle){
                 rhsValues.push_back( INT_MAX );
                 //std::cout<<rhsValues.back()<<std::endl;
@@ -223,26 +222,21 @@ int minSuccessor(Node node, mappedNodes& knownNodes){
 // Updates all the adjacents Nodes of the current node, thus all the predecesor/succesors
 void updateAdjacents(Node node, priorityList& uList, mappedNodes& knownNodes, std::pair<int,int> startCoord, Node goalNode){
     // Search adjacents nodes
-    for (int i = node.coord.first -1 ; i <= node.coord.first +1 ; i++)
+    for (int y = node.coord.second-1 ; y <= node.coord.second +1; y++)
     {
-        if( (i<0) || (i>=mapRows)) // outside of the map
+        if( (y<0) || (y>= mapRows)) // outside of the map
             continue;
-
-        for (int j = node.coord.second-1 ; j <= node.coord.second +1; j++)
+        for (int x = node.coord.first -1 ; x <= node.coord.first +1 ; x++)
         {
-            if( (j<0) || (j>= mapColumns)) // outside of the map
+            if( (x<0) || (x>=mapColumns)) // outside of the map
                 continue;
-            if( (i == node.coord.first ) && (j == node.coord.second) ) // current position
+            if( (x == node.coord.first ) && (y == node.coord.second) ) // current position
                 continue;
 
-            std::pair<int,int> nodeCoord(i,j);
+            std::pair<int,int> nodeCoord(x,y);
             Node tmp = knownNodes.at(nodeCoord);
             updateNode(tmp, uList, knownNodes,startCoord,goalNode);
-
         }
-
-
-
     }
 }
 
@@ -267,7 +261,7 @@ void findPath(std::vector<std::vector<int>>& randomMap, mappedNodes& knownNodes,
         x = path.at(i).coord.first;
         y = path.at(i).coord.second;
 
-        printedMap[x][y] = 2;
+        printedMap[y][x] = 2;
     }
     printMap(printedMap.size(), printedMap[0].size(), printedMap);
 }
@@ -306,19 +300,18 @@ Node bestNode(Node currentNode ,mappedNodes& knownNodes, Node goalNode){
 //    std::cout << "Current Node Coord : " << currentNode.coord.first << ","<< currentNode.coord.second << std::endl;
 
     // Search the possible successors
-    for (int i = currentNode.coord.first -1 ; i <= currentNode.coord.first +1 ; i++)
+    for (int y = currentNode.coord.second-1 ; y <= currentNode.coord.second +1; y++)
     {
-        if( (i<0) || (i>=mapRows)) // outside of the map
+        if( (y<0) || (y>= mapRows)) // outside of the map
             continue;
-
-        for (int j = currentNode.coord.second-1 ; j <= currentNode.coord.second +1; j++)
+        for (int x = currentNode.coord.first -1 ; x <= currentNode.coord.first +1 ; x++)
         {
-            if( (j<0) || (j>= mapColumns)) // outside of the map
+            if( (x<0) || (x>=mapColumns)) // outside of the map
                 continue;
-            if( (i == currentNode.coord.first ) && (j == currentNode.coord.second) ) // current position
+            if( (x == currentNode.coord.first ) && (y == currentNode.coord.second) ) // current position
                 continue;
 
-            std::pair<int,int> nodeCoord(i,j);
+            std::pair<int,int> nodeCoord(x,y);
             tmp = knownNodes.at(nodeCoord);
 
             if(tmp.isObstacle)
@@ -365,18 +358,18 @@ After map modification, the function updates all the changed Nodes
 */
 void updateMap(mappedNodes& knownNodes, std::vector<std::vector<int>>& randomMap, priorityList& uList, std::pair<int,int> startCoord, Node goalNode){
 
-    for(uint i = 0 ; i< randomMap.size(); i++){
+    for(uint y = 0 ; y< randomMap.size(); y++){
 
-        for(uint j = 0; j< randomMap[0].size(); j++){
+        for(uint x = 0; x< randomMap[0].size(); x++){
 
-            std::pair<int,int> nodeCoord(i,j);
+            std::pair<int,int> nodeCoord(x,y);
 
-            if( randomMap[i][j] == 1 && !(knownNodes.at(nodeCoord).isObstacle) ){
+            if( randomMap[y][x] == 1 && !(knownNodes.at(nodeCoord).isObstacle) ){
                 knownNodes.at(nodeCoord).isObstacle = true;
                 updateAdjacents(knownNodes.at(nodeCoord),uList, knownNodes, startCoord,goalNode);
                 updateNode(knownNodes.at(nodeCoord), uList, knownNodes, startCoord,goalNode);
             }
-            else if (randomMap[i][j] == 0 && knownNodes.at(nodeCoord).isObstacle ){
+            else if (randomMap[y][x] == 0 && knownNodes.at(nodeCoord).isObstacle ){
                 knownNodes.at(nodeCoord).isObstacle = false;
                 updateAdjacents(knownNodes.at(nodeCoord),uList, knownNodes, startCoord,goalNode);
                 updateNode(knownNodes.at(nodeCoord), uList, knownNodes, startCoord,goalNode);
@@ -388,9 +381,10 @@ void updateMap(mappedNodes& knownNodes, std::vector<std::vector<int>>& randomMap
 // debug function
 void printKnownNode(mappedNodes& knownNodes){
 
-    /*for(int i = 0; i < 20 ; i++ ){
-        for(int j =0; j <30 ; j++){
-            std::pair<int,int> nodeCoord(i,j);
+    /*for(int y = 0; y < 20 ; y++ ){
+        for(int x =0; x <30 ; x++){
+            std::pair<int,int> nodeCoord(x,y);
+
             Node tmp = knownNodes.at(nodeCoord);
             //std::cout << tmp.isObstacle << "\t";
             if( tmp.costG>2000000000){
@@ -403,9 +397,9 @@ void printKnownNode(mappedNodes& knownNodes){
         std::cout << std::endl;
     }
     std::cout << std::endl;*/
-    for(int i = 0; i < 20 ; i++ ){
-        for(int j =0; j <30 ; j++){
-            std::pair<int,int> nodeCoord(i,j);
+    for(int y = 0; y < 20 ; y++ ){
+        for(int x =0; x <30 ; x++){
+            std::pair<int,int> nodeCoord(x,y);
             Node tmp = knownNodes.at(nodeCoord);
             //std::cout << tmp.isObstacle << "\t";
             if( tmp.costRHS>2000000000){
