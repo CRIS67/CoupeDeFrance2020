@@ -4,16 +4,16 @@ void generateMap(std::vector<std::vector<int>>& mapVector, int mapRows, int mapC
 
 /*	mapVector.resize(mapRows);
 
-	for(int i =0; i<mapColumns; i++){
-		mapVector[i].resize(mapColumns);
+	for(int y =0; y<mapColumns; y++){
+		mapVector[y].resize(mapColumns);
 	}*/
-        for( int i = 0; i< mapRows; i++)
+        for( int y = 0; y< mapRows; y++)
         {
           std::vector<int> tmp;
           mapVector.push_back(tmp);
-          for(int j =0; j< mapColumns; j++)
+          for(int x =0; x< mapColumns; x++)
           {
-            mapVector.at(i).push_back(0);
+            mapVector.at(y).push_back(0);
           }
         }
 }
