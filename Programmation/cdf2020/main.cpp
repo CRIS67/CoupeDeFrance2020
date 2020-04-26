@@ -174,23 +174,10 @@ int main()
     strategyTour.insert( strategyTour.end(), Dernieres_taches_a_faire.begin(), Dernieres_taches_a_faire.end() );*/
     // Map Generation
     generateMap(mapVector,mapRows,mapColumns); // generates empty map
-    createRectangle(0,0,300/MAP_MM_PER_ARRAY_ELEMENT,mapColumns, mapVector); // creates a 400x2000 obstacle rectangle  at (1600,0)
-    createRectangle(1700/MAP_MM_PER_ARRAY_ELEMENT,0,250 / MAP_MM_PER_ARRAY_ELEMENT,mapColumns, mapVector); // creates a 400x2000 obstacle rectangle  at (1600,0)
+    createRectangle(0,0,mapColumns,300/MAP_MM_PER_ARRAY_ELEMENT, mapVector); // creates a 400x2000 obstacle rectangle  at (1600,0)
+    createRectangle(0,1700/MAP_MM_PER_ARRAY_ELEMENT,mapColumns,250 / MAP_MM_PER_ARRAY_ELEMENT, mapVector); // creates a 400x2000 obstacle rectangle  at (1600,0)
     //createRectangle(90,140,20,20, mapVector); // creates a 400x2000 obstacle rectangle  at (1600,0)
     std::vector<std::vector<int>> debugMap(mapVector);
-    //createRectangle(800/MAP_MM_PER_ARRAY_ELEMENT,1500/MAP_MM_PER_ARRAY_ELEMENT,400/MAP_MM_PER_ARRAY_ELEMENT,400/MAP_MM_PER_ARRAY_ELEMENT, debugMap);
-
-   // /*Ensemble palets*/
-   // createRectangle(90,85,30,30,mapVector);
-   // createRectangle(90,185,30,30,mapVector);
-   //
-   // /* Palets*/
-   // createRectangle(41,41,7,7,mapVector);
-   // createRectangle(71,41,7,7,mapVector);
-   // createRectangle(103,41,7,7,mapVector);
-   // createRectangle(41,246,7,7,mapVector);
-   // createRectangle(71,246,7,7,mapVector);
-   // createRectangle(103,246,7,7,mapVector);
 
     std::cout << "MAP GENERATED" << std::endl;
     //printMap(mapRows, mapColumns, mapVector);

@@ -26,7 +26,7 @@ void createRectangle(uint startX, uint startY, int width, int height, std::vecto
 	if( ( (startX + width) >  mapVector[0].size()  ) || ((startY + height)  > mapVector.size()) || startX<0 || startY<0 || width <=0 || height<=0)
 	{
 		std::cerr << "Rectangle creation fail : Too big of rectangle :( " << std::endl;
-		std::cerr << "X : " << startX << " Y " << startY << " W " << width << " L " << height << std::endl;
+		std::cerr << "X : " << startX << " Y " << startY << " W " << width << " H " << height << std::endl;
 		return;
 	}
 
