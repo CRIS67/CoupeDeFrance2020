@@ -483,9 +483,9 @@ int main()
 					ss << "logMaps/out_map" << nbPath++ << ".txt";
 					file.open(ss.str());
 					for(unsigned int i = 0; i < simplifiedPath.size();i++){
-						newMap.at(simplifiedPath.at(i).coord.first).at(simplifiedPath.at(i).coord.second) = 4;
+						newMap.at(simplifiedPath.at(i).coord.second).at(simplifiedPath.at(i).coord.first) = 4;
 					}
-					newMap.at(nRobot.coord.first).at(nRobot.coord.second) = 3;
+					newMap.at(nRobot.coord.second).at(nRobot.coord.first) = 3;
 					for(int y = 0; y < mapRows;y++){
 						for(int x = 0; x < mapColumns; x++){
 							file << newMap.at(y).at(x) << " ";
