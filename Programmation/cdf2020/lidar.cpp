@@ -99,8 +99,10 @@ void Lidar::DecodMsg(uint8_t buf[]) {
 				double distance = sqrt(p.x*p.x + p.y*p.y);
 				//angle += m_pWeb->dspic->getT() + 3.14159/4 + 3.14159;
 				angle += m_pWeb->dspic->getT() + 3.14159/4;
-				p.x = distance*cos(angle);
-				p.y = distance*sin(angle);
+				//p.x = distance*cos(angle);
+				//p.y = distance*sin(angle);
+				p.x = -distance*sin(angle);
+				p.y = distance*cos(angle);
 				p.x += m_pWeb->dspic->getX();
 				p.y += m_pWeb->dspic->getY();
 				m_pWeb->addLidarPoints(p);
