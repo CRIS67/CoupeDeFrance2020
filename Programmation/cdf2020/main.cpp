@@ -5,6 +5,7 @@
 #include <queue>
 #include "web.hpp"
 #include "dspic.hpp"
+#include "robot.hpp"
 #include "actuators.hpp"
 #include "SPI.hpp"
 #include "lidar.hpp"
@@ -107,13 +108,14 @@ int main()
 
 
     SPI spi(SPI_CHANNEL,SPI_SPEED); //initialise SPI
-	Actuators actFront(&spi,SPI_ID_ACT_FRONT), actBack(&spi,SPI_ID_ACT_BACK);
+	//Actuators actFront(&spi,SPI_ID_ACT_FRONT), actBack(&spi,SPI_ID_ACT_BACK);
 	/*actFront.ResetAtmega();
     actBack.ResetAtmega();*/
-    Web web(&dspic, &actFront, &actBack);
-    Lidar lidar(&spi, SPI_ID_LIDAR, &web);
+    Web web(&dspic, NULL, NULL);
+    //Lidar lidar(&spi, SPI_ID_LIDAR, &web);
+    Lidar lidar("Lidar",&spi,SPI_ID_LIDAR,&web);
     lidar.stop();
-    HMI hmi(&spi,SPI_ID_HMI);
+    //HMI hmi(&spi,SPI_ID_HMI);
 
     puts("Hello human ! I, your fervent robot, am initialised. Press <ENTER> to continue.");
 	getchar();
@@ -122,9 +124,9 @@ int main()
     dspic.startThreadReception();
     web.startThread();
     lidar.startThreadDetection();
-    hmi.startThreadDetection();
+    /*hmi.startThreadDetection();
     actFront.startThreadDetection();
-    actBack.startThreadDetection();
+    actBack.startThreadDetection();*/
 
     dspic.setVar8(CODE_VAR_VERBOSE,1);
     puts("verbose set to 1");
@@ -138,7 +140,7 @@ int main()
     //dspic.initPos(1000,3000,-3.14159/2);
     // ===================== Test des actionneurs =========================================
     puts("Test arms");
-	actFront.MoveServo(0,SERVO_VALUE_LOW);
+	/*actFront.MoveServo(0,SERVO_VALUE_LOW);
 	actFront.MoveServo(1,SERVO_VALUE_LOW);
 	actFront.MoveServo(2,SERVO_VALUE_LOW);
 	actBack.MoveServo(0,SERVO_VALUE_LOW);
@@ -150,7 +152,7 @@ int main()
 	actFront.MoveServo(2,SERVO_VALUE_HIGH);
 	actBack.MoveServo(0,SERVO_VALUE_HIGH);
 	actBack.MoveServo(1,SERVO_VALUE_HIGH);
-	actBack.MoveServo(2,SERVO_VALUE_HIGH);
+	actBack.MoveServo(2,SERVO_VALUE_HIGH);*/
 	 // ===================================================================================
 
     std::cout << "Press enter to dspic.start() " << std::endl;
@@ -207,9 +209,9 @@ int main()
 	/*save map in a file*/
 	/*std::ofstream file;
 	file.open("logMaps/out_map.txt");
-	for(int y = 0; y < mapRows;y++){
-		for(int x = 0; x < mapColumns; x++){
-			file << mapVector.at(y).at(x) << " ";
+	for(int i = 0; i < mapRows;i++){
+		for(int j = 0; j < mapColumns; j++){
+			file << mapVector.at(i).at(j) << " ";
 		}
 		file << std::endl;
 	}
@@ -226,9 +228,9 @@ int main()
 
 
     	file.open(ss.str());
-					for(int y = 0; y < mapRows;y++){
-						for(int x = 0; x < mapColumns; x++){
-							file << mapVector.at(y).at(x) << " ";
+					for(int i = 0; i < mapRows;i++){
+						for(int j = 0; j < mapColumns; j++){
+							file << mapVector.at(i).at(j) << " ";
 						}
 						file << std::endl;
 					}
@@ -290,13 +292,13 @@ int main()
 
 		DEBUG_PRINT("path optimized");
 		/*std::cout << "tempSimplified path : " << std::endl;
-		for(unsigned int j = 0 ; j < tempSimplifiedPath.size(); j++){
-			std::cout << j << " : (" << tempSimplifiedPath.at(j).coord.first << " ; "  << tempSimplifiedPath.at(j).coord.second << ")" << std::endl;
+		for(unsigned int i = 0 ; i < tempSimplifiedPath.size(); i++){
+			std::cout << i << " : (" << tempSimplifiedPath.at(i).coord.first << " ; "  << tempSimplifiedPath.at(i).coord.second << ")" << std::endl;
 		}
 
 		std::cout << "optimized path" << std::endl;
-		for(unsigned int j = 0 ; j < simplifiedPath.size(); j++){
-			std::cout << j << " : (" << simplifiedPath.at(j).coord.first << " ; "  << tempSimplifiedPath.at(j).coord.second << ")" << std::endl;
+		for(unsigned int i = 0 ; i < simplifiedPath.size(); i++){
+			std::cout << i << " : (" << simplifiedPath.at(i).coord.first << " ; "  << tempSimplifiedPath.at(i).coord.second << ")" << std::endl;
 		}*/
 		/*modifié>*/
 		/*<original*/
@@ -320,7 +322,7 @@ int main()
 			}
 
 			//startNode = bestNode(startNode, knownNodes); // we "move" the robot
-            fromNode = startNode;
+                        fromNode = startNode;
 			startNode = simplifiedPath.at(counter);
 			counter++;
 			std::cout << "PRINTING PATH" << std::endl;
@@ -350,21 +352,21 @@ int main()
 				//std::cout << dspic.getX() << ";" << dspic.getY()  << std::endl;
 				//get lidar points
 				std::queue<pointFloat2d> points = lidar.getAndClearDetectedPoints();	//get detected points and clear internal buffer
-				std::queue<pointFloat2d> savePoints = points; //TODO : verifier que c'est une copie et pas une copie de reference
+				std::queue<pointFloat2d> savePoints = points;
 				unsigned int nbPoints = points.size();
 				std::cout << "nbPoints" << nbPoints << std::endl;
 				//add on binary map
 				std::vector<std::vector<int>> newMap(mapVector); //used to detect colision
-				for(unsigned int j = 0; j < nbPoints;j++){
+				for(unsigned int i = 0; i < nbPoints;i++){
 					pointFloat2d p = points.front();
 					points.pop();
-					int xObstacle = (int)round(p.x / MAP_MM_PER_ARRAY_ELEMENT);
-					int yObstacle = (int)round(p.y / MAP_MM_PER_ARRAY_ELEMENT);
+					int x = (int)round(p.x / MAP_MM_PER_ARRAY_ELEMENT);
+					int y = (int)round(p.y / MAP_MM_PER_ARRAY_ELEMENT);
 					//std::cout << "(" << x << " ; " << y << ") ";
-					for(int y = yObstacle - SIZE_ENNEMY; y < yObstacle + SIZE_ENNEMY;y++){ //TODO : verifier pk pas <=
-					    for(int x = xObstacle - SIZE_ENNEMY; x < xObstacle + SIZE_ENNEMY;x++){
-							if(y >= 0 && y < mapRows && x >= 0 && x < mapColumns){
-								newMap.at(y).at(x) = 1;
+					for(int j = x - SIZE_ENNEMY; j < x + SIZE_ENNEMY;j++){
+						for(int k = y - SIZE_ENNEMY; k < y + SIZE_ENNEMY;k++){
+							if(j >= 0 && j < mapRows && k >= 0 && k < mapColumns){
+								newMap.at(j).at(k) = 1;
 								//std::cout << "(" << j << " ; " << k << ") ";
 							}
 						}
@@ -385,79 +387,82 @@ int main()
 					lidar.setFillBuffer(false);
 					std::vector<std::vector<int>> augmentedMap(mapVector); //used to compute modified path
 					DEBUG_PRINT("Filling augmentedMap ...");
-					for(unsigned int j = 0; j < nbPoints;j++){
+					for(unsigned int i = 0; i < nbPoints;i++){
 						pointFloat2d p = savePoints.front();
 						savePoints.pop();
-                        int xObstacle = (int)round(p.x / MAP_MM_PER_ARRAY_ELEMENT);
-                        int yObstacle = (int)round(p.y / MAP_MM_PER_ARRAY_ELEMENT);
-                        //std::cout << "(" << x << " ; " << y << ") ";
-                        for(int y = yObstacle - SIZE_ENNEMY_MARGIN; y < yObstacle + SIZE_ENNEMY_MARGIN;y++){
-                            for(int x = xObstacle - SIZE_ENNEMY_MARGIN; x < xObstacle + SIZE_ENNEMY_MARGIN;x++){
-                                if(y >= 0 && y < mapRows && x >= 0 && x < mapColumns){
-                                    augmentedMap.at(y).at(x) = 1;
-                                    if(newMap.at(y).at(x) == 0){
-                                        newMap.at(y).at(x) = 10;
-                                    }
-                                    //std::cout << "(" << x << " ; " << y << ") ";
-                                }
-                            }
-                        }
+						int x = (int)round(p.x / MAP_MM_PER_ARRAY_ELEMENT);
+						int y = (int)round(p.y / MAP_MM_PER_ARRAY_ELEMENT);
+						//std::cout << "(" << x << " ; " << y << ") ";
+						for(int j = x - SIZE_ENNEMY_MARGIN; j < x + SIZE_ENNEMY_MARGIN;j++){ //SIZE_ENNEMY_MARGIN>SIZE_ENNEMY pour eviter les ennemies sans les froller
+							for(int k = y - SIZE_ENNEMY_MARGIN; k < y + SIZE_ENNEMY_MARGIN;k++){
+								if(j >= 0 && j < mapRows && k >= 0 && k < mapColumns){
+									augmentedMap.at(j).at(k) = 1;
+									if(newMap.at(j).at(k) == 0){
+										newMap.at(j).at(k) = 10;
+									}
+									//std::cout << "(" << j << " ; " << k << ") ";
+								}
+							}
+						}
 						//std::cout << std::endl;
 					}
 					DEBUG_PRINT("AugmentedMap filled ");
 
-                    if(augmentedMap.at(nRobot.coord.second).at(nRobot.coord.first) == 1){ // If the nRobot is an obstacle
-                        std::cout << "Start Node is an obstacle ! Finding new startNode..." << std::endl;
-                        std::cout << "fromNode " << fromNode.coord.first << " " << fromNode.coord.second << std::endl;
-                        std::cout << "nRobot Node " << nRobot.coord.first << " " << nRobot.coord.second << std::endl;
-                        int dx =  nRobot.coord.first - fromNode.coord.first ;
-                        int dy = nRobot.coord.second - fromNode.coord.second ;
-                        startNode = searchNewStartNode(nRobot.coord.first, nRobot.coord.second, fromNode.coord.first, fromNode.coord.second, augmentedMap);
-                        std::cout << "nRobot Node " << nRobot.coord.first << " " << nRobot.coord.second << std::endl;
-                    }else{
-                        startNode.coord.first = nRobot.coord.first;
-                        startNode.coord.second = nRobot.coord.second;
-                    }
-					startNode = knownNodes.at(startNode.coord); // we update the start node
-                    std::cout << "New start Node " << startNode.coord.first << " " << startNode.coord.second << " Is obstacle : " << startNode.isObstacle << std::endl;
-                    std::cout << "Augmented map New start Node : " << augmentedMap.at(startNode.coord.second).at(startNode.coord.first) << std::endl;
+				        if(augmentedMap.at(nRobot.coord.first).at(nRobot.coord.second) == 1){ // If the nRobot is an obstacle
 
-                    DEBUG_PRINT("printing MAP");
+                                          std::cout << "Start Node is an obstacle ! Finding new startNode..." << std::endl;
+                                          std::cout << "fromNode " << fromNode.coord.first << " " << fromNode.coord.second << std::endl;
+                                          std::cout << "nRobot Node " << nRobot.coord.first << " " << nRobot.coord.second << std::endl;
+                                          int dx =  nRobot.coord.first - fromNode.coord.first ;
+                                          int dy = nRobot.coord.second - fromNode.coord.second ;
+                                          startNode = searchNewStartNode(nRobot.coord.first, nRobot.coord.second, fromNode.coord.first, fromNode.coord.second, augmentedMap);
+                                          std::cout << "nRobot Node " << nRobot.coord.first << " " << nRobot.coord.second << std::endl;
+                                        }
+                                        else{
+                                          startNode.coord.first = nRobot.coord.first;
+					  startNode.coord.second = nRobot.coord.second;
+                                        }
+					startNode = knownNodes.at(startNode.coord); // we update the start node
+                                        std::cout << "New start Node " << startNode.coord.first << " " << startNode.coord.second << " Is obstacle : " << startNode.isObstacle << std::endl;
+				        std::cout << "Augmented map New start Node : " << augmentedMap.at(startNode.coord.first).at(startNode.coord.second) << std::endl;
+
+                                        DEBUG_PRINT("printing MAP");
 					std::ofstream file;
 					std::ostringstream ss;
 					//ss << "logMaps/out_map" << nbStrat << "_" << nbPath++ << ".txt";
 					ss << "out_map.txt";
 					file.open(ss.str());
-                    std::vector<std::vector<int>> debugMap(augmentedMap);
-					debugMap.at(startNode.coord.second).at(startNode.coord.first) = 3;
-					for(int y = 0; y < mapRows;y++){
-						for(int x = 0; x < mapColumns; x++){
-							file << debugMap.at(y).at(x) << " ";
+                                        std::vector<std::vector<int>> debugMap(augmentedMap);
+					debugMap.at(startNode.coord.first).at(startNode.coord.second) = 3;
+					for(int i = 0; i < mapRows;i++){
+						for(int j = 0; j < mapColumns; j++){
+							file << debugMap.at(i).at(j) << " ";
 						}
 						file << std::endl;
 					}
 					file.close();
 					DEBUG_PRINT("printing MAP ended");
 
-					if(augmentedMap.at(goalNode.coord.second).at(goalNode.coord.first) == 1){ // If the goalNode is an obstacle
-                        std::cout << "AOUCH goalNode is an obstcale" << std::endl;
-                        std::cout << goalNode.coord.first << ";" << goalNode.coord.second << std::endl;
-                        dspic.stop();
-                        dspic.setVar8(CODE_VAR_VERBOSE,0);
-                        dspic.stopThreadReception();
-                        puts("verbose set to 0");
-                        puts("exiting ...");
-                        lidar.stop();
-                        lidar.stopThreadDetection();
-                        web.stopThread();
+					if(augmentedMap.at(goalNode.coord.first).at(goalNode.coord.second) == 1){ // If the goalNode is an obstacle
+                                            std::cout << "AOUCH goalNode is an obstcale" << std::endl;
+                                            std::cout << goalNode.coord.first << ";" << goalNode.coord.second << std::endl;
+                                            dspic.stop();
+                                            dspic.setVar8(CODE_VAR_VERBOSE,0);
+                                            dspic.stopThreadReception();
+                                            puts("verbose set to 0");
+                                            puts("exiting ...");
+                                            lidar.stop();
+                                            lidar.stopThreadDetection();
+                                            web.stopThread();
 
-                        puts("exiting...");
+                                            puts("exiting...");
 
-                        delay(200);
+                                            delay(200);
+
 					    //return -1;
 					}
 
-                    std::cout << "Goal Node" << goalNode.coord.first << " " << goalNode.coord.second << std::endl;
+                                        std::cout << "Goal Node" << goalNode.coord.first << " " << goalNode.coord.second << std::endl;
 					std::cout << " WARNING : collision !" << std::endl;
 					km = km + distance2(lastNode, startNode);
 					lastNode = startNode;
@@ -507,9 +512,9 @@ int main()
 						newMap.at(simplifiedPath.at(i).coord.first).at(simplifiedPath.at(i).coord.second) = 4;
 					}
 					newMap.at(nRobot.coord.first).at(nRobot.coord.second) = 3;
-					for(int y = 0; y < mapRows;y++){
-						for(int x = 0; x < mapColumns; x++){
-							file << newMap.at(y).at(x) << " ";
+					for(int i = 0; i < mapRows;i++){
+						for(int j = 0; j < mapColumns; j++){
+							file << newMap.at(i).at(j) << " ";
 						}
 						file << std::endl;
 					}
@@ -526,13 +531,13 @@ int main()
 				//ss << "logMaps/out_map" << nbStrat << "_" << nbPath++ << ".txt";
 				ss << "logMaps/out_map" << nbPath++ << ".txt";
 				file.open(ss.str());
-				for(unsigned int j = 0; j < simplifiedPath.size();j++){
-					newMap.at(simplifiedPath.at(j).coord.second).at(simplifiedPath.at(j).coord.first) = 4;
+				for(unsigned int i = 0; i < simplifiedPath.size();i++){
+					newMap.at(simplifiedPath.at(i).coord.first).at(simplifiedPath.at(i).coord.second) = 4;
 				}
-				newMap.at(nRobot.coord.second).at(nRobot.coord.first) = 3;
-				for(int y = 0; y < mapRows;y++){
-					for(int x = 0; x < mapColumns; x++){
-						file << newMap.at(y).at(x) << " ";
+				newMap.at(nRobot.coord.first).at(nRobot.coord.second) = 3;
+				for(int i = 0; i < mapRows;i++){
+					for(int j = 0; j < mapColumns; j++){
+						file << newMap.at(i).at(j) << " ";
 					}
 					file << std::endl;
 				}
@@ -591,27 +596,27 @@ int main()
 	puts("verbose set to 0");
     puts("exiting ...");
 	lidar.stop();
-	actFront.stopThreadDetection();
-    actBack.stopThreadDetection();
+	//actFront.stopThreadDetection();
+    //actBack.stopThreadDetection();
     lidar.stopThreadDetection();
     web.stopThread();
 
     puts("exiting...");
 
 	delay(200);
-	if(hmi.isStopPrgm()) {
+	/*if(hmi.isStopPrgm()) {
         system("sudo shutdown now");
-    }
+    }*/
 
     return 0;
 }
 
-void debugAct(){
+/*void debugAct(){
 
     wiringPiSetup();
     SPI spi(SPI_CHANNEL,SPI_SPEED); //initialise SPI
     /*A AJOUTER : FLUSH tous les slaves*/
-    Actuators actFront(&spi,SPI_ID_ACT_FRONT), actBack(&spi,SPI_ID_ACT_BACK);
+/*    Actuators actFront(&spi,SPI_ID_ACT_FRONT), actBack(&spi,SPI_ID_ACT_BACK);
 
     DsPIC dspic;
 
@@ -721,7 +726,7 @@ void debugAct(){
 void debugTestAllDelay(){
     SPI spi(SPI_CHANNEL,SPI_SPEED); //initialise SPI
     /*A AJOUTER : FLUSH tous les slaves*/
-    Actuators actFront(&spi,SPI_ID_ACT_FRONT), actBack(&spi,SPI_ID_ACT_BACK);
+/*    Actuators actFront(&spi,SPI_ID_ACT_FRONT), actBack(&spi,SPI_ID_ACT_BACK);
 
     int valueH = 800;
     int valueL = 1600;
@@ -808,7 +813,7 @@ void debugTestAllDelay(){
 void debugTestAllInstant(){
     SPI spi(SPI_CHANNEL,SPI_SPEED); //initialise SPI
     /*A AJOUTER : FLUSH tous les slaves*/
-    Actuators actFront(&spi,SPI_ID_ACT_FRONT), actBack(&spi,SPI_ID_ACT_BACK);
+/*    Actuators actFront(&spi,SPI_ID_ACT_FRONT), actBack(&spi,SPI_ID_ACT_BACK);
 
     int valueH = 800;
     int valueL = 1600;
@@ -886,7 +891,7 @@ void debugTestAllInstant(){
 void debugBN(){
     SPI spi(SPI_CHANNEL,SPI_SPEED); //initialise SPI
     /*A AJOUTER : FLUSH tous les slaves*/
-    Actuators actFront(&spi,SPI_ID_ACT_FRONT), actBack(&spi,SPI_ID_ACT_BACK);
+/*    Actuators actFront(&spi,SPI_ID_ACT_FRONT), actBack(&spi,SPI_ID_ACT_BACK);
 
     //int valueH = 800;
     int valueL = 1600;
@@ -941,3 +946,4 @@ void debugGoldenium(){
 void reglageOdometrie(){
 
 }
+*/

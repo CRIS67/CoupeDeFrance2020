@@ -1,76 +1,77 @@
 #include "trajectoryHandle.hpp"
 
 /*
-Detects where the angles of the trajectory change and thus
-simplifies the trajectory
+Detects where the angles of the trajectory change and thus 
+simplifies the trajectory 
 */
 std::vector<Node> pathTreatment(std::vector<Node> path)
-{
+{ 
   std::vector<Node> simplifiedPath;
   if(path.size() < 3)
     return path;
   for(uint i = 0; i<path.size()-2; i++)
   {
     //std::cout << "debug pathTreatment : " << i << " & " << path.size() << std::endl;
-    Node tmpNode = path.at(i);
-    Node nextNode = path.at(i+1);
-    Node furtherNode = path.at(i+2);
+    Node tmpNode = path.at(i); 
+    Node nextNode = path.at(i+1); 
+    Node furtherNode = path.at(i+2); 
 
-    int xVector = nextNode.coord.first - tmpNode.coord.first;
-    int yVector = nextNode.coord.second - tmpNode.coord.second;
+    int xVector = nextNode.coord.first - tmpNode.coord.first; 
+    int yVector = nextNode.coord.second - tmpNode.coord.second; 
 
-    int xVectorF = furtherNode.coord.first -  nextNode.coord.first ;
-    int yVectorF = furtherNode.coord.second - nextNode.coord.second;
+    int xVectorF = furtherNode.coord.first -  nextNode.coord.first ; 
+    int yVectorF = furtherNode.coord.second - nextNode.coord.second; 
 
-    double firstAngle = atan2(yVector,xVector);
-    double secondAngle = atan2(yVectorF, xVectorF);
+    double firstAngle = atan2(yVector,xVector); 
+    double secondAngle = atan2(yVectorF, xVectorF); 
     if(firstAngle != secondAngle)
     {
-      simplifiedPath.push_back(nextNode);
+      simplifiedPath.push_back(nextNode); 
     }
 
   }
 
-  return simplifiedPath;
+  return simplifiedPath; 
 }
 
-bool sensorTreatment(int enemyX, int enemyY, int enemyWidth,
+bool sensorTreatment(int enemyX, int enemyY, int enemyWidth, 
   std::vector<std::vector<int>>& mapVector, std::vector<Node> path)
 {
-  clearMap(mapVector); // clears the map
-  generateMap(mapVector, mapVector.size() , mapVector.at(0).size()); // initializes the original map
-  //createRectangle( enemyX, enemyY, enemyWidth, enemyWidth, mapVector); // generates the obstacle zone
+  clearMap(mapVector); // clears the map 
+  generateMap(mapVector, mapVector.size() , mapVector.at(0).size()); // initializes the original map 
+  //createRectangle( enemyX, enemyY, enemyWidth, enemyWidth, mapVector); // generates the obstacle zone  
 
-  // Check if the path passes through the obsctale
+  // Check if the path passes through the obsctale 
   for(uint i = 0; i< path.size(); i++)
   {
-    int x = path.at(i).coord.first;
-    int y = path.at(i).coord.second;
+    int x = path.at(i).coord.first; 
+    int y = path.at(i).coord.second; 
 
-    if(mapVector[y][x] == 1)
+    if(mapVector[x][y] == 1)
     {
-      return true;
+      return true; 
     }
   }
 
-  return false;
+  return false; 
 }
 
 void printPath(std::vector<Node> path, std::vector<std::vector<int>>& mapVector)
 {
-  std::cout <<"===== PRINTING PATH =====" << std::endl << std::endl;
-  std::vector<std::vector<int>> tmpMap = mapVector;
 
-  int x,y;
-  for(uint i = 0; i< path.size(); i++)
-  {
+    std::cout <<"===== PRINTING PATH =====" << std::endl << std::endl; 
+    std::vector<std::vector<int>> tmpMap = mapVector; 
+
+    int x,y; 
+    for(uint i = 0; i< path.size(); i++)
+    {
     x = path.at(i).coord.first;
     y = path.at(i).coord.second;
 
-    tmpMap[y][x] = 2;
-  }
+    tmpMap[x][y] = 2;
+    }
 
-  printMap(tmpMap.size(), tmpMap[0].size(), tmpMap);
+    printMap(tmpMap.size(), tmpMap[0].size(), tmpMap);
 }
 
 bool detectCollision(std::vector<std::vector<int> > &map, std::vector<Node> path, Node start, Node nextDestination){
@@ -97,7 +98,7 @@ bool detectCollision(std::vector<std::vector<int> > &map, std::vector<Node> path
     int xB = path.at(i).coord.first;
     int yB = path.at(i).coord.second;*/
     //std::cout << path.at(i).coord.first << " & " << path.at(i).coord.second << " -> " <<  path.at(i+1).coord.first << " & " << path.at(i+1).coord.second << std::endl;
-
+    
     if(detectCollisionLine(path.at(i).coord.first, path.at(i).coord.second, path.at(i+1).coord.first, path.at(i+1).coord.second,map))
             return true;
 
@@ -121,7 +122,7 @@ std::vector<Node> optimizePath(std::vector<std::vector<int> > &map, std::vector<
   while(ind != lastIndex){
     bool shortcut = false;
     for(unsigned int i = lastIndex; i > ind+1;i--){
-      //std::cout << "i = " << i << std::endl;
+      //std::cout << "i = " << i << std::endl; 
       if(!detectCollisionLine(x,y,path.at(i).coord.first,path.at(i).coord.second,map)){
         shortcut = true;
         ind = i;
@@ -226,34 +227,37 @@ Node searchNewStartNode( float xRobot, float yRobot, float xFrom, float yFrom , 
   for(int x=(int)xRobot; x<=maxX; x++)
   {
     //std::cout << x << " / " << y << std::endl;
-    if(steep) {
-      if(map.at(y).at(x) != 1){
+    if(steep)
+    {
+        if(map.at(y).at(x) != 1){
           //if(firstZero){
         ret.coord.first = y;
         ret.coord.second = x;
         return ret;
-      }
+      //}
       //else
       //  firstZero = true;
-      //}
-      else{
-        //firstZero = false;
-        map.at(y).at(x) = 7;
-      }
-    }else {
-      if(map.at(x).at(y) != 1){
-        //if(firstZero){
-        ret.coord.first = x;
+    }
+    else{
+      //firstZero = false;
+      map.at(y).at(x) = 7; 
+    }
+    }
+    else
+    {
+        if(map.at(x).at(y) != 1){
+          //if(firstZero){
+              ret.coord.first = x;
         ret.coord.second = y;
         return ret;
-      }
+      //}
       //else
       //  firstZero = true;
-      //}
-      else{
-        //firstZero = false;
-        map.at(x).at(y) = 7;
-      }
+    }
+    else{
+      //firstZero = false;
+      map.at(x).at(y) = 7; 
+    }
     }
 
     error -= dy;
