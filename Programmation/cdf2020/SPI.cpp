@@ -6,6 +6,13 @@ SPI::SPI(int channel, int speed){
     m_fd = wiringPiSPISetup(channel, speed);
 	pinMode(PIN_MUX_A, OUTPUT);
 	pinMode(PIN_MUX_B, OUTPUT);
+	pinMode(PIN_MUX_C, OUTPUT);
+	
+	for(int i=0;i<NB_CARTE;i++) {
+		pinMode(PinRst[i], OUTPUT);
+		digitalWrite(PinRst[i],HIGH);
+	}
+
 	m_slaveId = -1;
 }
 SPI::~SPI(){
@@ -13,10 +20,11 @@ SPI::~SPI(){
 }
 /*Change slave select line*/
 void SPI::setSlave(uint8_t id){
-	if(id < 4){
+	if(id < NB_CARTE){
 		m_slaveId = id;
 		digitalWrite(PIN_MUX_A,(id & 0x1));			//bit0 of id -> MUX_A
 		digitalWrite(PIN_MUX_B,((id >> 1) & 0x1));	//bit1 of id -> MUX_B
+		digitalWrite(PIN_MUX_C,((id >> 2) & 0x1));	//bit2 of id -> MUX_C
 		//std::cout << "slave set to = " << (int)m_slaveId << std::endl;
 	}
 }

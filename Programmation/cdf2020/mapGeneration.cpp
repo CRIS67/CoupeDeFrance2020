@@ -30,9 +30,9 @@ void createRectangle(uint startX, uint startY, int width, int height, std::vecto
 		return;
 	}
 
-	for(int y = startY; i<startY+width; i++)
+	for(int y = startY; y<startY+width; y++)
 	{
-		for(int x = startX; j<startX+height; j++)
+		for(int x = startX; x<startX+height; x++)
 		{
 			mapVector[y][x] = 1;
 		}

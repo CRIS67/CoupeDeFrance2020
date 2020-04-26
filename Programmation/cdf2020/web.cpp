@@ -1,8 +1,8 @@
 #include "web.hpp"
 
-Web::Web(DsPIC *ds, Actuators *a1, Actuators *a2){
+Web::Web(DsPIC *ds, Actuator *a1, Actuator *a2){
 	dspic = ds;
-	actFront = a1;
+	actScara = a1;
 	actBack = a2;
     s = "hello world !";
     struct sockaddr_in server;
@@ -300,15 +300,15 @@ void* thread_HandleConnnection(void *threadid){
 						//w->dspic->servo(id,n);
 						if(id > 0 && id < 4) {
 							if(n == 0) {
-								w->actFront->SetPump(id-1,0);
+								w->actScara->SetMot(id-1,0);
 							} else if(n == 1) {
-								w->actFront->SetPump(id-1,1);
+								w->actScara->SetMot(id-1,1);
 							}
 						} else if(id > 3) {
 							if(n == 0) {
-								w->actBack->SetPump(id-4,0);
+								w->actBack->SetMot(id-4,0);
 							} else if(n == 1) {
-								w->actBack->SetPump(id-4,1);
+								w->actBack->SetMot(id-4,1);
 							}
 						} else {
 							if(n == 0) {
@@ -351,9 +351,9 @@ void* thread_HandleConnnection(void *threadid){
 						printf("command executed : servo %d preset %d\n",id,n);
 						if(id > 0 && id < 4) {
 							if(n == 0) {
-								w->actFront->MoveServo(id-1,SERVO_VALUE_HIGH);
+								w->actScara->MoveServo(id-1,SERVO_VALUE_HIGH);
 							} else if(n == 1) {
-								w->actFront->MoveServo(id-1,SERVO_VALUE_LOW);
+								w->actScara->MoveServo(id-1,SERVO_VALUE_LOW);
 							}
 						} else if(id > 3) {
 							if(n == 0) {
