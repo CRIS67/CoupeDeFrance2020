@@ -1,6 +1,9 @@
 #ifndef SPI_CRIS_PIN_H
 #define SPI_CRIS_PIN_H
 
+#define COM_SPI
+//#define COM_UART
+
 #define NB_SERVO        0
 #define NB_MOTEUR4Q     0
 #define NB_MOTEUR       0

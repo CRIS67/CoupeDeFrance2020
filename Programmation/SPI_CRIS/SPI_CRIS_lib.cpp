@@ -374,6 +374,7 @@ void InitCrisSpi(void) {
     inX = (char)(XBee_Adress+'0');
     inO = (char)(Other_Adress+'0');
     XBee_Config(inX, inO, Network_Adress);
+    XBee_Send(Other_Adress, CMD_PING_UART, "0");
   #endif
   #if NB_SCREEN > 0
     Serial.begin(BAUDRATE);
@@ -566,6 +567,14 @@ void LoopCrisSpi(void) {
   #endif
   #if NB_UART > 0
   #ifdef COM_UART
+
+
+
+XBee_Send(Data_Sender, CMD_PING_UART, "0");
+
+
+
+  
     if(PhareState == PHARE_ON) {
       if(digitalRead(Pin_Rupt[0])) {
         analogWrite(Pin_Moteur4Q_PWM[1], 0);
@@ -593,8 +602,8 @@ void LoopCrisSpi(void) {
     		case PHARE_STATE:
     			if(Data_Text.substring(0,2) == "49") {
     				PhareState = PHARE_ON;
-            digitalWrite(Pin_Moteur4Q_SENS[0], 1);
-            analogWrite(Pin_Moteur4Q_PWM[0], 150);
+            digitalWrite(Pin_Moteur4Q_SENS[1], 1);
+            analogWrite(Pin_Moteur4Q_PWM[1], 150);
     			} else {
     				PhareState = PHARE_OFF;
     			}

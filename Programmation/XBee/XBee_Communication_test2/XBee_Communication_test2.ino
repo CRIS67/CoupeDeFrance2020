@@ -37,6 +37,8 @@ void setup() {
   XBee_Config(XBee_Team, Other_Team, Network_Adress); // Configure la XBee avec les adresses spécifiées plus haut
   XBee.attachInterrupt(XBee_Receive);                 // La reception des messages fonctionne par interruption
 
+
+  XBee_Send (1, 46, "1");
 }
 
 int Vblink = 0;
@@ -45,9 +47,9 @@ void loop() {
 
   Vblink = ~Vblink;
   if(Vblink) {
-    XBee_Send (1, 46, "1");
+    //XBee_Send (1, 46, "1");
   } else {
-    XBee_Send (1, 46, "0");
+    //XBee_Send (1, 46, "0");
   }
 
   /*if(XBee.available()) {
