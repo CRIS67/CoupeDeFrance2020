@@ -5,6 +5,9 @@ String Network_Adress = "1234";   // Adresse du réseau
 
 char Flag = 'c';                  // Caractère indiquant le début d'un message
 
+#define CMD_PING_UART                   47
+#define MSG_NON_PRIS_EN_CHARGE_UART     48
+
 String Data_Text = "";            // Chaine contenant le dernier message reçu
 int Data_Type = 0;                // Type du dernier message reçu
 int Data_Sender = 0;              // Adresse proprede la XBee qui à envoyé ledit message
@@ -18,7 +21,7 @@ void setup() {
 }
 
 void loop() {
-  XBee_Send (1, 1, "Coucou je suis numero 2");
+  /*XBee_Send (1, 1, "Coucou je suis numero 2");
   if (Data_Text != "") {    
     digitalWrite(13,1);// Si message reçu
     //Serial.println("La XBee n " + String(Data_Sender) + " a envoyee un message de type " + String(Data_Type) + " : " + Data_Text);  // Affichage des données reçues
@@ -26,7 +29,23 @@ void loop() {
     Data_Clear();                                                                                                                   // Les données ont été lues : on peut donc les supprimer (sans quoi elles seraient
   } else {                                                                                                                               // de nouveau lues à la prochaine itération si aucun nouveau message n'a été reçu)
     delay(1000);
-  }
+  }*/
+  if(Data_Text  != "") {
+      switch(Data_Type) {
+        case CMD_PING_UART:
+          //SendSpi(CMD_PING_UART,3,0);
+          //XBee_Send (1, 1, "Coucou je suis numero 2");
+          digitalWrite(13,!digitalRead(13));
+          break;
+        case MSG_NON_PRIS_EN_CHARGE_UART:
+          //SendSpi(MSG_NON_PRIS_EN_CHARGE_UART,3,0);
+          break;
+        default:
+          //SendSpi(MSG_NON_PRIS_EN_CHARGE_UART,3,0);
+          break;
+      }
+    }
+    delay(1000);
 }
 
 static void XBee_Config(String Sender, String Receiver, String Network) { // Configure la XBee. Le programme reste bloqué si il ne détecte pas la XBee

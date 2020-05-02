@@ -1,9 +1,19 @@
 int XBee_Adress = 1;              // Adresse propre de la XBee entre 0 et 255
+int Other_Adress = 2;
 String XBee_Team = "1";           // Adresse de la team de la XBee
 String Other_Team = "2";          // Adresse de la team à laquelle les messages seront envoyés. Ces deux adresses se composent d'un unique caractère au choix
 String Network_Adress = "1234";   // Adresse du réseau
 
 char Flag = 'c';                  // Caractère indiquant le début d'un message
+
+#define LED_USER 13
+
+
+#define PHARE_STATE                     46
+#define CMD_PING_UART                   47
+#define MSG_NON_PRIS_EN_CHARGE_UART     48
+#define CMD_RST                         32
+#define CMD_PING                        33
 
 String Data_Text = "";            // Chaine contenant le dernier message reçu
 int Data_Type = 0;                // Type du dernier message reçu
@@ -12,24 +22,43 @@ boolean Data_Reading = false;
 
 void setup() {
   Serial.begin(9600);
+  delay(1000);
   XBee_Config(XBee_Team, Other_Team, Network_Adress); // Configure la XBee avec les adresses spécifiées plus haut
-  pinMode(2, OUTPUT);
-  digitalWrite(2,0);
-  pinMode(6, OUTPUT);
-  digitalWrite(6, 0);
+
+    XBee_Send(Other_Adress, CMD_PING_UART, "0");
+  
+  pinMode(LED_USER, OUTPUT);
+  digitalWrite(LED_USER,0);
 }
 
 void loop() {
-  XBee_Send (2, 1, "test2");
+  /*XBee_Send (2, 1, "test2");
   if (Data_Text == "test1") {    
-    digitalWrite(2,1);// Si message reçu
+    digitalWrite(LED_USER,!digitalRead(LED_USER));// Si message reçu
     //Serial.println("La XBee n " + String(Data_Sender) + " a envoyee un message de type " + String(Data_Type) + " : " + Data_Text);  // Affichage des données reçues
     delay(1000);
     Data_Clear();                                                                                                                   // Les données ont été lues : on peut donc les supprimer (sans quoi elles seraient
-  } else {      
-    digitalWrite(2,0);// de nouveau lues à la prochaine itération si aucun nouveau message n'a été reçu)
-    delay(1000);
-  }
+  }*/
+  if(Data_Text != "") {
+      switch(Data_Type) {
+        case CMD_RST:
+          //resetFunc();
+          break;
+        case CMD_PING:
+          XBee_Send(Data_Sender, CMD_PING_UART, "1");
+          break;
+        case PHARE_STATE:
+          if(Data_Text.substring(0,1) == "1") {
+            digitalWrite(LED_USER,1);
+          } else {
+            digitalWrite(LED_USER,0);
+          }
+          break;
+        default:
+          XBee_Send(Data_Sender, MSG_NON_PRIS_EN_CHARGE_UART, "0");
+          break;
+      }
+    }
 }
 
 static void XBee_Config(String Sender, String Receiver, String Network) { // Configure la XBee. Le programme reste bloqué si il ne détecte pas la XBee
@@ -55,8 +84,6 @@ static void XBee_Send(int adress, int type, String data0) {   // Envoit un messa
   data = data + char(chk);
   Serial.print(data);
 }
-
-//static void XBee_Receive( uint8_t c) {    // Programme d'interuption permettant de gérer la réception
 void serialEvent() {
   while(Serial.available()) {
   char c = (char)(Serial.read());

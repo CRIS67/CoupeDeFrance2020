@@ -369,11 +369,16 @@ void InitCrisSpi(void) {
   #endif
   #if NB_UART > 0
     Serial.begin(BAUDRATE);
+    delay(6000);
+    #ifdef COM_UART
+      String XBee_Team = "1";
+      String Other_Team = "2";
+    #else
+      String XBee_Team = "2";
+      String Other_Team = "1";
+    #endif
+    XBee_Config(XBee_Team, Other_Team, Network_Adress);
     delay(1000);
-    String inO = "", inX = "";
-    inX = (char)(XBee_Adress+'0');
-    inO = (char)(Other_Adress+'0');
-    XBee_Config(inX, inO, Network_Adress);
     XBee_Send(Other_Adress, CMD_PING_UART, "0");
   #endif
   #if NB_SCREEN > 0
@@ -567,14 +572,6 @@ void LoopCrisSpi(void) {
   #endif
   #if NB_UART > 0
   #ifdef COM_UART
-
-
-
-XBee_Send(Data_Sender, CMD_PING_UART, "0");
-
-
-
-  
     if(PhareState == PHARE_ON) {
       if(digitalRead(Pin_Rupt[0])) {
         analogWrite(Pin_Moteur4Q_PWM[1], 0);
@@ -588,8 +585,6 @@ XBee_Send(Data_Sender, CMD_PING_UART, "0");
         digitalWrite(Pin_Moteur4Q_SENS[1], 1);
         analogWrite(Pin_Moteur4Q_PWM[1], 200);
       }
-    } else {
-    	digitalWrite(LED_PHARE, 0);
     }
     if(Data_Text != "") {
     	switch(Data_Type) {
@@ -602,10 +597,12 @@ XBee_Send(Data_Sender, CMD_PING_UART, "0");
     		case PHARE_STATE:
     			if(Data_Text.substring(0,2) == "49") {
     				PhareState = PHARE_ON;
+            digitalWrite(LED_PHARE, 1);
             digitalWrite(Pin_Moteur4Q_SENS[1], 1);
             analogWrite(Pin_Moteur4Q_PWM[1], 150);
     			} else {
     				PhareState = PHARE_OFF;
+            digitalWrite(LED_PHARE, 0);
     			}
     			break;
     		default:

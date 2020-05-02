@@ -38,18 +38,19 @@ void setup() {
   XBee.attachInterrupt(XBee_Receive);                 // La reception des messages fonctionne par interruption
 
 
-  XBee_Send (1, 46, "1");
+  //XBee_Send (1, 46, "1");
 }
 
 int Vblink = 0;
 
 void loop() {
+  XBee_Send (1, 33, "0");
 
   Vblink = ~Vblink;
   if(Vblink) {
-    //XBee_Send (1, 46, "1");
+    XBee_Send (1, 46, "49");
   } else {
-    //XBee_Send (1, 46, "0");
+    XBee_Send (1, 46, "0");
   }
 
   /*if(XBee.available()) {
