@@ -591,11 +591,11 @@ void LoopCrisSpi(void) {
     		case CMD_RST:
     			resetFunc();
     			break;
-    		case CMD_PING:
+    		case CMD_PING_UART:
     			XBee_Send(Data_Sender, CMD_PING_UART, "0");
     			break;
     		case PHARE_STATE:
-    			if(Data_Text.substring(0,2) == "49") {
+    			if(Data_Text.substring(0,1) == "1") {
     				PhareState = PHARE_ON;
             digitalWrite(LED_PHARE, 1);
             digitalWrite(Pin_Moteur4Q_SENS[1], 1);
@@ -609,6 +609,7 @@ void LoopCrisSpi(void) {
     			XBee_Send(Data_Sender, MSG_NON_PRIS_EN_CHARGE_UART, "0");
     			break;
     	}
+      Data_Clear();
     }
   #else
     if(Data_Text  != "") {
@@ -623,6 +624,7 @@ void LoopCrisSpi(void) {
     			SendSpi(MSG_NON_PRIS_EN_CHARGE_UART,3,0);
     			break;
     	}
+      Data_Clear();
     }
   #endif
   #endif
@@ -713,7 +715,7 @@ unsigned char ISRCrisSpi(unsigned char data_spi) {
                 i_int = 2;
                 inp = "";
                 while(TextSpi[i_int] != '\0') {
-                  inp += TextSpi[i_int];
+                  inp += (char)(TextSpi[i_int]);
                   i_int++;
                 }
                 XBee_Send(TextSpi[1], TextSpi[0], inp);

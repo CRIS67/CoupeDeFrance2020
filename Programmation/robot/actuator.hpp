@@ -61,8 +61,9 @@ class Actuator : public Robot {
 		void UartSend(unsigned char Send, unsigned char id_uart, unsigned char msg);
 		void allumerPhare();
 		void eteindrePhare();
-		bool isPhareAllumee();
-		bool isPhareEteint();
+		bool GetPingXbee(uint8_t id);
+		void PingXbee(uint8_t id);
+		void resetXbee(uint8_t id);
 	protected:
 		int m_nb_servo;
         int m_nb_moteur4Q;
@@ -77,8 +78,8 @@ class Actuator : public Robot {
         int m_color[10] = {ERROR_VALUE, ERROR_VALUE, ERROR_VALUE, ERROR_VALUE, ERROR_VALUE, ERROR_VALUE, ERROR_VALUE, ERROR_VALUE, ERROR_VALUE, ERROR_VALUE};
         int m_dist[10] = {ERROR_VALUE, ERROR_VALUE, ERROR_VALUE, ERROR_VALUE, ERROR_VALUE, ERROR_VALUE, ERROR_VALUE, ERROR_VALUE, ERROR_VALUE, ERROR_VALUE};
         int m_rupt[10] = {ERROR_VALUE, ERROR_VALUE, ERROR_VALUE, ERROR_VALUE, ERROR_VALUE, ERROR_VALUE, ERROR_VALUE, ERROR_VALUE, ERROR_VALUE, ERROR_VALUE};
-        int m_phareAllumee = 0;
-        int m_phareEteint = 0;
+        bool m_pingXbee[10] = {false, false, false, false, false, false, false, false, false, false};
+		bool m_connectedXbee = false;
 };
 
 #endif // ACTUATIR_H

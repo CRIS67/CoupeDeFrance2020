@@ -17,7 +17,36 @@ Actuator::Actuator(std::string nom, SPI *pSpi, uint8_t id, int nb_servo, int nb_
 	if(m_nb_moteur) {std::cout << m_nb_moteur << " moteurs" << std::endl;}
 	if(m_nb_capt_cur) {std::cout << m_nb_capt_cur << " capteurs de courant" << std::endl;}
 	if(m_nb_capt_couleur) {std::cout << m_nb_capt_couleur << " capteurs de couleur" << std::endl;}
-	if(m_nb_uart) {std::cout << m_nb_uart << " uart" << std::endl;}
+	if(m_nb_uart) {
+		std::cout << m_nb_uart << " uart : " << std::endl << " ";
+		for(int i=1;i<m_nb_uart+1;i++) {
+			PingXbee(1);
+			delay(1000);
+			PingXbee(1);
+			delay(1000);
+			PingXbee(1);
+			delay(1000);
+			PingXbee(1);
+			delay(1000);
+			checkMessages();
+			if(m_pingXbee[i]) {
+				DEBUG_ROBOT_PRINTLN("Xbee connecté");
+				m_connectedXbee = true;
+			} else {
+				resetXbee(1);
+				PingXbee(1);
+				delay(500);
+				checkMessages();
+				if(m_pingXbee[i]) {
+					DEBUG_ROBOT_PRINTLN("Xbee connecté")
+					m_connectedXbee = true;
+				} else {
+					DEBUG_ROBOT_PRINTLN("Xbee non connecté ERROR")
+					m_connectedXbee = false;
+				}
+			}
+		}
+	}
 	if(m_nb_rupteur) {std::cout << m_nb_rupteur << " rupteurs" << std::endl;}
 	if(m_nb_ax12) {std::cout << m_nb_ax12 << " ax12" << std::endl;}
 	if(m_nb_capt_dist) {std::cout << m_nb_capt_dist << " capteurs de distance" << std::endl;}
@@ -40,29 +69,32 @@ void Actuator::DecodMsg(uint8_t buf[]) {
 		case ACT_CMD_DIST:
 			m_dist[buf[2]] = buf[3]*256+buf[4];
 			break;
-		case ACT_CMD_UART_SEND:
-			if(buf[6] == (buf[2]+buf[3]+buf[4]+buf[5])%256) { //test CS
-				if(buf[2] == 5) {
-					if(buf[3] == UART_ID_PHARE) {
-						if(buf[4] == PHARE_STATE) {
-							m_phareAllumee = buf[5];
-						} else {
-    						DEBUG_ROBOT_PRINTLN("erreur type message")
-						}
-					} else {
-    					DEBUG_ROBOT_PRINTLN("wrong ID UART")
-					}
-				} else {
-    				DEBUG_ROBOT_PRINTLN("wrong length UART")
-				}
-			} else {
-    			DEBUG_ROBOT_PRINTLN("wrong CS UART")
-			}
+		case CMD_PING_UART:
+			m_pingXbee[1] = true;
+			break;
+		case MSG_NON_PRIS_EN_CHARGE_UART:
+			DEBUG_ROBOT_PRINTLN("Xbee receive msg with not concern it !!! ERROR" << buf[1]);
 			break;
 		default:
     		DEBUG_ROBOT_PRINTLN("message non pris en charge")
 			break;
 	}
+}
+
+void Actuator::PingXbee(uint8_t id) {
+	UartSend(CMD_PING_UART, id, '0');
+}
+
+bool Actuator::GetPingXbee(uint8_t id) {
+	m_mutex.lock();
+	bool b = m_pingXbee[id];
+	m_pingXbee[id] = false;
+	m_mutex.unlock();
+	return b;
+}
+
+void Actuator::resetXbee(uint8_t id) {
+	UartSend(CMD_RST, id, '0');
 }
 
 bool Actuator::startThreadDetection(){
@@ -350,20 +382,4 @@ void Actuator::resetCptColor(void) {
 	uint8_t buffer[1];
 	buffer[0] = ACT_CMD_RESET_CPT_COLOR;
 	sendSPI(buffer,1);
-}
-
-bool Actuator::isPhareAllumee(void) {
-	m_mutex.lock();
-	int b = m_phareAllumee;
-	m_phareAllumee = 0;
-	m_mutex.unlock();
-	return b;
-}
-
-bool Actuator::isPhareEteint(void) {
-	m_mutex.lock();
-	int b = m_phareEteint;
-	m_phareEteint = 0;
-	m_mutex.unlock();
-	return b;
 }

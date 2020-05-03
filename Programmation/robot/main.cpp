@@ -120,7 +120,6 @@ int main() {
     Lidar lidar("Lidar",&spi,SPI_ID_LIDAR,&web);
 
     lidar.stop();
-    xbee.reset();
     delay(1000);
 
     puts("Hello human ! I, your fervent robot, am initialised. Press <ENTER> to continue.");
@@ -189,12 +188,11 @@ int main() {
     actScara.SetMot4QPos(1, 150, 1, 4000);
     delay(5000);
     actBack.MoveServo(1, 1400);*/
-    
-    
 
 
-
-
+    xbee.allumerPhare();
+    delay(12000);
+    xbee.resetXbee(1);
 
 
     //actScara.SetMot4QVit(1,255,0);
@@ -205,13 +203,19 @@ int main() {
     //actScara.SetMot4QVit(1,0,1);
     std::cout << "main" << std::endl;
     while(!hmi.isStopMain()) {
-        xbee.allumerPhare();
+    	//xbee.PingXbee(1);
+        //actBack.MoveServo(0, 1400);
+        //actScara.SetMot4QPos(0, 115, 0, 200);
+        //xbee.allumerPhare();
         delay(1000);
-        xbee.eteindrePhare();
-    	//std::cout << actBack.ColorOne(0) << std::endl;
-    	//std::cout << actBack.ColorOne(1) << std::endl;
-    	delay(1000);
-	}
+        //std::cout << xbee.GetPingXbee(1) << std::endl;
+        //actBack.MoveServo(0, 800);
+        //xbee.eteindrePhare();
+        //actScara.SetMot4QPos(0, 200, 1, 200);
+    	  //std::cout << actBack.ColorOne(0) << std::endl;
+    	  //std::cout << actBack.ColorOne(1) << std::endl;
+    	  delay(1000);
+	  }
 
     dspic.stop();
     dspic.setVar8(CODE_VAR_VERBOSE,0);
