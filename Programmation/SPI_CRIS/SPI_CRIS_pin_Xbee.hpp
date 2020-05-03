@@ -45,8 +45,8 @@ const int Pin_Led = 2;
   const int Pin_Capt_Color_Arm[NB_CAPT_COLOR];
 #endif
 #if NB_UART > 0
-  const int XBee_Adress = 1;
-  const int Other_Adress = 2;
+  const int XBee_Adress = 2;
+  const int Other_Adress = 1;
   const String Network_Adress = "1234";
 #endif
 #if NB_RUPT > 0
