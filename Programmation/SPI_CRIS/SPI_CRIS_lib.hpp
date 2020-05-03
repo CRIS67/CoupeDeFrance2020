@@ -4,16 +4,18 @@
 #include <Servo.h>
 #include <SoftwareSerial.h>
 #include <Arduino.h>
-#include "SPI_CRIS_pin_Xbee.hpp"
+//#include "SPI_CRIS_pin_Xbee.hpp"
 //#include "SPI_CRIS_pin_Phare.hpp"
 //#include "SPI_CRIS_pin_Act.hpp"
 //#include "SPI_CRIS_pin_Scara.hpp"
 //#include "SPI_CRIS_pin_HMI.hpp"
+#include "SPI_CRIS_pin.hpp"
 #include "projet.h"
 
 void InitCrisSpi();
 void LoopCrisSpi();
 unsigned char ISRCrisSpi(unsigned char data_spi);
+void SendSpi(uint8_t buf, uint8_t leng, uint8_t num);
 
 #define SS              10
 #define MOSI            11
@@ -95,6 +97,16 @@ unsigned char ISRCrisSpi(unsigned char data_spi);
   #define SPEED 		      (-1)
 #endif
 #if NB_SCREEN > 0
+  #include <math.h>
+  
+  #define BAUDRATE  115200
+  
+  #define SCREEN_MAIN         0
+  #define SREEN_CONTROL       1
+  #define SCREEN_TERMINAL     2
+  #define SCREEN_PID          3
+  #define SCREEN_DEBUG        4
+
   #define JAUNE               1
   #define BLEU                2
 #endif
