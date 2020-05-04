@@ -109,14 +109,16 @@ int main() {
 
     SPI spi(SPI_CHANNEL,SPI_SPEED); //initialise SPI
 
-    Actuator actBack("Actuator Back",&spi,SPI_ID_ACT_BACK,6,0,0,0,2,0,6,0,0);
-    //Actuator actBack("Actuator Back 2019",&spi,SPI_ID_ACT_BACK,3,0,3,3,0,0,0,0,0);
-    Actuator actScara("Actuator Scara",&spi,SPI_ID_ACT_SCARA,0,2,2,2,0,0,5,3,1);
+    Actuator actBack("Actuator Back",&spi,SPI_ID_ACT_BACK,6,0,0,0,2,6,0,0);
+    //Actuator actBack("Actuator Back 2019",&spi,SPI_ID_ACT_BACK,3,0,3,3,0,0,0,0);
+    Actuator actScara("Actuator Scara",&spi,SPI_ID_ACT_SCARA,0,2,2,2,0,5,3,1);
 
     Web web(&dspic, &actScara, &actBack);
 
     Hmi hmi("HMI",&spi,SPI_ID_HMI);
-    Actuator xbee("Xbee",&spi,SPI_ID_XBEE,4,2,0,0,0,1,3,0,0);
+    std::string xbeeName[1] = {"XBee"};
+    int xbeeAddr[1] = {1};
+    Actuator xbee("Xbee",&spi,SPI_ID_XBEE,4,2,0,0,0,3,0,0,1,xbeeName,xbeeAddr);
     Lidar lidar("Lidar",&spi,SPI_ID_LIDAR,&web);
 
     lidar.stop();
@@ -204,13 +206,11 @@ int main() {
     std::cout << "main" << std::endl;
     while(!hmi.isStopMain()) {
     	//xbee.PingXbee(1);
-        //actBack.MoveServo(0, 1400);
+        actBack.MoveServo(0, 1600);
         //actScara.SetMot4QPos(0, 115, 0, 200);
-        //xbee.allumerPhare();
         delay(1000);
         //std::cout << xbee.GetPingXbee(1) << std::endl;
-        //actBack.MoveServo(0, 800);
-        //xbee.eteindrePhare();
+        actBack.MoveServo(0, 800);
         //actScara.SetMot4QPos(0, 200, 1, 200);
     	  //std::cout << actBack.ColorOne(0) << std::endl;
     	  //std::cout << actBack.ColorOne(1) << std::endl;
@@ -224,7 +224,7 @@ int main() {
     puts("exiting ...");
     lidar.stop();
     lidar.stopThreadDetection();
-    //hmi.stopThreadDetection();
+    hmi.stopThreadDetection();
     actScara.stopThreadDetection();
     actBack.stopThreadDetection();
     xbee.stopThreadDetection();

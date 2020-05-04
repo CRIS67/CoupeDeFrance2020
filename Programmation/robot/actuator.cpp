@@ -1,6 +1,28 @@
 #include "actuator.hpp"
 
-Actuator::Actuator(std::string nom, SPI *pSpi, uint8_t id, int nb_servo, int nb_moteur4Q, int nb_moteur, int nb_capt_cur, int nb_capt_couleur, int nb_uart, int nb_rupteur, int nb_ax12, int nb_capt_dist) 
+Actuator::Actuator(std::string nom, SPI *pSpi, uint8_t id, int nb_servo, int nb_moteur4Q, int nb_moteur, int nb_capt_cur, int nb_capt_couleur, int nb_rupteur, int nb_ax12, int nb_capt_dist) 
+: Robot(nom, pSpi, id) {
+	m_nb_servo = nb_servo;
+	m_nb_moteur4Q = nb_moteur4Q;
+	m_nb_moteur = nb_moteur;
+	m_nb_capt_cur = nb_capt_cur;
+	m_nb_capt_couleur = nb_capt_couleur;
+	m_nb_rupteur = nb_rupteur;
+	m_nb_ax12 = nb_ax12;
+	m_nb_capt_dist = nb_capt_dist;
+	std::cout << m_nom << " comporte : " << std::endl;
+	if(m_nb_servo) {std::cout << m_nb_servo << " servo moteurs" << std::endl;}
+	if(m_nb_moteur4Q) {std::cout << m_nb_moteur4Q << " pont en H" << std::endl;}
+	if(m_nb_moteur) {std::cout << m_nb_moteur << " moteurs" << std::endl;}
+	if(m_nb_capt_cur) {std::cout << m_nb_capt_cur << " capteurs de courant" << std::endl;}
+	if(m_nb_capt_couleur) {std::cout << m_nb_capt_couleur << " capteurs de couleur" << std::endl;}
+	if(m_nb_rupteur) {std::cout << m_nb_rupteur << " rupteurs" << std::endl;}
+	if(m_nb_ax12) {std::cout << m_nb_ax12 << " ax12" << std::endl;}
+	if(m_nb_capt_dist) {std::cout << m_nb_capt_dist << " capteurs de distance" << std::endl;}
+	std::cout << std::endl;
+}
+
+Actuator::Actuator(std::string nom, SPI *pSpi, uint8_t id, int nb_servo, int nb_moteur4Q, int nb_moteur, int nb_capt_cur, int nb_capt_couleur, int nb_rupteur, int nb_ax12, int nb_capt_dist, int nb_uart, std::string uart_name[], int uart_addr[]) 
 : Robot(nom, pSpi, id) {
 	m_nb_servo = nb_servo;
 	m_nb_moteur4Q = nb_moteur4Q;
@@ -11,45 +33,50 @@ Actuator::Actuator(std::string nom, SPI *pSpi, uint8_t id, int nb_servo, int nb_
 	m_nb_rupteur = nb_rupteur;
 	m_nb_ax12 = nb_ax12;
 	m_nb_capt_dist = nb_capt_dist;
+  for(int j=0;j<nb_uart;j++) {
+    m_uart_name[j] = uart_name[j];
+    m_uart_addr[j] = uart_addr[j];
+  }
 	std::cout << m_nom << " comporte : " << std::endl;
 	if(m_nb_servo) {std::cout << m_nb_servo << " servo moteurs" << std::endl;}
 	if(m_nb_moteur4Q) {std::cout << m_nb_moteur4Q << " pont en H" << std::endl;}
 	if(m_nb_moteur) {std::cout << m_nb_moteur << " moteurs" << std::endl;}
 	if(m_nb_capt_cur) {std::cout << m_nb_capt_cur << " capteurs de courant" << std::endl;}
 	if(m_nb_capt_couleur) {std::cout << m_nb_capt_couleur << " capteurs de couleur" << std::endl;}
+	if(m_nb_rupteur) {std::cout << m_nb_rupteur << " rupteurs" << std::endl;}
+	if(m_nb_ax12) {std::cout << m_nb_ax12 << " ax12" << std::endl;}
+	if(m_nb_capt_dist) {std::cout << m_nb_capt_dist << " capteurs de distance" << std::endl;}
 	if(m_nb_uart) {
 		std::cout << m_nb_uart << " uart : " << std::endl << " ";
-		for(int i=1;i<m_nb_uart+1;i++) {
-			PingXbee(1);
+		for(int i=0;i<m_nb_uart;i++) {
+			PingXbee(uart_addr[i]);
 			delay(1000);
-			PingXbee(1);
+			PingXbee(uart_addr[i]);
 			delay(1000);
-			PingXbee(1);
+			PingXbee(uart_addr[i]);
 			delay(1000);
-			PingXbee(1);
+			PingXbee(uart_addr[i]);
 			delay(1000);
 			checkMessages();
-			if(m_pingXbee[i]) {
-				DEBUG_ROBOT_PRINTLN("Xbee connecté");
-				m_connectedXbee = true;
+			if(m_pingXbee) {
+				DEBUG_ROBOT_PRINTLN(uart_name[i] << " connecté");
+				m_connected_uart[i] = true;
 			} else {
-				resetXbee(1);
-				PingXbee(1);
+				resetXbee(uart_addr[i]);
+        delay(8000);
+				PingXbee(uart_addr[i]);
 				delay(500);
 				checkMessages();
-				if(m_pingXbee[i]) {
-					DEBUG_ROBOT_PRINTLN("Xbee connecté")
-					m_connectedXbee = true;
+				if(m_pingXbee) {
+					DEBUG_ROBOT_PRINTLN(uart_name[i] << " connecté")
+					m_connected_uart[i] = true;
 				} else {
-					DEBUG_ROBOT_PRINTLN("Xbee non connecté ERROR")
-					m_connectedXbee = false;
+					DEBUG_ROBOT_PRINTLN(uart_name[i] << " non connecté ERROR")
+					m_connected_uart[i] = false;
 				}
 			}
 		}
 	}
-	if(m_nb_rupteur) {std::cout << m_nb_rupteur << " rupteurs" << std::endl;}
-	if(m_nb_ax12) {std::cout << m_nb_ax12 << " ax12" << std::endl;}
-	if(m_nb_capt_dist) {std::cout << m_nb_capt_dist << " capteurs de distance" << std::endl;}
 	std::cout << std::endl;
 }
 
@@ -70,10 +97,10 @@ void Actuator::DecodMsg(uint8_t buf[]) {
 			m_dist[buf[2]] = buf[3]*256+buf[4];
 			break;
 		case CMD_PING_UART:
-			m_pingXbee[1] = true;
+			m_pingXbee = true;
 			break;
 		case MSG_NON_PRIS_EN_CHARGE_UART:
-			DEBUG_ROBOT_PRINTLN("Xbee receive msg with not concern it !!! ERROR" << buf[1]);
+			DEBUG_ROBOT_PRINTLN("UART receive msg with not concern it !!! ERROR" << buf[1]);
 			break;
 		default:
     		DEBUG_ROBOT_PRINTLN("message non pris en charge")
@@ -85,10 +112,10 @@ void Actuator::PingXbee(uint8_t id) {
 	UartSend(CMD_PING_UART, id, '0');
 }
 
-bool Actuator::GetPingXbee(uint8_t id) {
+bool Actuator::GetPingXbee() {
 	m_mutex.lock();
-	bool b = m_pingXbee[id];
-	m_pingXbee[id] = false;
+	bool b = m_pingXbee;
+	m_pingXbee = false;
 	m_mutex.unlock();
 	return b;
 }

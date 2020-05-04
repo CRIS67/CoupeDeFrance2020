@@ -36,7 +36,8 @@ void* thread_act(void *threadid);
 
 class Actuator : public Robot {
 	public:
-		Actuator(std::string nom, SPI *pSpi, uint8_t id, int nb_servo, int nb_moteur4Q, int nb_moteur, int nb_capt_cur, int nb_capt_couleur, int nb_uart, int nb_rupteur, int nb_ax12, int nb_capt_dist);
+		Actuator(std::string nom, SPI *pSpi, uint8_t id, int nb_servo, int nb_moteur4Q, int nb_moteur, int nb_capt_cur, int nb_capt_couleur, int nb_rupteur, int nb_ax12, int nb_capt_dist);
+    Actuator(std::string nom, SPI *pSpi, uint8_t id, int nb_servo, int nb_moteur4Q, int nb_moteur, int nb_capt_cur, int nb_capt_couleur, int nb_rupteur, int nb_ax12, int nb_capt_dist, int nb_uart, std::string uart_name[], int uart_addr[]);
 		virtual ~Actuator();
 		void DecodMsg(uint8_t buf[]);
 		bool startThreadDetection();
@@ -61,7 +62,7 @@ class Actuator : public Robot {
 		void UartSend(unsigned char Send, unsigned char id_uart, unsigned char msg);
 		void allumerPhare();
 		void eteindrePhare();
-		bool GetPingXbee(uint8_t id);
+		bool GetPingXbee();
 		void PingXbee(uint8_t id);
 		void resetXbee(uint8_t id);
 	protected:
@@ -78,8 +79,10 @@ class Actuator : public Robot {
         int m_color[10] = {ERROR_VALUE, ERROR_VALUE, ERROR_VALUE, ERROR_VALUE, ERROR_VALUE, ERROR_VALUE, ERROR_VALUE, ERROR_VALUE, ERROR_VALUE, ERROR_VALUE};
         int m_dist[10] = {ERROR_VALUE, ERROR_VALUE, ERROR_VALUE, ERROR_VALUE, ERROR_VALUE, ERROR_VALUE, ERROR_VALUE, ERROR_VALUE, ERROR_VALUE, ERROR_VALUE};
         int m_rupt[10] = {ERROR_VALUE, ERROR_VALUE, ERROR_VALUE, ERROR_VALUE, ERROR_VALUE, ERROR_VALUE, ERROR_VALUE, ERROR_VALUE, ERROR_VALUE, ERROR_VALUE};
-        bool m_pingXbee[10] = {false, false, false, false, false, false, false, false, false, false};
-		bool m_connectedXbee = false;
+        bool m_pingXbee = false;
+		    bool m_connected_uart[10] = {false, false, false, false, false, false, false, false, false, false};
+        std::string m_uart_name[10] = {"","","","","","","","","",""};
+        int m_uart_addr[10] = {0,0,0,0,0,0,0,0,0,0};
 };
 
 #endif // ACTUATIR_H
