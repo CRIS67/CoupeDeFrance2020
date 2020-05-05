@@ -38,7 +38,11 @@ void(*resetFunc)(void) = 0; //declare reset function @ address 0
   Servo S[NB_SERVO];
   void SetupServo(void) {
 	for(int i_init=0;i_init<NB_SERVO;i_init++) {
-      S[i_init].attach(Pin_Servo[i_init], SERVO_MIN, SERVO_MAX);
+      #ifdef SERVO_MIN_MAX
+        S[i_init].attach(Pin_Servo[i_init], SERVO_MIN, SERVO_MAX);
+      #else
+        S[i_init].attach(Pin_Servo[i_init]);
+      #endif
       S[i_init].writeMicroseconds(SERVO_MIN);
     }
   }

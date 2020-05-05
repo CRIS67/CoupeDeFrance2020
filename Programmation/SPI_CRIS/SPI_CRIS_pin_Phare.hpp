@@ -21,8 +21,9 @@ const int Pin_Led = 2;
   const int LED_PHARE = 8;
 #endif
 #if NB_SERVO > 0
-  #define SERVO_MIN     700
-  #define SERVO_MAX     2300
+  #define SERVO_MIN_MAX
+  #define SERVO_MIN     544
+  #define SERVO_MAX     2400
   const int Pin_Servo[] = {7, 9};
 #endif
 #if NB_MOTEUR4Q > 0

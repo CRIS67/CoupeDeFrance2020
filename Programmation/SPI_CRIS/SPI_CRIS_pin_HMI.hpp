@@ -20,6 +20,7 @@ const int Pin_Led = 5;
   const int LED_PHARE = ;
 #endif
 #if NB_SERVO > 0
+  #define SERVO_MIN_MAX
   #define SERVO_MIN     700
   #define SERVO_MAX     1600
   const int Pin_Servo[] = {};
