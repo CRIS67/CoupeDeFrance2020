@@ -341,7 +341,7 @@ void(*resetFunc)(void) = 0; //declare reset function @ address 0
           }
         } else {
           digitalWrite(Pin_Moteur4Q_SENS[1], 1);
-          analogWrite(Pin_Moteur4Q_PWM[1], 200);
+          analogWrite(Pin_Moteur4Q_PWM[1], 255);
         }
       }
       if(Data_Text != "") {
@@ -357,7 +357,7 @@ void(*resetFunc)(void) = 0; //declare reset function @ address 0
     				PhareState = PHARE_ON;
             digitalWrite(LED_PHARE, 1);
             digitalWrite(Pin_Moteur4Q_SENS[1], 1);
-            analogWrite(Pin_Moteur4Q_PWM[1], 150);
+            analogWrite(Pin_Moteur4Q_PWM[1], 255);
     			} else {
     				PhareState = PHARE_OFF;
             digitalWrite(LED_PHARE, 0);
