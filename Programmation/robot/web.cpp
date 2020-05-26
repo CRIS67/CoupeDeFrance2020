@@ -1,9 +1,10 @@
 #include "web.hpp"
 
-Web::Web(DsPIC *ds, Actuator *a1, Actuator *a2){
+Web::Web(DsPIC *ds, Actuator a[], int leng){
 	dspic = ds;
-	actScara = a1;
-	actBack = a2;
+	for(int i=0;i<leng;i++) {
+		act[i] = &a[i];
+	}
     s = "hello world !";
     struct sockaddr_in server;
 
@@ -128,6 +129,18 @@ void Web::addLidarPoints(std::vector<pointFloat2d> vect_fp){
 }
 void Web::clearLidarPoints(){
 	m_clearLidarPoints = true;
+}
+void Web::addElementPoints(float x, float y){
+	pointFloat2d fp;
+	fp.x = x;
+	fp.y = y;
+	addElementPoints(fp);
+}
+void Web::addElementPoints(pointFloat2d fp){
+	ElementPoints.push(fp);
+}
+void Web::addElementAttribut(int val) {
+	ElementAttributs.push(val);
 }
 
 void* thread_HandleConnnection(void *threadid){
@@ -300,15 +313,15 @@ void* thread_HandleConnnection(void *threadid){
 						//w->dspic->servo(id,n);
 						if(id > 0 && id < 4) {
 							if(n == 0) {
-								w->actScara->SetMot(id-1,0);
+								//w->actScara->SetMot(id-1,0);
 							} else if(n == 1) {
-								w->actScara->SetMot(id-1,1);
+								//w->actScara->SetMot(id-1,1);
 							}
 						} else if(id > 3) {
 							if(n == 0) {
-								w->actBack->SetMot(id-4,0);
+								//w->actBack->SetMot(id-4,0);
 							} else if(n == 1) {
-								w->actBack->SetMot(id-4,1);
+								//w->actBack->SetMot(id-4,1);
 							}
 						} else {
 							if(n == 0) {
@@ -344,38 +357,25 @@ void* thread_HandleConnnection(void *threadid){
 					break;
 				}
 				int id = atoi(opt);
-				if(id >= 0 && id <= 6){
+				int card = int(id/10);
+				id = id-card*10;
+				if(id >= 0 && id <= 9) {
 					int n = atoi(val);
-					if(n >= 0 && n <= 2){
+					if(n >= 544 && n <= 2400) {
 						sendStr = "OK";
-						printf("command executed : servo %d preset %d\n",id,n);
-						if(id > 0 && id < 4) {
-							if(n == 0) {
-								w->actScara->MoveServo(id-1,SERVO_VALUE_HIGH);
-							} else if(n == 1) {
-								w->actScara->MoveServo(id-1,SERVO_VALUE_LOW);
-							}
-						} else if(id > 3) {
-							if(n == 0) {
-								w->actBack->MoveServo(id-4,SERVO_VALUE_HIGH);
-							} else if(n == 1) {
-								w->actBack->MoveServo(id-4,SERVO_VALUE_LOW);
-							}
-						} else {
-							if(n == 0) {
-								w->dspic->setMotLin(0);
-							} else if(n == 1) {
-								w->dspic->setMotLin(1);
-							}
+						printf("command executed : Card %d servo %d preset %d\n",card,id,n);
+						w->act[card]->MoveServo(id,n);
+						if(w->m_rec) {
+							w->ElementFile << card << ",";
+							w->ActionFile << "S" << ":" << card << ":" << id << ":" << n << ":;";
+							w->ActTime += 1;
 						}
-					}
-					else{
+					} else {
 						errorStr += "Error : servo preset value second token\n";
 						error = true;
 						puts("Error : servo preset value second token");
 					}
-				}
-				else{
+				} else {
 					errorStr += "Error : invalid servo preset id\n";
 					error = true;
 					puts("Error : invalid servo preset id");
@@ -414,8 +414,7 @@ void* thread_HandleConnnection(void *threadid){
 					puts("Error : invalid motor id");
 				}
 			}
-			else if(!strcmp(cmd,"mp")){
-
+			else if(!strcmp(cmd,"mp")) {
 				if(opt == NULL){
 					errorStr += "Error : motor preset id token = NULL\n";
 					error = true;
@@ -429,11 +428,19 @@ void* thread_HandleConnnection(void *threadid){
 					break;
 				}
 				int id = atoi(opt);
-				if(id >= 0 && id <= 4){
+				int card = int(id/10);
+				id = id-10*card;
+				if(id >= 0 && id <= 9) {
 					int n = atoi(val);
-					if(n >= 0 && n <= 2){
+					if(n >= 0 && n <= 1){
 						sendStr = "OK";
-						printf("command executed : motor %d preset %d\n",id,n);
+						printf("command executed : Card %d motor %d preset %d\n",card,id,n);
+						w->act[card]->SetMot(id,n);
+						if(w->m_rec) {
+							w->ElementFile << card << ",";
+							w->ActionFile << "D" << ":" << card << ":" << id << ":" << n << ":;";
+							w->ActTime += 0.2;
+						}
 					}
 					else{
 						errorStr += "Error : motor preset value second token\n";
@@ -446,6 +453,160 @@ void* thread_HandleConnnection(void *threadid){
 					error = true;
 					puts("Error : invalid motor preset id");
 				}
+			}
+			else if(!strcmp(cmd,"m4")) {
+				if(opt == NULL){
+					errorStr += "Error : motor4q preset id token = NULL\n";
+					error = true;
+					puts("Error : motor4q preset id token = NULL\n");
+					break;
+				}
+				if(val == NULL){
+					errorStr += "Error : motor4q preset value token = NULL\n";
+					error = true;
+					puts("Error : motor4q preset value token = NULL\n");
+					break;
+				}
+				int id = atoi(opt);
+				int card = int(id/10);
+				id = id-10*card;
+				if(id >= 0 && id <= 9) {
+					int n = atoi(val);
+					if(n >= 0 && n <= 1000) {
+						int sens, vit;
+						n = n-w->m_mot4q_pos[card][id];
+            			std::cout << card << " " << id << std::endl;
+						if(n > 0) {
+							sens = 1;
+							vit = 115;//Motor4qVitDown[card][n];
+						} else {
+							sens = 0;
+							vit = 115;//Motor4qVitUp[card][n];
+						}
+						sendStr = "OK";
+						printf("command executed : Card %d motor %d preset %d\n",card,id,n);
+						w->act[card]->SetMot4QPos(id,vit,sens,n);
+						if(w->m_rec) {
+							w->ElementFile << card << ",";
+							w->ActionFile << "M" << ":" << card << ":" << id << ":" << n << ":;";
+							w->ActTime += 3;
+						}
+					}
+					else{
+						errorStr += "Error : motor preset value second token\n";
+						error = true;
+						puts("Error : motor preset value second token");
+					}
+				}
+				else{
+					errorStr += "Error : invalid motor preset id\n";
+					error = true;
+					puts("Error : invalid motor preset id");
+				}
+			}
+			else if(!strcmp(cmd,"fu")) {
+				sendStr = "OK";
+				printf("command executed : fun action preset \n");
+				w->act[2]->allumerPhare();
+				if(w->m_rec) {
+					w->ElementFile << "2,";
+					w->ActionFile << "F" << ":2:0:1:;";
+					w->ActTime += 1;
+				}
+			}
+			else if(!strcmp(cmd,"Ax")){
+				if(rX && rY) {
+					printf("command executed : Card  Ax12 %d preset %d\n",x,y);
+					//w->act[card]->
+					sendStr = "OK";
+				}
+				else{
+					errorStr += "Variables x & y need to be set before executing function go\n";
+					error = true;
+					puts("Variables x & y need to be set before executing function go");
+				}
+			}
+			else if(!strcmp(cmd,"An")) {
+				sendStr = "OK";
+				if(opt == NULL){
+					errorStr += "Error : rec preset id token = NULL\n";
+					error = true;
+					puts("Error : rec preset id token = NULL\n");
+					break;
+				}
+				if(val == NULL){
+					errorStr += "Error : rec preset value token = NULL\n";
+					error = true;
+					puts("Error : rec preset value token = NULL\n");
+					break;
+				}
+				std::string txt = "", line;
+				//Elements
+				w->ElementFileR.open("GameElement.txt");
+				if(!w->ElementFileR.is_open()) {
+					puts("error opening GameElement.txt");
+					break;
+				}
+				while(getline(w->ElementFileR,line)) {
+					txt += line;
+					txt += '\n';
+				}
+				w->ElementFileR.close();
+				w->ElementFile.open("GameElement.txt");
+				if(!w->ElementFile.is_open()) {
+					puts("error opening GameElement.txt");
+					break;
+				}
+				w->ElementFile << txt;
+				//Actions
+				txt = "";
+				w->ActionFileR.open("Actions.txt");
+				if(!w->ActionFileR.is_open()) {
+					puts("error opening Actions.txt");
+					break;
+				}
+				while(getline(w->ActionFileR,line)) {
+					txt += line;
+					txt += '\n';
+				}
+				w->ActionFileR.close();
+				w->ActionFile.open("Actions.txt");
+				if(!w->ActionFile.is_open()) {
+					puts("error opening Actions.txt");
+					break;
+				}
+				w->ActionFile << txt;
+				w->ElementFile << opt << ":" << val << ":" << w->dspic->getX() << ":" << w->dspic->getY() << ":";
+				w->ActTime = 0;
+				printf("command executed : rec ON %s ; %s \n",opt,val);
+			}
+			else if(!strcmp(cmd,"Ay")) {
+				sendStr = "OK";
+				if(opt == NULL){
+					errorStr += "Error : rec2 preset id token = NULL\n";
+					error = true;
+					puts("Error : rec2 preset id token = NULL\n");
+					break;
+				}
+				if(val == NULL){
+					errorStr += "Error : rec2 preset value token = NULL\n";
+					error = true;
+					puts("Error : rec2 preset value token = NULL\n");
+					break;
+				}
+				int aa = atoi(opt), ab = atoi(val);
+				w->ElementFile << aa << ":" << ab << ":";
+				w->m_rec = true;
+				printf("command executed : %d ; %d \n",aa,ab);
+			}
+			else if(!strcmp(cmd,"Sa")) {
+				sendStr = "OK";
+				w->m_rec = false;
+				w->ElementFile << ":" << w->ActTime << ":" << '\n';
+				w->ActionFile << '\n';
+				w->ElementFile.close();
+				w->ActionFile.close();
+				printf("command executed : record off \n");
 			}
 			else if(!strcmp(cmd,"p1")){
 				if(val == NULL){
@@ -781,6 +942,28 @@ std::string realResponse(Web *w){
         //std::cout << "log sent to web -> " << qs << std::endl;
         //myString << qs;
 	}
+	if(w->m_ElementCreateEnd) {
+		while(w->ElementPoints.size() > 0) {
+			w->m_ElementCreateEnd = false;
+			myString << "&f=";
+			pointFloat2d fp = w->ElementPoints.front();
+			w->ElementPoints.pop();
+			int val = w->ElementAttributs.front();
+			w->ElementAttributs.pop();
+			myString << fp.x << ";" << fp.y << ";" << val;
+			std::cout << fp.x << ";" << fp.y << "ElementPoints" << std::endl;
+		}
+	}
+	if(w->m_clearElementsPoints) {
+		w->m_clearElementsPoints = false;
+		myString << "&g=";
+	}
+	/*while(w->Game.size() > 0) {
+		myString << "&g=";
+		pointFloat2d fp = w->GamePoints.frint();
+		w->GamePoints.pop();
+		myString << fp.x << ";" << fp.y << ";0";
+	}*/
 	/*std::queue<pointFloat2d> points  = w->lidar->getAndClearDetectedPoints();
     while(points.size()){
         pointFloat2d fp = points.front();

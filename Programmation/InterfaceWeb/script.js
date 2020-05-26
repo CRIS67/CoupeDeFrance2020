@@ -10,9 +10,117 @@ var lidarPoints = [];
 var lidarPointsCircular = [];
 var iLidar = 0;
 
-window.onload = function () {
+var elementPoints = [];
+var elementAttributs = [];
 
-		// easal stuff goes hur
+var JoyT = setInterval(TimeJoy,100);
+var JoyX = 0;
+var JoyY = 0;
+
+var JoyXAx = 0;
+var JoyYAx = 0;
+
+var xRobot1 = -100;
+var yRobot1 = -100;
+
+var RecState = 0;
+
+var NumCarte = "0";
+
+function CARTE0() {
+	var imgC = document.getElementById("Carte");
+	imgC.src = "Carte0.jpg";
+	NumCarte = "0";
+}
+function CARTE1() {
+	var imgC = document.getElementById("Carte");
+	imgC.src = "Carte1.jpg";
+	NumCarte = "1";
+}
+function CARTE2() {
+	var imgC = document.getElementById("Carte");
+	imgC.src = "Carte2.jpg";
+	NumCarte = "2";
+}
+
+// Next/previous controls
+function plusSlides(n) {
+  showSlides(slideIndex += n);
+}
+
+// Thumbnail image controls
+function currentSlide(n) {
+  showSlides(slideIndex = n);
+}
+
+function showSlides(n) {
+  var i;
+  var slides = document.getElementsByClassName("mySlides");
+  var dots = document.getElementsByClassName("dot");
+  if (n > slides.length) {slideIndex = 1}
+  if (n < 1) {slideIndex = slides.length}
+  for (i = 0; i < slides.length; i++) {
+      slides[i].style.display = "none";
+  }
+  for (i = 0; i < dots.length; i++) {
+      dots[i].className = dots[i].className.replace(" active", "");
+  }
+  slides[slideIndex-1].style.display = "block";
+  dots[slideIndex-1].className += " active";
+}
+
+function TactilServo() {
+	var servoId = event.target.name.replace("servo","");
+	var val = event.target.value;
+	var txtServo = "inputText_"+event.target.name+"Custom";
+	document.getElementById(txtServo).value = event.target.value;
+	servoId = NumCarte+servoId;
+	//alert("servoPreset " + servoId + " " + val);
+	sendCmd("sp:" + servoId + "=" + val);
+}
+
+function TactilMotor() {
+	var motorId = event.target.name.replace("motor4q","");
+	var val = event.target.value;
+	var txtMotor = "inputText_"+event.target.name+"Custom";
+	document.getElementById(txtMotor).value = event.target.value;
+	motorId = NumCarte+motorId;
+	//alert("servoPreset " + motorId + " " + val);
+	sendCmd("m4:" + motorId + "=" + val);
+}
+
+function funAction() {
+	//alert("fu:0=1");
+	sendCmd("fu:0=1");
+}
+
+function Rec() {
+	if(RecState == 0) {
+		RecState = 1;
+		document.getElementById("RecBtn").innerHTML = "Stop";
+		var Nom = document.getElementById("inputText_NomCustom").value;
+		var IdAct = document.getElementById("inputText_IdCustom").value;
+		var Score = document.getElementById("inputText_SocreCustom").value;
+		var Depot = document.getElementById("inputText_DepotCustom").value;
+		var txtId = IdAct.substring(0,1);
+		sendCmd("An:"+Nom+"="+txtId);
+		sendCmd("Ay:"+Score+"="+Depot);
+	} else {
+		//alert("Sa:0=0");
+		RecState = 0;
+		document.getElementById("RecBtn").innerHTML = "Record";
+		sendCmd("Sa:0=0");
+	}
+	
+	
+}
+
+window.onload = function () {
+	CARTE0();
+	var slideIndex = 1;
+	currentSlide(slideIndex);
+
+	// easal stuff goes hur
   	var xCenter = 150;
   	var yCenter = 150;
   	var stage = new createjs.Stage('joystick');
@@ -27,7 +135,7 @@ window.onload = function () {
 
   	stage.addChild(psp);
   	stage.addChild(psp2);
-  	createjs.Ticker.framerate = 60;
+  	createjs.Ticker.framerate = 10;
   	createjs.Ticker.addEventListener('tick', stage);
   	stage.update();
 
@@ -38,7 +146,30 @@ window.onload = function () {
   	var mc1 = new Hammer(myElement);
 
 
+  	var xCenterAx = 150;
+  	var yCenterAx = 150;
+  	var stageAx = new createjs.Stage('joystickAx');
 
+  	var pspAx = new createjs.Shape();
+  	var psp2Ax = new createjs.Shape();
+  	pspAx.graphics.beginFill('#000000').drawCircle(xCenterAx, yCenterAx, 50);
+  	psp2Ax.graphics.beginStroke("#000000").drawCircle(xCenterAx, yCenterAx, 150);
+
+
+
+  	pspAx.alpha = 0.25;
+
+  	stageAx.addChild(pspAx);
+  	stageAx.addChild(psp2Ax);
+  	createjs.Ticker.framerate = 60;
+  	createjs.Ticker.addEventListener("tick", stageAx);
+  	stageAx.update();
+
+  	var myElementAx = $('#joystickAx')[0];
+
+  	// create a simple instance
+  	// by default, it only adds horizontal recognizers
+  	var mc1Ax = new Hammer(myElementAx);
 
 		/*variables*/
 		var dps = [];   //dataPoints. 
@@ -97,8 +228,6 @@ window.onload = function () {
 		var tCMD =  ["","","","","","","","","",""];
 		var nCMD = 0;
 		
-		var xRobot1 = -100;
-		var yRobot1 = -100;
 		var tRobot1 = 0;
 		var xRobot2 = 0;
 		var yRobot2 = 0;
@@ -110,24 +239,13 @@ window.onload = function () {
 		var canvasInterval;
 		var UIInterval;
 
-		var servo0 = 0;
-		var servo1 = 0;
-		var servo2 = 0;
-		var servo3 = 0;
-		var servo4 = 0;
-		var servo5 = 0;
-		var servo6 = 0;
-		var pump0 = 0;
-		var pump1 = 0;
-		var pump2 = 0;
-		var pump3 = 0;
-		var pump4 = 0;
-		var pump5 = 0;
-		var pump6 = 0;
+		var servo = [[0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0]];
+		var mot = [0,0,0,0,0,0,0,0,0,0];
+		var mot4q = [0,0,0,0,0,0,0,0,0,0];
 		
 		var ctx = document.getElementById('canvasPlayingArea').getContext('2d');
 		var img = new Image();
-			img.onload = function() {
+		img.onload = function() {
 			ctx.drawImage(img, 0, 0);
 			/*ctx.beginPath();
 			ctx.moveTo(30, 96);
@@ -139,7 +257,7 @@ window.onload = function () {
 			//drawCenteredRotatedRect(ctx, 25, 25, 50, 50, 0, "red");
 		};
 		img.src = "terrain_couleur.png";
-		
+
 		var chart = new CanvasJS.Chart("chartContainer",{
 			zoomEnabled:true,
 			
@@ -252,10 +370,11 @@ window.onload = function () {
     			xCenter = psp.x;
     			yCenter = psp.y;
     			psp.alpha = 0.5;
+    			JoyX = 0;
+    			JoyY = 0;
 
     			stage.update();
   		});
-
   		// listen to events...
   		mc1.on("panmove", function(ev) {
     			var pos = $('#joystick').position();
@@ -265,21 +384,56 @@ window.onload = function () {
     			psp.x = coords.x;
     			psp.y = coords.y;
 
-    			xRobot1 = xRobot1 + psp.x/15;
-    			yRobot1 = yRobot1 + psp.y/15;
+    			JoyX = psp.x;
+    			JoyY = psp.y;
+    			//xRobot1 = xRobot1 + psp.y/15;
+    			//yRobot1 = yRobot1 + psp.x/15;
 
-    			sendCmd("x="+xRobot1+"&y="+yRobot1+"&go");
+    			//sendCmd("x="+xRobot1+"&y="+yRobot1+"&go");
 
 
     			psp.alpha = 0.5;
 
     			stage.update();
   		});
-
   		mc1.on("panend", function(ev) {
     			psp.alpha = 0.25;
     			createjs.Tween.get(psp).to({x:xCenter,y:yCenter},750,createjs.Ease.elasticOut);
+    			JoyX = 0;
+    			JoyY = 0;
   		});
+		mc1Ax.on("panstart", function(ev) {
+    			var posAx = $('#joystickAx').position();
+    			xCenterAx = pspAx.x;
+    			yCenterAx = pspAx.y;
+    			pspAx.alpha = 0.5;
+    			JoyXAx = 0;
+    			JoyYAx = 0;
+
+    			stageAx.update();
+  		});
+  		mc1Ax.on("panmove", function(ev) {
+    			var posAx = $('#joystickAx').position();
+
+    			var coordsAx = calculateCoords(ev.angle, ev.distance);
+
+    			pspAx.x = coordsAx.x;
+    			pspAx.y = coordsAx.y;
+
+    			JoyXAx = JoyXAx + pspAx.x/15;
+    			JoyYAx = JoyYAx + pspAx.y/15;
+
+    			pspAx.alpha = 0.5;
+
+    			stageAx.update();
+  		});
+  		mc1Ax.on("panend", function(ev) {
+    			pspAx.alpha = 0.25;
+    			createjs.Tween.get(pspAx).to({x:xCenterAx,y:yCenterAx},750,createjs.Ease.elasticOut);
+    			JoyXAx = 0;
+    			JoyYAx = 0;
+  		});
+
 
 		var chartPID1 = new CanvasJS.Chart("chartPID1",{
 			zoomEnabled:true,
@@ -710,138 +864,102 @@ window.onload = function () {
 		  if(event.key == 32 || event.key === ' '){
 			  sendCmd('stop=1');
 			  alert('Emergency stop pressed');
-		  } else if(event.key == 48 || event.key == '0'){
-			  servo0 = !servo0;
-			  if(servo0){
-			  	  sendCmd("sp:0=1");
-			  }else{
-				  sendCmd("sp:0=0");
+		  } /*else if(event.key >= '0' && event.key <= '9'){
+		  	var id = parseInt(event.key)-'0';
+			servo[NumCarte][id] = !servo[NumCarte][id];
+			  var txt = "";
+			  if(servo[NumCarte][id] == true) {
+			  	txt = "2400";
+			  	var name = "sliderServo" + id;
+				document.getElementById(name).value = 2400;
+				var txtServo = "inputText_servo"+id+"Custom";
+				document.getElementById(txtServo).value = 2400;
+			  } else {
+			  	txt = "544";
+			  	var name = "sliderServo" + id;
+				document.getElementById(name).value = 544;
+				var txtServo = "inputText_servo"+id+"Custom";
+				document.getElementById(txtServo).value = 544;
 			  }
-		  } else if(event.key == 49 || event.key == '1'){
-                          servo1 = !servo1;
-                          if(servo1){
-                                  sendCmd("sp:1=1");
-                          }else{
-                                  sendCmd("sp:1=0");
-                          }
-                  } else if(event.key == 50 || event.key == '2'){
-                          servo2 = !servo2;
-                          if(servo2){
-                                  sendCmd("sp:2=1");
-                          }else{
-                                  sendCmd("sp:2=0");
-                          }
-                  } else if(event.key == 51 || event.key == '3'){
-                          servo3 = !servo3;
-                          if(servo3){
-                                  sendCmd("sp:3=1");
-                          }else{
-                                  sendCmd("sp:3=0");
-                          }
-                  } else if(event.key == 52 || event.key == '4'){
-                          servo4 = !servo4;
-                          if(servo4){
-                                  sendCmd("sp:4=1");
-                          }else{
-                                  sendCmd("sp:4=0");
-                          }
-                  } else if(event.key == 53 || event.key == '5'){
-                          servo5 = !servo5;
-                          if(servo5){
-                                  sendCmd("sp:5=1");
-                          }else{
-                                  sendCmd("sp:5=0");
-                          }
-                  } else if(event.key == 54 || event.key == '6'){
-                          servo6 = !servo6;
-                          if(servo6){
-                                  sendCmd("sp:6=1");
-                          }else{
-                                  sendCmd("sp:6=0");
-                          }
-                  } else if(event.key == 38 || event.key == '&'){
-                          pump1 = !pump1;
-                          if(pump1){
-                                  sendCmd("s:1=1");
-                          }else{
-                                  sendCmd("s:1=0");
-                          }
-                  } else if(event.key == 'Ã©'){
-                          pump2 = !pump2;
-                          if(pump2){
-                                  sendCmd("s:2=1");
-                          }else{
-                                  sendCmd("s:2=0");
-                          }
-                  } else if(event.key == '"'){
-                          pump3 = !pump3;
-                          if(pump3){
-                                  sendCmd("s:3=1");
-                          }else{
-                                  sendCmd("s:3=0");
-                          }
-                  } else if(event.key == '-'){
-                          pump4 = !pump4;
-                          if(pump4){
-                                  sendCmd("s:4=1");
-                          }else{
-                                  sendCmd("s:4=0");
-                          }
-                  } else if(event.key == '('){
-                          pump5 = !pump5;
-                          if(pump5){
-                                  sendCmd("s:5=1");
-                          }else{
-                                  sendCmd("s:5=0");
-                          }
-                  } else if(event.key == "'"){
-                          pump6 = !pump6;
-                          if(pump6){
-                                  sendCmd("s:6=1");
-                          }else{
-                                  sendCmd("s:6=0");
-                          }
-                  } else if(event.key == 'Ã '){
-                          pump0 = !pump0;
-                          if(pump0){
-                                  sendCmd("s:0=1");
-                          }else{
-                                  sendCmd("s:0=0");
-                          }
-                  } else if(event.key == 'z'){
-			  xRobot1 = xRobot1+20;
-                          sendCmd("x="+xRobot1+"&y="+yRobot1+"&go");
-                  } else if(event.key == 's'){
-			  xRobot1 = xRobot1-20;
-                          sendCmd("x="+xRobot1+"&y="+yRobot1+"&go");
-                  } else if(event.key == 'q'){
-			  yRobot1 = yRobot1+20;
-                          sendCmd("x="+xRobot1+"&y="+yRobot1+"&go");
-                  } else if(event.key == 'd'){
-			  yRobot1 = yRobot1-20;
-                          sendCmd("x="+xRobot1+"&y="+yRobot1+"&go");
-                  }
+
+			  id = id+10*NumCarte;
+			  txt = "sp:"+id+"="+txt;
+			  //alert(txt);
+			  sendCmd(txt);
+          } */else if(event.key == 'z'){
+		    xRobot1 = xRobot1+20;
+            sendCmd("x="+xRobot1+"&y="+yRobot1+"&go");
+          } else if(event.key == 's'){
+		    xRobot1 = xRobot1-20;
+            sendCmd("x="+xRobot1+"&y="+yRobot1+"&go");
+          } else if(event.key == 'q'){
+		    yRobot1 = yRobot1+20;
+            sendCmd("x="+xRobot1+"&y="+yRobot1+"&go");
+          } else if(event.key == 'd'){
+		    yRobot1 = yRobot1-20;
+            sendCmd("x="+xRobot1+"&y="+yRobot1+"&go");
+          } else if(event.key == '&' || event.key.charCodeAt(0) == 233 || event.key == '"' || event.key == '\'' || event.key == '(' || event.key == '-' || event.key.charCodeAt(0) == 232 || event.key == '_' || event.key.charCodeAt(0) == 231 || event.key.charCodeAt(0) == 224) {
+          	var id = event.key;
+          	switch(id) {
+          		case '&':
+          			id = 1;
+          			break;
+          		case '"':
+          			id = 3;
+          			break;
+          		case '\'':
+          			id = 4;
+          			break;
+          		case '(':
+          			id = 5;
+          			break;
+          		case '-':
+          			id = 6;
+          			break;
+          		case '_':
+          			id = 8;
+          			break;
+          		default:
+          			if(event.key.charCodeAt(0) == 233) {
+          				id = 2;
+          			} else if(event.key.charCodeAt(0) == 232) {
+          				id = 7;
+          			} else if(event.key.charCodeAt(0) == 231) {
+          				id = 9;
+          			} else {
+          				id = 0;
+          			}
+          			break;
+          	}
+			servo[NumCarte][id] = !servo[NumCarte][id];
+			  var txt = "";
+			  if(servo[NumCarte][id] == true) {
+			  	txt = "0";
+			  	var name = "sliderMotor" + id;
+				document.getElementById(name).value = 0;
+				var txtServo = "inputText_motor4q"+id+"Custom";
+				document.getElementById(txtServo).value = -255;
+			  } else {
+			  	txt = "510";
+			  	var name = "sliderMotor" + id;
+				document.getElementById(name).value = 510;
+				var txtServo = "inputText_motor4q"+id+"Custom";
+				document.getElementById(txtServo).value = 255;
+			  }
+
+			  id = id+10*NumCarte;
+			  txt = "m4:"+id+"="+txt;
+			  //alert(txt);
+			  sendCmd(txt);
+          } else if(event.key == 'k') {
+          	CARTE0();
+          } else if(event.key == 'l') {
+          	CARTE1();
+          } else if(event.key == 'm') {
+          	CARTE2();
+          }
 		  drawRobot(ctx, xRobot1, yRobot1, 50, 50, tRobot1 + 180, "blue", "GR");
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-		//alert('Évènement keypress\n\n' + 'touche : ' + nomTouche);
-
-		  
+		  //alert('Évènement keypress\n\n' + 'touche : ' + event.key.charCodeAt(0) + " " + event.key);
 		});
 		/*INIT ONGLET 1*/
 		if(document.getElementById("checkbox_canvas").checked){
@@ -1070,7 +1188,7 @@ window.onload = function () {
 		$(".radioMotor").click(function(event){
 			var motorId = event.target.name.replace("motor","");
 			var val = event.target.value;
-			if(val == 3){
+			/*if(val == 3){
 				var id = "inputText_" + event.target.name + "Custom";
 				val = Number(document.getElementById(id).value);
 				if(isNaN(val)){
@@ -1084,12 +1202,13 @@ window.onload = function () {
 				//alert("motor " + motorId + " " + val);
 				sendCmd("m:" + motorId + "=" + val);
 			}
-			else{
-				//alert("motorPreset " + motorId + " " + val);
-				sendCmd("mp:" + motorId + "=" + val);
-			}
+			else{*/
+			motorId = NumCarte+motorId;
+			//alert("motorPreset " + motorId + " " + val);
+			sendCmd("mp:" + motorId + "=" + val);
+			//}
 		});
-		$(".radioServo").click(function(event){
+		/*$(".radioServo").click(function(event){
 			var servoId = event.target.name.replace("servo","");
 			var val = event.target.value;
 			if(val == 3){
@@ -1110,14 +1229,30 @@ window.onload = function () {
 				//alert("servoPreset " + servoId + " " + val);
 				sendCmd("sp:" + servoId + "=" + val);
 			}
-		});
+		});*/
+		/*$(".sliderServo").click(function(event) {
+			var servoId = event.target.name.replace("servo","");
+			var val = event.target.value;
+			var txtServo = "inputText_"+event.target.name+"Custom";
+			document.getElementById(txtServo).value = event.target.value;
+			servoId = NumCarte+servoId;
+			//alert("servoPreset " + servoId + " " + val);
+			sendCmd("sp:" + servoId + "=" + val);
+		});*/
 		$(".inputText_servoCustom").keypress(function(event){
 			if(event.keyCode == '13'){
 				var id = event.target.id;	//get id of servo
 				id = id.replace("inputText_servo","");
 				id = id.replace("Custom","");
-				var name = "servo" + id;
-				var selector = "input[name=" + name + "]:checked";
+				var name = "sliderServo" + id;
+				var val = event.target.value;
+				if(val < 544) {val = 544;event.target.value=val;}
+				if(val > 2400) {val = 2400;event.target.value=val;}
+				document.getElementById(name).value = event.target.value;
+				id = NumCarte+id;
+				//alert("servoPreset " + id + " " + val);
+				sendCmd("sp:" + id + "=" + val);
+				/*var selector = "input[name=" + name + "]:checked";
 				var checkVal = document.querySelector(selector).value;	//get which radio button is checked
 				if(checkVal == 3){
 					var val = Number(event.target.value);
@@ -1134,10 +1269,34 @@ window.onload = function () {
 					//alert("servo " + id + " " + val);
 					sendCmd("s:" + id + "=" + val);
 					//sendCmd("s:" + id + "=" + val + "&s:2=42&s:3=452&m:1=95&mp:2=1");
-				}
+				}*/
 			}
 		});
+		/*$(".sliderMotor").click(function(event) {
+			var motorId = event.target.name.replace("motor4q","");
+			var val = event.target.value;
+			var txtMotor = "inputText_"+event.target.name+"Custom";
+			document.getElementById(txtMotor).value = event.target.value-255;
+			motorId = NumCarte+motorId;
+			//alert("servoPreset " + motorId + " " + val);
+			sendCmd("m4:" + motorId + "=" + val);
+		});*/
 		$(".inputText_motorCustom").keypress(function(event){
+			if(event.keyCode == '13'){
+				var id = event.target.id;
+				id = id.replace("inputText_motor4q","");
+				id = id.replace("Custom","");
+				var name = "sliderMotor" + id;
+				var val = parseInt(event.target.value);
+				if(val < 0) {val = 0;event.target.value=val;}
+				if(val > 1000) {val = 1000;event.target.value=val;}
+				document.getElementById(name).value = val;
+				id = NumCarte+id;
+				alert("servoPreset " + id + " " + val);
+				sendCmd("m4:" + id + "=" + val);
+			}
+		});
+		/*$(".inputText_motorCustom").keypress(function(event){
 			if(event.keyCode == '13'){
 				var id = event.target.id;	//get id of servo
 				id = id.replace("inputText_motor","");
@@ -1161,7 +1320,7 @@ window.onload = function () {
 					sendCmd("m:" + id + "=" + val);
 				}
 			}
-		});
+		});*/
 		$("#inputText_requestRefreshRate").keypress(function(event){
 			if(event.keyCode == '13'){
 				var interval = Number(event.target.value);
@@ -1526,7 +1685,6 @@ window.onload = function () {
 
 		}
 		function drawRobot(ctx, x, y, width, height, degrees, style, text) {
-
 			x = x / 3000 * $("#canvasPlayingArea").width();
 			y = y / 2000 * $("#canvasPlayingArea").height();
 			var save = x;
@@ -1586,9 +1744,27 @@ window.onload = function () {
 			ctx.stroke();*/
 			// restore the context to its untranslated/unrotated state
 			ctx.restore();
-
 		}
-	
+		function drawElement(ctx, x, y, number) {
+			x = x / 3000 * $("#canvasPlayingArea").width();
+			y = y / 2000 * $("#canvasPlayingArea").height();
+			var save = x;
+			x = y;
+			y = save;
+			// first save the untranslated/unrotated context
+			ctx.save();
+
+			ctx.beginPath();
+			// move the rotation point to the center of the rect
+			//ctx.translate(x + width / 2, y + height / 2);
+			ctx.translate(x, y);
+			// rotate the rect
+			var imgElement = new Image();
+			var txt = "Element"+number+".png"
+			imgElement.src = txt;
+			ctx.drawImage(imgElement,x,y);
+			ctx.restore();
+		}
 		function xhrRequest(){
 		
 			var xhr = new XMLHttpRequest();
@@ -1900,6 +2076,18 @@ window.onload = function () {
 							lidarPoints.length = 0;
 							lidarPointsCircular.length = 0;
 							iLidar = 0;
+						} else if(subString[i].charAt(0) == 'f') {
+							subString[i]= subString[i].slice(2);	//remove f=
+							var subSubString = subString[i].split(";");
+							var xVal = Number(subSubString[0]);
+							var yVal = Number(subSubString[1]);
+							var nbVal = Number(subSubString[2]);
+							elementPoints.push({x: xVal,y: yVal});
+							elementAttributs.push(nbVal);
+							//alert('push x : ' + xVal + ' & y : ' + yVal + ' & nb : ' + nbVal + '\n' );
+						} else if(subString[i].charAt(0) == 'g') {
+							elementPoints.length = 0;
+							elementAttributs.length = 0;
 						}
 					}
 					/*if(updateChart){	//attention ne change pas si les capteurs bougent mais pas le robot
@@ -1924,29 +2112,7 @@ window.onload = function () {
 			}
 			xhr.send("update");
 		}
-		function sendCmd(cmd){
-		
-			var xhr = new XMLHttpRequest();
-			xhr.open("POST", "socket.php", true);
-
-			//Send the proper header information along with the request
-			xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-
-			xhr.onreadystatechange = function() {//Call a function when the state changes.
-				if(this.readyState == XMLHttpRequest.DONE && this.status == 200) {
-					
-					var r = this.responseText;
-					//if(r != "OK"){
-					/*if( r != null){
-						if(!r.startsWith("OK")){
-							alert("Error occured during SendCmd function : server did not respond \"OK\".\nResponse : " + r);
-						}
-					}*/
-				}
-			}
-			//xhr.send("cmd=" + cmd);
-			xhr.send(cmd);
-		}
+		//sendCmd
 		function drawCanvas(){
 			ctx.drawImage(img, 0, 0);
 			drawRobot(ctx, xRobot1, yRobot1, 50, 50, tRobot1 + 180, "black", "GR");
@@ -1955,6 +2121,9 @@ window.onload = function () {
 			}
 			for(var i = 0; i < lidarPointsCircular.length;i++){
 				drawPoint(ctx, lidarPointsCircular[i].x, lidarPointsCircular[i].y, "red");
+			}
+			for(var i = 0; i < elementPoints.length;i++){
+				drawElement(ctx, elementPoints[i].x, elementPoints[i].y, elementAttributs[i]);
 			}
 			//drawRobot(ctx, xRobot2, yRobot2, 50, 50, tRobot2, "red", "PR");
 		}
@@ -2020,4 +2189,39 @@ window.onload = function () {
   			return coords;
 		}
 
+}
+
+function TimeJoy() {
+	if((JoyX > 5 || JoyX < -5) && (JoyY > 5 || JoyY < -5)) {
+    	xRobot1 = xRobot1 + JoyY/15;
+    	yRobot1 = yRobot1 + JoyX/15;
+
+    	sendCmd("x="+xRobot1+"&y="+yRobot1+"&go");
+	}
+	if((JoyXAx > 5 || JoyXAx < -5) && (JoyYAx > 5 || JoyYAx < -5)) {
+    	sendCmd("x="+JoyXAx+"&y="+JoyYAx+"&Ax");
+    }
+}
+
+function sendCmd(cmd){
+	var xhr = new XMLHttpRequest();
+	xhr.open("POST", "socket.php", true);
+
+	//Send the proper header information along with the request
+	xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+	xhr.onreadystatechange = function() {//Call a function when the state changes.
+	if(this.readyState == XMLHttpRequest.DONE && this.status == 200) {
+					
+		var r = this.responseText;
+		//if(r != "OK"){
+			/*if( r != null){
+				if(!r.startsWith("OK")){
+					alert("Error occured during SendCmd function : server did not respond \"OK\".\nResponse : " + r);
+				}
+			}*/
+		}
+	}
+	//xhr.send("cmd=" + cmd);
+	xhr.send(cmd);
 }

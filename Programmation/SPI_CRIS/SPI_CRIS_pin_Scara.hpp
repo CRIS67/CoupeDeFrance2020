@@ -29,6 +29,8 @@ const int Pin_Led = 4;
   const int Pin_Moteur4Q_SENS[] = {8, 9};
   const int Pin_Moteur4Q_PWM[] = {5, 6};
   const int Pin_RuptEnd4Q[][2] = {{7, A0},{A1, A2}};
+  const int Speed_Moteur4Q[][2] = {{200, 150},{115,115}};
+  const int Length_Moteur[] = {1, 3};
 #endif
 #if NB_MOTEUR > 0
   const int Pin_Moteur[] = {2, 3};

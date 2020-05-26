@@ -15,6 +15,7 @@
 #include <wiringPiSPI.h>
 #include <ncurses.h>
 #include <opencv/highgui.h>
+#include <array>
 
 // DStarIncludes 
 #include <utility>
@@ -26,6 +27,7 @@
 #include "mapGeneration.hpp"
 #include "dStarLite.hpp"
 #include "trajectoryHandle.hpp"
+#include "GameElements.hpp"
 
 
 #include <fstream>
@@ -96,7 +98,7 @@ std::vector<Node> completePath;
 #define BACKWARD        1
 
 int main() {
-
+    int i_main;
     std::cout << std::endl << "     Coupe de France 2020 by CRIS" << std::endl << std::endl;
     wiringPiSetup();
 
@@ -109,17 +111,23 @@ int main() {
 
     SPI spi(SPI_CHANNEL,SPI_SPEED); //initialise SPI
 
-    Actuator actBack("Actuator Back",&spi,SPI_ID_ACT_BACK,6,0,0,0,2,6,0,0);
-    //Actuator actBack("Actuator Back 2019",&spi,SPI_ID_ACT_BACK,3,0,3,3,0,0,0,0);
-    Actuator actScara("Actuator Scara",&spi,SPI_ID_ACT_SCARA,0,2,2,2,0,5,3,1);
 
-    Web web(&dspic, &actScara, &actBack);
-
-    Hmi hmi("HMI",&spi,SPI_ID_HMI);
     std::string xbeeName[1] = {"XBee"};
     int xbeeAddr[1] = {1};
-    Actuator xbee("Xbee",&spi,SPI_ID_XBEE,4,2,0,0,0,3,0,0,1,xbeeName,xbeeAddr);
+    Actuator Act[] = {Actuator("Back Actuator",&spi,SPI_ID_ACT_BACK,6,0,0,0,2,6,0,0),
+                      Actuator("Scara Actuator",&spi,SPI_ID_ACT_SCARA,0,2,2,2,0,5,3,1),
+                      Actuator("Xbee Actuator",&spi,SPI_ID_XBEE,4,2,0,0,0,3,0,0,1,xbeeName,xbeeAddr)};
+    const int LengAct = sizeof(Act)/sizeof(Act[0]);
+    //Actuator actBack("Actuator Back 2019",&spi,SPI_ID_ACT_BACK,3,0,3,3,0,0,0,0);
+
+    Web web(&dspic, Act, LengAct);
+
+    Hmi hmi("HMI",&spi,SPI_ID_HMI);
     Lidar lidar("Lidar",&spi,SPI_ID_LIDAR,&web);
+
+    GameElements Elements[LengGameElement()];
+    CreateGameElement(Elements, Act, LengAct, &web);
+    int Leng = sizeof(Elements)/sizeof(Elements[0]);
 
     lidar.stop();
     delay(1000);
@@ -133,9 +141,7 @@ int main() {
     web.startThread();
     lidar.startThreadDetection();
     hmi.startThreadDetection();
-    actScara.startThreadDetection();
-    actBack.startThreadDetection();
-    xbee.startThreadDetection();
+    for(i_main=0;i_main<LengAct;i_main++) {Act[i_main].startThreadDetection();}
 
     dspic.setVar8(CODE_VAR_VERBOSE,1);
     puts("verbose set to 1");
@@ -149,15 +155,19 @@ int main() {
     dspic.initPos(1045,1500,0);
     
     //std::cout << "Press enter to dspic.start() " << std::endl; 
-    actBack.MoveServo(2, 980);
-    actBack.MoveServo(0, 1600);
-    actBack.MoveServo(1, 1800);
+    Act[0].MoveServo(2, 980);
+    Act[0].MoveServo(0, 1600);
+    Act[0].MoveServo(1, 1800);
     std::cout << "Reamorcer le drapeau ! ensuite appuyer sur entrÃ©e" << std::endl;
     hmi.setScore(666);
     getchar();
-    actBack.MoveServo(2, 1100);
-
+    Act[0].MoveServo(2, 1100);
     
+    Act[2].eteindrePhare();
+    std::cout << "Appuyer sur entrée quand le phare est en bas" << std::endl;
+    getchar();
+
+    Do(0,true,Act);
 
 
     //dspic.go(1445, 1500, 0, 0);
@@ -192,9 +202,9 @@ int main() {
     actBack.MoveServo(1, 1400);*/
 
 
-    xbee.allumerPhare();
-    delay(12000);
-    xbee.resetXbee(1);
+    //Act[2].allumerPhare();
+    //delay(12000);
+    //xbee.resetXbee(1);
 
 
     //actScara.SetMot4QVit(1,255,0);
@@ -204,19 +214,18 @@ int main() {
     //getchar();
     //actScara.SetMot4QVit(1,0,1);
     std::cout << "main" << std::endl;
-    while(!hmi.isStopMain()) {
+    /*while(!hmi.isStopMain()) {
     	//xbee.PingXbee(1);
-        actBack.MoveServo(0, 1600);
+        //actBack.MoveServo(0, 1600);
         //actScara.SetMot4QPos(0, 115, 0, 200);
         delay(1000);
         //std::cout << xbee.GetPingXbee(1) << std::endl;
-        actBack.MoveServo(0, 800);
+        //actBack.MoveServo(0, 800);
         //actScara.SetMot4QPos(0, 200, 1, 200);
-    	  //std::cout << actBack.ColorOne(0) << std::endl;
-    	  //std::cout << actBack.ColorOne(1) << std::endl;
-    	  delay(1000);
-	  }
-
+    	//std::cout << actBack.ColorOne(0) << std::endl;
+    	//std::cout << actBack.ColorOne(1) << std::endl;
+        delay(1000);
+	}*/
     dspic.stop();
     dspic.setVar8(CODE_VAR_VERBOSE,0);
     dspic.stopThreadReception();
@@ -225,9 +234,7 @@ int main() {
     lidar.stop();
     lidar.stopThreadDetection();
     hmi.stopThreadDetection();
-    actScara.stopThreadDetection();
-    actBack.stopThreadDetection();
-    xbee.stopThreadDetection();
+    for(i_main=0;i_main<LengAct;i_main++) {Act[i_main].stopThreadDetection();}
     hmi.stopThreadDetection();
     web.stopThread();
 

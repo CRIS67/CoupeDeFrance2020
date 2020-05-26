@@ -5,9 +5,9 @@
 #include <SoftwareSerial.h>
 #include <Arduino.h>
 //#include "SPI_CRIS_pin_Xbee.hpp"
-#include "SPI_CRIS_pin_Phare.hpp"
+//#include "SPI_CRIS_pin_Phare.hpp"
 //#include "SPI_CRIS_pin_Act.hpp"
-//#include "SPI_CRIS_pin_Scara.hpp"
+#include "SPI_CRIS_pin_Scara.hpp"
 //#include "SPI_CRIS_pin_HMI.hpp"
 //#include "SPI_CRIS_pin.hpp"
 #include "projet.h"

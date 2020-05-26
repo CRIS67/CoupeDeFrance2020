@@ -1,7 +1,12 @@
 #include "actuator.hpp"
 
+Actuator::Actuator() : Robot() {}
+
+Actuator::Actuator(const Actuator&) {}
+
 Actuator::Actuator(std::string nom, SPI *pSpi, uint8_t id, int nb_servo, int nb_moteur4Q, int nb_moteur, int nb_capt_cur, int nb_capt_couleur, int nb_rupteur, int nb_ax12, int nb_capt_dist) 
 : Robot(nom, pSpi, id) {
+  int i;
 	m_nb_servo = nb_servo;
 	m_nb_moteur4Q = nb_moteur4Q;
 	m_nb_moteur = nb_moteur;
@@ -12,7 +17,13 @@ Actuator::Actuator(std::string nom, SPI *pSpi, uint8_t id, int nb_servo, int nb_
 	m_nb_capt_dist = nb_capt_dist;
 	std::cout << m_nom << " comporte : " << std::endl;
 	if(m_nb_servo) {std::cout << m_nb_servo << " servo moteurs" << std::endl;}
-	if(m_nb_moteur4Q) {std::cout << m_nb_moteur4Q << " pont en H" << std::endl;}
+  if(m_nb_moteur4Q) {
+		for(i=0;i<m_nb_moteur4Q;i++) {
+			SetMot4QPos(i,100,0,400);
+			delay(1000);
+		}
+		std::cout << m_nb_moteur4Q << " pont en H" << std::endl;
+	}
 	if(m_nb_moteur) {std::cout << m_nb_moteur << " moteurs" << std::endl;}
 	if(m_nb_capt_cur) {std::cout << m_nb_capt_cur << " capteurs de courant" << std::endl;}
 	if(m_nb_capt_couleur) {std::cout << m_nb_capt_couleur << " capteurs de couleur" << std::endl;}
@@ -24,6 +35,7 @@ Actuator::Actuator(std::string nom, SPI *pSpi, uint8_t id, int nb_servo, int nb_
 
 Actuator::Actuator(std::string nom, SPI *pSpi, uint8_t id, int nb_servo, int nb_moteur4Q, int nb_moteur, int nb_capt_cur, int nb_capt_couleur, int nb_rupteur, int nb_ax12, int nb_capt_dist, int nb_uart, std::string uart_name[], int uart_addr[]) 
 : Robot(nom, pSpi, id) {
+	int i;
 	m_nb_servo = nb_servo;
 	m_nb_moteur4Q = nb_moteur4Q;
 	m_nb_moteur = nb_moteur;
@@ -39,7 +51,13 @@ Actuator::Actuator(std::string nom, SPI *pSpi, uint8_t id, int nb_servo, int nb_
   }
 	std::cout << m_nom << " comporte : " << std::endl;
 	if(m_nb_servo) {std::cout << m_nb_servo << " servo moteurs" << std::endl;}
-	if(m_nb_moteur4Q) {std::cout << m_nb_moteur4Q << " pont en H" << std::endl;}
+	if(m_nb_moteur4Q) {
+		for(i=0;i<m_nb_moteur4Q;i++) {
+			SetMot4QPos(i,100,0,400);
+			delay(1000);
+		}
+		std::cout << m_nb_moteur4Q << " pont en H" << std::endl;
+	}
 	if(m_nb_moteur) {std::cout << m_nb_moteur << " moteurs" << std::endl;}
 	if(m_nb_capt_cur) {std::cout << m_nb_capt_cur << " capteurs de courant" << std::endl;}
 	if(m_nb_capt_couleur) {std::cout << m_nb_capt_couleur << " capteurs de couleur" << std::endl;}
@@ -47,28 +65,32 @@ Actuator::Actuator(std::string nom, SPI *pSpi, uint8_t id, int nb_servo, int nb_
 	if(m_nb_ax12) {std::cout << m_nb_ax12 << " ax12" << std::endl;}
 	if(m_nb_capt_dist) {std::cout << m_nb_capt_dist << " capteurs de distance" << std::endl;}
 	if(m_nb_uart) {
+		int cpt = 0;
 		std::cout << m_nb_uart << " uart : " << std::endl << " ";
-		for(int i=0;i<m_nb_uart;i++) {
+		for(i=0;i<m_nb_uart;i++) {
+		  resetXbee(uart_addr[i]);
+			delay(200);
 			PingXbee(uart_addr[i]);
-			delay(1000);
-			PingXbee(uart_addr[i]);
-			delay(1000);
-			PingXbee(uart_addr[i]);
-			delay(1000);
-			PingXbee(uart_addr[i]);
-			delay(1000);
-			checkMessages();
+			while(cpt < 4000 && !m_pingXbee) {
+				delay(1);
+				checkMessages();
+				cpt++;
+			}
 			if(m_pingXbee) {
 				DEBUG_ROBOT_PRINTLN(uart_name[i] << " connecté");
 				m_connected_uart[i] = true;
 			} else {
 				resetXbee(uart_addr[i]);
-        delay(8000);
+				delay(200);
 				PingXbee(uart_addr[i]);
-				delay(500);
-				checkMessages();
+				cpt = 0;
+				while(cpt < 4000 && !m_pingXbee) {
+					delay(1);
+					checkMessages();
+					cpt++;
+				}
 				if(m_pingXbee) {
-					DEBUG_ROBOT_PRINTLN(uart_name[i] << " connecté")
+					DEBUG_ROBOT_PRINTLN(uart_name[i] << " connecté 2")
 					m_connected_uart[i] = true;
 				} else {
 					DEBUG_ROBOT_PRINTLN(uart_name[i] << " non connecté ERROR")
@@ -109,7 +131,11 @@ void Actuator::DecodMsg(uint8_t buf[]) {
 }
 
 void Actuator::PingXbee(uint8_t id) {
-	UartSend(CMD_PING_UART, id, '0');
+  if(m_nb_uart) {
+    UartSend(CMD_PING_UART, id, '0');
+  } else {  
+    DEBUG_ROBOT_PRINTLN("erreur pas d'uart sur cette carte")
+  }
 }
 
 bool Actuator::GetPingXbee() {
@@ -121,7 +147,11 @@ bool Actuator::GetPingXbee() {
 }
 
 void Actuator::resetXbee(uint8_t id) {
-	UartSend(CMD_RST, id, '0');
+ if(m_nb_uart) {
+	    UartSend(CMD_RST, id, '0');
+  } else {  
+    	DEBUG_ROBOT_PRINTLN("erreur pas d'uart sur cette carte")
+  }
 }
 
 bool Actuator::startThreadDetection(){
@@ -146,7 +176,7 @@ void* thread_act(void *threadid){
 
 void Actuator::MoveServo(int nb_bras, int pos) {
     uint8_t buffer[4];
-	if(nb_bras < 0 || nb_bras > m_nb_servo) {
+	if(nb_bras < 0 || nb_bras > m_nb_servo-1) {
     	DEBUG_ROBOT_PRINTLN("erreur bras = " << nb_bras)
 	} else {
 		if(pos < 600 || pos > 1800) {
@@ -163,7 +193,7 @@ void Actuator::MoveServo(int nb_bras, int pos) {
 
 void Actuator::SetMot(int nb_bras, int state) {
 	uint8_t buffer[3];
-	if(nb_bras < 0 || nb_bras > m_nb_moteur) {
+	if(nb_bras < 0 || nb_bras > m_nb_moteur-1) {
     	DEBUG_ROBOT_PRINTLN("erreur nb_bras = " << nb_bras)
 	} else {
 		if(state < 0 || state > 1) {
@@ -179,7 +209,7 @@ void Actuator::SetMot(int nb_bras, int state) {
 
 void Actuator::SetMot4QVit(int nb_bras, int vit, int sens) {
 	uint8_t buffer[4];
-	if(nb_bras < 0 || nb_bras > m_nb_moteur4Q) {
+	if(nb_bras < 0 || nb_bras > m_nb_moteur4Q-1) {
     	DEBUG_ROBOT_PRINTLN("erreur nb_bras = " << nb_bras)
 	} else {
 		if(sens < 0 || sens > 1) {
@@ -200,7 +230,7 @@ void Actuator::SetMot4QVit(int nb_bras, int vit, int sens) {
 
 void Actuator::SetMot4QPos(int nb_bras, int vit, int sens, int temps) {
 	uint8_t buffer[6];
-	if(nb_bras < 0 || nb_bras > m_nb_moteur4Q) {
+	if(nb_bras < 0 || nb_bras > m_nb_moteur4Q-1) {
     	DEBUG_ROBOT_PRINTLN("erreur nb_bras = " << nb_bras)
 	} else {
 		if(sens < 0 || sens > 1) {
@@ -227,7 +257,7 @@ void Actuator::SetMot4QPos(int nb_bras, int vit, int sens, int temps) {
 
 void Actuator::SetAx12(int nb_bras, int pos) {
 	uint8_t buffer[4];
-	if(nb_bras < 1 || nb_bras > m_nb_ax12+1) {
+	if(nb_bras < 1 || nb_bras > m_nb_ax12) {
     	DEBUG_ROBOT_PRINTLN("erreur nb_bras = " << nb_bras)
 	} else {
 		if(pos < 0 || pos > 1000) {
@@ -244,7 +274,7 @@ void Actuator::SetAx12(int nb_bras, int pos) {
 
 void Actuator::GetColor(int nb_bras) {
 	uint8_t buffer[2];
-	if(nb_bras < 0 || nb_bras > m_nb_capt_couleur) {
+	if(nb_bras < 0 || nb_bras > m_nb_capt_couleur-1) {
     	DEBUG_ROBOT_PRINTLN("erreur nb_bras = " << nb_bras)
 	} else {
 		buffer[0] = ACT_CMD_COLOR;
@@ -256,7 +286,7 @@ void Actuator::GetColor(int nb_bras) {
 
 void Actuator::GetCurrent(int nb_bras){
 	uint8_t buffer[2];
-	if(nb_bras < 0 || nb_bras > m_nb_capt_cur) {
+	if(nb_bras < 0 || nb_bras > m_nb_capt_cur-1) {
     	DEBUG_ROBOT_PRINTLN("erreur nb_bras = " << nb_bras)
 	} else {
 		buffer[0] = ACT_CMD_CUR;
@@ -268,7 +298,7 @@ void Actuator::GetCurrent(int nb_bras){
 
 void Actuator::GetRupt(int nb_bras) {
 	uint8_t buffer[2];
-	if(nb_bras < 0 || nb_bras > m_nb_rupteur) {
+	if(nb_bras < 0 || nb_bras > m_nb_rupteur-1) {
     	DEBUG_ROBOT_PRINTLN("erreur nb_bras = " << nb_bras)
 	} else {
 		buffer[0] = ACT_CMD_RUPT;
@@ -280,7 +310,7 @@ void Actuator::GetRupt(int nb_bras) {
 
 void Actuator::GetDist(int nb_bras) {
 	uint8_t buffer[2];
-	if(nb_bras < 0 || nb_bras > m_nb_capt_dist) {
+	if(nb_bras < 0 || nb_bras > m_nb_capt_dist-1) {
     	DEBUG_ROBOT_PRINTLN("erreur nb_bras = " << nb_bras)
 	} else {
 		buffer[0] = ACT_CMD_DIST;
@@ -385,11 +415,19 @@ void Actuator::UartSend(unsigned char Send, unsigned char id_uart, unsigned char
 }
 
 void Actuator::allumerPhare(void) {
+  if(m_nb_uart) {
     UartSend(PHARE_STATE,UART_ID_PHARE, '1');
+  } else {
+    DEBUG_ROBOT_PRINTLN("erreur pas d'uart sur cette carte")
+  }
 }
 
 void Actuator::eteindrePhare(void) {
+    if(m_nb_uart) {
     UartSend(PHARE_STATE,UART_ID_PHARE, '0');
+  } else {
+    DEBUG_ROBOT_PRINTLN("erreur pas d'uart sur cette carte")
+  }
 }
 
 void Actuator::setSeuilColor(int seuil, int valeur) {

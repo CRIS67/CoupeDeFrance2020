@@ -28,324 +28,479 @@
 				<div id="FlexChild_Actuators_Title">
 					Actuators
 				</div>
-					<div>Joystick</div>
-    					<div class="center-align">
-      						<canvas id="joystick" height="300" width="300"></canvas>
-    					</div>
 				<div>
-					Servomotors<br/><br/>
-					<table>
-						<tr>
-							<td>
-							</td>
-							<td>
-								0
-							</td>
-							<td>
-								1
-							</td>
-							<td>
-								2
-							</td>
-							<td>
-								custom
-							</td>
-						</tr>
-						<tr>
-							<td>
-								0
-							</td>
-							<td>
-								<input type="radio" name="servo0" value="0" class="radioServo">
-							</td>
-							<td>
-								<input type="radio" name="servo0" value="1" class="radioServo">
-							</td>
-							<td>
-								<input type="radio" name="servo0" value="2" class="radioServo">
-							</td>
-							<td>
-								<input type="radio" name="servo0" checked value="3" class="radioServo">
-								<input class="inputText_servoCustom" id="inputText_servo0Custom" type="text" value="0"/>
-							</td>
-						</tr>
-						<tr>
-							<td>
-								1
-							</td>
-							<td>
-								<input type="radio" name="servo1" value="0" class="radioServo">
-							</td>
-							<td>
-								<input type="radio" name="servo1" value="1" class="radioServo">
-							</td>
-							<td>
-								<input type="radio" name="servo1" value="2" class="radioServo">
-							</td>
-							<td>
-								<input type="radio" name="servo1" checked value="3" class="radioServo">
-								<input class="inputText_servoCustom" id="inputText_servo1Custom" type="text" value="0"/>
-							</td>
-						</tr>
-						<tr>
-							<td>
-								2
-							</td>
-							<td>
-								<input type="radio" name="servo2" value="0" class="radioServo">
-							</td>
-							<td>
-								<input type="radio" name="servo2" value="1" class="radioServo">
-							</td>
-							<td>
-								<input type="radio" name="servo2" value="2" class="radioServo">
-							</td>
-							<td>
-								<input type="radio" name="servo2" checked value="3" class="radioServo">
-								<input class="inputText_servoCustom" id="inputText_servo2Custom" type="text" value="0"/>
-							</td>
-						</tr>
-						<tr>
-							<td>
-								3
-							</td>
-							<td>
-								<input type="radio" name="servo3" value="0" class="radioServo">
-							</td>
-							<td>
-								<input type="radio" name="servo3" value="1" class="radioServo">
-							</td>
-							<td>
-								<input type="radio" name="servo3" value="2" class="radioServo">
-							</td>
-							<td>
-								<input type="radio" name="servo3" checked value="3" class="radioServo">
-								<input class="inputText_servoCustom" id="inputText_servo3Custom" type="text" value="0"/>
-							</td>
-						</tr>
-						<tr>
-							<td>
-								4
-							</td>
-							<td>
-								<input type="radio" name="servo4" value="0" class="radioServo">
-							</td>
-							<td>
-								<input type="radio" name="servo4" value="1" class="radioServo">
-							</td>
-							<td>
-								<input type="radio" name="servo4" value="2" class="radioServo">
-							</td>
-							<td>
-								<input type="radio" name="servo4" checked value="3" class="radioServo">
-								<input class="inputText_servoCustom" id="inputText_servo4Custom" type="text" value="0"/>
-							</td>
-						</tr>
-						<tr>
-							<td>
-								5
-							</td>
-							<td>
-								<input type="radio" name="servo5" value="0" class="radioServo">
-							</td>
-							<td>
-								<input type="radio" name="servo5" value="1" class="radioServo">
-							</td>
-							<td>
-								<input type="radio" name="servo5" value="2" class="radioServo">
-							</td>
-							<td>
-								<input type="radio" name="servo5"  checked value="3" class="radioServo">
-								<input class="inputText_servoCustom" id="inputText_servo5Custom" type="text" value="0"/>
-							</td>
-						</tr>
-						<tr>
-							<td>
-								6
-							</td>
-							<td>
-								<input type="radio" name="servo6" value="0" class="radioServo">
-							</td>
-							<td>
-								<input type="radio" name="servo6" value="1" class="radioServo">
-							</td>
-							<td>
-								<input type="radio" name="servo6" value="2" class="radioServo">
-							</td>
-							<td>
-								<input type="radio" name="servo6" checked value="3" class="radioServo">
-								<input class="inputText_servoCustom" id="inputText_servo6Custom" type="text" value="0"/>
-							</td>
-						</tr>
-					</table>
-					
+					<button class="btn carte0" id="Carte0" onclick="CARTE0()">Actionneur</button>
+					<button class="btn carte1" id="Carte1" onclick="CARTE1()">Scara</button>
+					<button class="btn carte2" id="Carte2" onclick="CARTE2()">XBee</button>
+					<br><br>
+					<img id="Carte" alt="Act">
+					<br><br>
+					<button onclick="funAction()" class="btn_fun">Fun action</button>
+					<br><br>
+					<!-- Slideshow container -->
+					<div class="slideshow-container">
+						<!-- The dots/circles -->
+						<div style="text-align:center">
+					  		<span class="dot" onclick="currentSlide(1)"></span>
+					  		<span class="dot" onclick="currentSlide(2)"></span>
+					  		<span class="dot" onclick="currentSlide(3)"></span>
+					  		<span class="dot" onclick="currentSlide(4)"></span>
+					  		<span class="dot" onclick="currentSlide(5)"></span>
+						</div>
+					 	<!-- Full-width images with number and caption text -->
+					  	<div class="mySlides fade">
+					  		<p>Sermotor</p>
+							<table>
+								<tr>
+									<td>
+										0
+									</td>
+									<td>
+										<div class="slidecontainer">
+  											<input type="range" name="servo0" min="544" max="2400" value="800" class="sliderServo" id = "sliderServo0" onchange="TactilServo()">
+										</div>
+									</td>
+									<td>
+										<input class="inputText_servoCustom" id="inputText_servo0Custom" type="text" value="800"/>
+									</td>
+								</tr>
+								<tr>
+									<td>
+										1
+									</td>
+									<td>
+										<div class="slidecontainer">
+  											<input type="range" name="servo1" min="544" max="2400" value="800" class="sliderServo" id = "sliderServo1" onchange="TactilServo()">
+										</div>
+									</td>
+									<td>
+										<input class="inputText_servoCustom" id="inputText_servo1Custom" type="text" value="800"/>
+									</td>
+								</tr>
+								<tr>
+									<td>
+										2
+									</td>
+									<td>
+										<div class="slidecontainer">
+  											<input type="range" name="servo2" min="544" max="2400" value="800" class="sliderServo" id = "sliderServo2" onchange="TactilServo()">
+										</div>
+									</td>
+									<td>
+										<input class="inputText_servoCustom" id="inputText_servo2Custom" type="text" value="800"/>
+									</td>
+								</tr>
+								<tr>
+									<td>
+										3
+									</td>
+									<td>
+										<div class="slidecontainer">
+  											<input type="range" name="servo3" min="544" max="2400" value="800" class="sliderServo" id = "sliderServo3" onchange="TactilServo()">
+										</div>
+									</td>
+									<td>
+										<input class="inputText_servoCustom" id="inputText_servo3Custom" type="text" value="800"/>
+									</td>
+								</tr>
+								<tr>
+									<td>
+										4
+									</td>
+									<td>
+										<div class="slidecontainer">
+  											<input type="range" name="servo4" min="544" max="2400" value="800" class="sliderServo" id = "sliderServo4" onchange="TactilServo()">
+										</div>
+									</td>
+									<td>
+										<input class="inputText_servoCustom" id="inputText_servo4Custom" type="text" value="800"/>
+									</td>
+								</tr>
+								<tr>
+									<td>
+										5
+									</td>
+									<td>
+										<div class="slidecontainer">
+  											<input type="range" name="servo5" min="544" max="2400" value="800" class="sliderServo" id = "sliderServo5" onchange="TactilServo()">
+										</div>
+									</td>
+									<td>
+										<input class="inputText_servoCustom" id="inputText_servo5Custom" type="text" value="800"/>
+									</td>
+								</tr>
+								<tr>
+									<td>
+										6
+									</td>
+									<td>
+										<div class="slidecontainer">
+  											<input type="range" name="servo6" min="544" max="2400" value="800" class="sliderServo" id = "sliderServo6" onchange="TactilServo()">
+										</div>
+									</td>
+									<td>
+										<input class="inputText_servoCustom" id="inputText_servo6Custom" type="text" value="800"/>
+									</td>
+								</tr>
+								<tr>
+									<td>
+										7
+									</td>
+									<td>
+										<div class="slidecontainer">
+  											<input type="range" name="servo7" min="544" max="2400" value="800" class="sliderServo" id = "sliderServo7" onchange="TactilServo()">
+										</div>
+									</td>
+									<td>
+										<input class="inputText_servoCustom" id="inputText_servo7Custom" type="text" value="800"/>
+									</td>
+								</tr>
+								<tr>
+									<td>
+										8
+									</td>
+									<td>
+										<div class="slidecontainer">
+  											<input type="range" name="servo8" min="544" max="2400" value="800" class="sliderServo" id = "sliderServo8" onchange="TactilServo()">
+										</div>
+									</td>
+									<td>
+										<input class="inputText_servoCustom" id="inputText_servo8Custom" type="text" value="800"/>
+									</td>
+								</tr>
+								<tr>
+									<td>
+										9
+									</td>
+									<td>
+										<div class="slidecontainer">
+  											<input type="range" name="servo9" min="544" max="2400" value="800" class="sliderServo" id = "sliderServo9" onchange="TactilServo()">
+										</div>
+									</td>
+									<td>
+										<input class="inputText_servoCustom" id="inputText_servo9Custom" type="text" value="800"/>
+									</td>
+								</tr>
+							</table>
+						</div>
+						<div class="mySlides fade">
+							<p>Motor</p>
+							<table>
+								<tr>
+									<td>
+									</td>
+									<td>
+										0
+									</td>
+									<td>
+										1
+									</td>
+								</tr>
+								<tr>
+									<td>
+										0
+									</td>
+									<td>
+										<input type="radio" name="motor0" value="0" class="radioMotor" checked="checked">
+									</td>
+									<td>
+										<input type="radio" name="motor0" value="1" class="radioMotor">
+									</td>
+								</tr>
+								<tr>
+									<td>
+										1
+									</td>
+									<td>
+										<input type="radio" name="motor1" value="0" class="radioMotor" checked="checked">
+									</td>
+									<td>
+										<input type="radio" name="motor1" value="1" class="radioMotor">
+									</td>
+								</tr>
+								<tr>
+									<td>
+										2
+									</td>
+									<td>
+										<input type="radio" name="motor2" value="0" class="radioMotor" checked="checked">
+									</td>
+									<td>
+										<input type="radio" name="motor2" value="1" class="radioMotor">
+									</td>
+								</tr>
+								<tr>
+									<td>
+										3
+									</td>
+									<td>
+										<input type="radio" name="motor3" value="0" class="radioMotor" checked="checked">
+									</td>
+									<td>
+										<input type="radio" name="motor3" value="1" class="radioMotor">
+									</td>
+								</tr>
+								<tr>
+									<td>
+										4
+									</td>
+									<td>
+										<input type="radio" name="motor4" value="0" class="radioMotor" checked="checked">
+									</td>
+									<td>
+										<input type="radio" name="motor4" value="1" class="radioMotor">
+									</td>
+								</tr>
+								<tr>
+									<td>
+										5
+									</td>
+									<td>
+										<input type="radio" name="motor5" value="0" class="radioMotor" checked="checked">
+									</td>
+									<td>
+										<input type="radio" name="motor5" value="1" class="radioMotor">
+									</td>
+								</tr>
+								<tr>
+									<td>
+										6
+									</td>
+									<td>
+										<input type="radio" name="motor6" value="0" class="radioMotor" checked="checked">
+									</td>
+									<td>
+										<input type="radio" name="motor6" value="1" class="radioMotor">
+									</td>
+								</tr>
+								<tr>
+									<td>
+										7
+									</td>
+									<td>
+										<input type="radio" name="motor7" value="0" class="radioMotor" checked="checked">
+									</td>
+									<td>
+										<input type="radio" name="motor7" value="1" class="radioMotor">
+									</td>
+								</tr>
+								<tr>
+									<td>
+										8
+									</td>
+									<td>
+										<input type="radio" name="motor8" value="0" class="radioMotor" checked="checked">
+									</td>
+									<td>
+										<input type="radio" name="motor8" value="1" class="radioMotor">
+									</td>
+								</tr>
+								<tr>
+									<td>
+										9
+									</td>
+									<td>
+										<input type="radio" name="motor9" value="0" class="radioMotor" checked="checked">
+									</td>
+									<td>
+										<input type="radio" name="motor9" value="1" class="radioMotor">
+									</td>
+								</tr>
+							</table>
+						</div>
+					  	<div class="mySlides fade">
+					  		<p>Motor 4 Q</p>
+					  		<table>
+								<tr>
+									<td>
+										0
+									</td>
+									<td>
+										<div class="slidecontainer">
+  											<input type="range" name="motor4q0" min="0" max="1000" value="0" class="sliderMotor" id = "sliderMotor0" onchange="TactilMotor()">
+										</div>
+									</td>
+									<td>
+										<input class="inputText_motorCustom" id="inputText_motor4q0Custom" type="text" value="0"/>
+									</td>
+								</tr>
+								<tr>
+									<td>
+										1
+									</td>
+									<td>
+										<div class="slidecontainer">
+  											<input type="range" name="motor4q1" min="0" max="1000" value="0" class="sliderMotor" id = "sliderMotor1" onchange="TactilMotor()">
+										</div>
+									</td>
+									<td>
+										<input class="inputText_motorCustom" id="inputText_motor4q1Custom" type="text" value="0"/>
+									</td>
+								</tr>
+								<tr>
+									<td>
+										2
+									</td>
+									<td>
+										<div class="slidecontainer">
+  											<input type="range" name="motor4q2" min="0" max="1000" value="0" class="sliderMotor" id = "sliderMotor2" onchange="TactilMotor()">
+										</div>
+									</td>
+									<td>
+										<input class="inputText_motorCustom" id="inputText_motor4q2Custom" type="text" value="0"/>
+									</td>
+								</tr>
+								<tr>
+									<td>
+										3
+									</td>
+									<td>
+										<div class="slidecontainer">
+  											<input type="range" name="motor4q3" min="0" max="1000" value="0" class="sliderMotor" id = "sliderMotor3" onchange="TactilMotor()">
+										</div>
+									</td>
+									<td>
+										<input class="inputText_motorCustom" id="inputText_motor4q3Custom" type="text" value="0"/>
+									</td>
+								</tr>
+								<tr>
+									<td>
+										4
+									</td>
+									<td>
+										<div class="slidecontainer">
+  											<input type="range" name="motor4q4" min="0" max="1000" value="0" class="sliderMotor" id = "sliderMotor4" onchange="TactilMotor()">
+										</div>
+									</td>
+									<td>
+										<input class="inputText_motorCustom" id="inputText_motor4q4Custom" type="text" value="0"/>
+									</td>
+								</tr>
+								<tr>
+									<td>
+										5
+									</td>
+									<td>
+										<div class="slidecontainer">
+  											<input type="range" name="motor4q5" min="0" max="1000" value="0" class="sliderMotor" id = "sliderMotor5" onchange="TactilMotor()">
+										</div>
+									</td>
+									<td>
+										<input class="inputText_motorCustom" id="inputText_motor4q5Custom" type="text" value="0"/>
+									</td>
+								</tr>
+								<tr>
+									<td>
+										6
+									</td>
+									<td>
+										<div class="slidecontainer">
+  											<input type="range" name="motor4q6" min="0" max="1000" value="0" class="sliderMotor" id = "sliderMotor6" onchange="TactilMotor()">
+										</div>
+									</td>
+									<td>
+										<input class="inputText_motorCustom" id="inputText_motor4q6Custom" type="text" value="0"/>
+									</td>
+								</tr>
+								<tr>
+									<td>
+										7
+									</td>
+									<td>
+										<div class="slidecontainer">
+  											<input type="range" name="motor4q7" min="0" max="1000" value="0" class="sliderMotor" id = "sliderMotor7" onchange="TactilMotor()">
+										</div>
+									</td>
+									<td>
+										<input class="inputText_motorCustom" id="inputText_motor4q7Custom" type="text" value="0"/>
+									</td>
+								</tr>
+								<tr>
+									<td>
+										8
+									</td>
+									<td>
+										<div class="slidecontainer">
+  											<input type="range" name="motor4q8" min="0" max="1000" value="0" class="sliderMotor" id = "sliderMotor8" onchange="TactilMotor()">
+										</div>
+									</td>
+									<td>
+										<input class="inputText_motorCustom" id="inputText_motor4q8Custom" type="text" value="0"/>
+									</td>
+								</tr>
+								<tr>
+									<td>
+										9
+									</td>
+									<td>
+										<div class="slidecontainer">
+  											<input type="range" name="motor4q9" min="0" max="1000" value="0" class="sliderMotor" id = "sliderMotor9" onchange="TactilMotor()">
+										</div>
+									</td>
+									<td>
+										<input class="inputText_motorCustom" id="inputText_motor4q9Custom" type="text" value="0"/>
+									</td>
+								</tr>
+							</table>
+					  	</div>
+					  	<div class="mySlides fade">
+					  		<p>AX12</p>
+					  		<div class="center-align">
+      							<canvas id="joystickAx" height="300" width="300" onclick="JoyDragDownAx()" onclose="JoyDragUpAx()"></canvas>
+    						</div>
+					  	</div>
+					  	<div class="mySlides fade">
+					  		<p>Recoder</p>
+					  		<div class="center-align">
+					  			<table>
+					  				<tr>
+					  					<td></td>
+					  					<td>
+					  						<button onclick="Rec()" class="btn_rec" id="RecBtn">Record</button>
+					  					</td>
+					  				</tr>
+					  				<tr>
+					  					<td>
+					  						<p>Nom (string)</p>
+					  					</td>
+					  					<td>
+					  						<input class="inputText_recCustom" id="inputText_NomCustom" type="text" value=""/>
+					  					</td>
+					  				</tr>
+					  				<tr>
+					  					<td>
+					  						<p>Id (char)</p>
+					  					</td>
+					  					<td>
+					  						<input class="inputText_recCustom" id="inputText_IdCustom" type="text" value=""/>
+					  					</td>
+					  				</tr>
+					  				<tr>
+					  					<td>
+					  						<p>Score (nb/element)</p>
+					  					</td>
+					  					<td>
+					  						<input class="inputText_recCustom" id="inputText_SocreCustom" type="text" value=""/>
+					  					</td>
+					  				</tr>
+					  				<tr>
+					  					<td>
+					  						<span title="(-1 déposable, 0 élément fixe, >0 stock)">
+					  							<p>Dépot ?</p>
+					  						</span>
+					  					</td>
+					  					<td>
+					  						<span title="(-1 déposable, 0 élément fixe, >0 stock)">
+					  							<input class="inputText_recCustom" id="inputText_DepotCustom" type="text" value=""/>
+					  						</span>
+					  					</td>
+					  				</tr>
+					  				
+					  			</table>
+					  		</div>
+					  	</div>	
+					</div>
 				</div>
-				<div>
-					<br/><br/>Motors<br/><br/>
-					<table>
-						<tr>
-							<td>
-							</td>
-							<td>
-								0
-							</td>
-							<td>
-								1
-							</td>
-							<td>
-								2
-							</td>
-							<td>
-								custom
-							</td>
-						</tr>
-						<tr>
-							<td>
-								0
-							</td>
-							<td>
-								<input type="radio" name="motor0" value="0" class="radioMotor">
-							</td>
-							<td>
-								<input type="radio" name="motor0" value="1" class="radioMotor">
-							</td>
-							<td>
-								<input type="radio" name="motor0" value="2" class="radioMotor">
-							</td>
-							<td>
-								<input type="radio" name="motor0" checked value="3" class="radioMotor">
-								<input class="inputText_motorCustom" id="inputText_motor0Custom" type="text" value="0"/>
-							</td>
-						</tr>
-						<tr>
-							<td>
-								1
-							</td>
-							<td>
-								<input type="radio" name="motor1" value="0" class="radioMotor">
-							</td>
-							<td>
-								<input type="radio" name="motor1" value="1" class="radioMotor">
-							</td>
-							<td>
-								<input type="radio" name="motor1" value="2" class="radioMotor">
-							</td>
-							<td>
-								<input type="radio" name="motor1" checked value="3" class="radioMotor">
-								<input class="inputText_motorCustom" id="inputText_motor1Custom" type="text" value="0"/>
-							</td>
-						</tr>
-						<tr>
-							<td>
-								2
-							</td>
-							<td>
-								<input type="radio" name="motor2" value="0" class="radioMotor">
-							</td>
-							<td>
-								<input type="radio" name="motor2" value="1" class="radioMotor">
-							</td>
-							<td>
-								<input type="radio" name="motor2" value="2" class="radioMotor">
-							</td>
-							<td>
-								<input type="radio" name="motor2" checked value="3" class="radioMotor">
-								<input class="inputText_motorCustom" id="inputText_motor2Custom" type="text" value="0"/>
-							</td>
-						</tr>
-						<tr>
-							<td>
-								3
-							</td>
-							<td>
-								<input type="radio" name="motor3" value="0" class="radioMotor">
-							</td>
-							<td>
-								<input type="radio" name="motor3" value="1" class="radioMotor">
-							</td>
-							<td>
-								<input type="radio" name="motor3" value="2" class="radioMotor">
-							</td>
-							<td>
-								<input type="radio" name="motor3" checked value="3" class="radioMotor">
-								<input class="inputText_motorCustom" id="inputText_motor3Custom" type="text" value="0"/>
-							</td>
-						</tr>
-					</table>
-				</div>
-			</div>
-			<div id="flexChild_Movement" class="flexChild_Control">
-				<div id="flexChild_Movement_Title">
-					Movement
-				</div>
-				<div>
-					<table>
-						<tr>
-							<td>
-							</td>
-							<td>
-								Position
-							</td>
-							<td>
-								Destination
-							</td>
-							
-						</tr>
-						<tr>
-							<td>
-								X
-							</td>
-							<td>
-								<input class="outputText" id="outputText_posX" type="text" value=""/>
-							</td>
-							<td>
-								<input class="inputText"Text" id="inputText_destX" type="text" value=""/>
-							</td>
-							
-						</tr>
-						<tr>
-							<td>
-								Y
-							</td>
-							<td>
-								<input class="outputText" id="outputText_posY" type="text" value=""/>
-							</td>
-							<td>
-								<input class="inputText"Text" id="inputText_destY" type="text" value=""/>
-							</td>
-						</tr>
-					</table>
-					<input type="button" id="button_go" value="Go">
-					<table>
-						<tr>
-							<td>
-							</td>
-							<td>
-								Position
-							</td>
-							<td>
-								Destination
-							</td>
-							
-						</tr>
-						<tr>
-							<td>
-								T
-							</td>
-							<td>
-								<input class="outputText" id="outputText_posT" type="text" value=""/>
-							</td>
-							<td>
-								<input class="inputText"Text" id="inputText_destT" type="text" value=""/>
-							</td>
-						</tr>
-					</table>
-					<input type="button" id="button_turn" value="Go">
-				</div>
-			</div>
-			<div id="flexChild_PlayingArea" class="flexChild_Control">
-			<!-- <img src="terrain_couleur.png" alt="terrain de jeu"> -->
-				<canvas id="canvasPlayingArea" width="873" height="588"></canvas>
 			</div>
 			<div id="flexChild_Sensors" class="flexChild_Control">
 				<div id="flexChild_Sensors_Title">
@@ -411,6 +566,88 @@
 					</table>
 				</div>
 			</div>
+			<div id="flexChild_PlayingArea" class="flexChild_Control">
+			<!-- <img src="terrain_couleur.png" alt="terrain de jeu"> -->
+				<canvas id="canvasPlayingArea" width="873" height="588"></canvas>
+			</div>
+
+			<div id="flexChild_Movement" class="flexChild_Control">
+				<div id="flexChild_Movement_Title">
+					Movement
+				</div>
+				<br>
+				<div>
+					<table>
+						<tr>
+							<td>
+							</td>
+							<td>
+								Position
+							</td>
+							<td>
+								Destination
+							</td>
+							
+						</tr>
+						<tr>
+							<td>
+								X
+							</td>
+							<td>
+								<input class="outputText" id="outputText_posX" type="text" value=""/>
+							</td>
+							<td>
+								<input class="inputText"Text" id="inputText_destX" type="text" value=""/>
+							</td>
+							
+						</tr>
+						<tr>
+							<td>
+								Y
+							</td>
+							<td>
+								<input class="outputText" id="outputText_posY" type="text" value=""/>
+							</td>
+							<td>
+								<input class="inputText"Text" id="inputText_destY" type="text" value=""/>
+							</td>
+						</tr>
+					</table>
+					<input type="button" id="button_go" value="Go">
+					<table>
+						<tr>
+							<td>
+							</td>
+							<td>
+								Position
+							</td>
+							<td>
+								Destination
+							</td>
+							
+						</tr>
+						<tr>
+							<td>
+								T
+							</td>
+							<td>
+								<input class="outputText" id="outputText_posT" type="text" value=""/>
+							</td>
+							<td>
+								<input class="inputText"Text" id="inputText_destT" type="text" value=""/>
+							</td>
+						</tr>
+					</table>
+					<input type="button" id="button_turn" value="Go">
+				</div>
+				<br><br><br><br><br><br><br><br><br><br><br><br>
+				<div>Joystick</div>
+				<div class="center-align">
+					<br>
+      				<canvas id="joystick" height="300" width="300"></canvas>
+    			</div>
+			</div>
+
 		</div>
 	</div>
 	<div id="onglet2" class="tab">

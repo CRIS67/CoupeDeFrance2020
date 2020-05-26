@@ -36,8 +36,10 @@ void* thread_act(void *threadid);
 
 class Actuator : public Robot {
 	public:
+		Actuator();
+		Actuator(const Actuator&);
 		Actuator(std::string nom, SPI *pSpi, uint8_t id, int nb_servo, int nb_moteur4Q, int nb_moteur, int nb_capt_cur, int nb_capt_couleur, int nb_rupteur, int nb_ax12, int nb_capt_dist);
-    Actuator(std::string nom, SPI *pSpi, uint8_t id, int nb_servo, int nb_moteur4Q, int nb_moteur, int nb_capt_cur, int nb_capt_couleur, int nb_rupteur, int nb_ax12, int nb_capt_dist, int nb_uart, std::string uart_name[], int uart_addr[]);
+    	Actuator(std::string nom, SPI *pSpi, uint8_t id, int nb_servo, int nb_moteur4Q, int nb_moteur, int nb_capt_cur, int nb_capt_couleur, int nb_rupteur, int nb_ax12, int nb_capt_dist, int nb_uart, std::string uart_name[], int uart_addr[]);
 		virtual ~Actuator();
 		void DecodMsg(uint8_t buf[]);
 		bool startThreadDetection();

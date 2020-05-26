@@ -83,7 +83,7 @@
 
 class Robot {
 	public:
-	    //functions
+		Robot();
 		Robot(std::string nom, SPI *pSpi, uint8_t id);
 		virtual ~Robot();
 		void stopThreadDetection();
@@ -97,6 +97,7 @@ class Robot {
 		void checkMessages();
 		virtual void DecodMsg(uint8_t buf[]);
 		bool isConnected();
+		std::string GetName(void);
 
 		int16_t x = 1500,y = 1000, t = 45;
 		uint8_t bufferRx[SIZE_BUFFER_RX];

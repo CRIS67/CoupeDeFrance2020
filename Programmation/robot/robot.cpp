@@ -1,20 +1,31 @@
 #include "robot.hpp"
 
+Robot::Robot() {}
+
 Robot::Robot(std::string nom, SPI *pSpi, uint8_t id) {
 	m_nom = nom;
 	m_pSpi = pSpi;
 	m_id = id;
+	int cpt = 0;
 	GetPing();
-	delay(2000);
-	checkMessages();
+	while(cpt < 2000 && !m_ping) {
+		delay(1);
+		cpt++;
+		checkMessages();
+	}
 	if(m_ping) {
 		DEBUG_ROBOT_PRINTLN(" connecté")
 		m_connected = true;
 	} else {
 		reset();
+		delay(100);
+		cpt = 0;
 		GetPing();
-		delay(2000);
-		checkMessages();
+		while(cpt < 2000 && !m_ping) {
+			delay(1);
+			cpt++;
+			checkMessages();
+		}
 		if(m_ping) {
 			DEBUG_ROBOT_PRINTLN(" connecté (2)")
 			m_connected = true;
@@ -204,4 +215,8 @@ bool Robot::Ping(void) {
 	m_ping = false;
 	m_mutex.unlock();
 	return b;
+}
+
+std::string Robot::GetName(void) {
+	return m_nom;
 }

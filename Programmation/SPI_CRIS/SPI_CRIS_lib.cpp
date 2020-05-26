@@ -49,7 +49,7 @@ void(*resetFunc)(void) = 0; //declare reset function @ address 0
 #endif
   /*****************MOTEUR4Q*****************/
 #if NB_MOTEUR4Q > 0
-  int PosGo[NB_MOTEUR4Q];
+  int PosGo[NB_MOTEUR4Q], PosActu[NB_MOTEUR4Q];
   void SetupMoteur4Q(void) {
   	TCCR2A = 0;
     TCCR2B = 0b00000110; // 1/256
@@ -66,9 +66,14 @@ void(*resetFunc)(void) = 0; //declare reset function @ address 0
   }
   void loopMoteur4Q(void) {
   	for(int i_init = 0;i_init<NB_MOTEUR4Q;i_init++) {
-      if(digitalRead(Pin_RuptEnd4Q[i_init][0]) || digitalRead(Pin_RuptEnd4Q[i_init][1])) {
+      if(digitalRead(Pin_RuptEnd4Q[i_init][1])) {
         analogWrite(Pin_Moteur4Q_PWM[i_init],MOTEUR_STOP);
         PosGo[i_init] = SPEED;
+      }
+      if(digitalRead(Pin_RuptEnd4Q[i_init][0])) {
+        analogWrite(Pin_Moteur4Q_PWM[i_init],MOTEUR_STOP);
+        PosGo[i_init] = SPEED;
+        PosActu[i_init] = 0;
       }
     }
   }
@@ -316,7 +321,7 @@ void(*resetFunc)(void) = 0; //declare reset function @ address 0
   }
   void SetupUART(void) {
   	Serial.begin(BAUDRATE);
-    delay(6000);
+    //delay(6000);
     #ifdef COM_UART
       String XBee_Team = "1";
       String Other_Team = "2";
@@ -640,9 +645,16 @@ void ReceiveSpi(void) {
           analogWrite(Pin_Moteur4Q_PWM[TextSpi[0]],TextSpi[2]);
           break;
         case ACT_CMD_SET_MOT4QPos:
-          digitalWrite(Pin_Moteur4Q_SENS[TextSpi[0]], TextSpi[1]);
-          analogWrite(Pin_Moteur4Q_PWM[TextSpi[0]],TextSpi[2]);
-          PosGo[TextSpi[0]] = TextSpi[3]*256+TextSpi[4];
+          PosGo[TextSpi[0]] = TextSpi[3]*256+TextSpi[4]*Length_Moteur[TextSpi[0]]-PosActu[TextSpi[0]];
+          PosActu[TextSpi[0]] = TextSpi[3]*256+TextSpi[4]*Length_Moteur[TextSpi[0]];
+          if(PosGo[TextSpi[0]] > 0) {
+            digitalWrite(Pin_Moteur4Q_SENS[TextSpi[0]], 1);
+            analogWrite(Pin_Moteur4Q_PWM[TextSpi[0]],Speed_Moteur4Q[TextSpi[0]][1]);
+          } else {
+            digitalWrite(Pin_Moteur4Q_SENS[TextSpi[0]], 0);
+            analogWrite(Pin_Moteur4Q_PWM[TextSpi[0]],Speed_Moteur4Q[TextSpi[0]][0]);
+            PosGo[TextSpi[0]] *= -1;
+          }
           break;
       #endif
       #if NB_CAPT_CUR > 0
