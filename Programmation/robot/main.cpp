@@ -28,6 +28,9 @@
 #include "dStarLite.hpp"
 #include "trajectoryHandle.hpp"
 #include "GameElements.hpp"
+#include <ctime>
+
+//#include "vision.hpp"
 
 
 #include <fstream>
@@ -141,7 +144,7 @@ int main() {
     web.startThread();
     lidar.startThreadDetection();
     hmi.startThreadDetection();
-    for(i_main=0;i_main<LengAct;i_main++) {Act[i_main].startThreadDetection();}
+    //for(i_main=0;i_main<LengAct;i_main++) {Act[i_main].startThreadDetection();}
 
     dspic.setVar8(CODE_VAR_VERBOSE,1);
     puts("verbose set to 1");
@@ -152,9 +155,9 @@ int main() {
     int yInit = 2550+HALF_LENGTH;
     double tInit = -PI/2;
     //double tInit = 0;
-    dspic.initPos(1045,1500,0);
+    dspic.initPos(xInit,yInit,tInit);
     
-    //std::cout << "Press enter to dspic.start() " << std::endl; 
+    std::cout << "Press enter to dspic.start() " << std::endl; 
     Act[0].MoveServo(2, 980);
     Act[0].MoveServo(0, 1600);
     Act[0].MoveServo(1, 1800);
@@ -167,65 +170,18 @@ int main() {
     std::cout << "Appuyer sur entrée quand le phare est en bas" << std::endl;
     getchar();
 
-    Do(0,true,Act);
-
-
-    //dspic.go(1445, 1500, 0, 0);
-
-    //actBack.MoveServo(2, 1100); //drapeau haut/bas
-    //actBack.MoveServo(2, 980);
-
-    //actBack.MoveServo(0, 1600); //prehenseur haut/bas
-    //actBack.MoveServo(0, 850);
-
-    //actBack.MoveServo(1, 1800); //orienter prehenseur
-    //actBack.MoveServo(1, 1400);
-
-    //actScara.SetMot(0, 0); //Scara
-    //actScara.SetAx12(1, 400); //pump droite
-    //actScara.SetAx12(2, 600);
-    //actScara.SetAx12(3, 800);  //pump droite
-    //delay(2000);
-    //delay(2000);
-    //actScara.SetMot4QPos(0, 200, 1, 400); //ascensseur
-    /*actScara.SetMot4QVit(0, 115, 0);
-    delay(200);
-    actScara.SetMot4QVit(0, 0, 0);*/
-
-    /*actBack.MoveServo(1, 1800);
-    actScara.SetMot4QPos(1, 150, 0, 4000);
-    delay(5000);
-    actBack.MoveServo(0, 800);
-    delay(1000);
-    actScara.SetMot4QPos(1, 150, 1, 4000);
-    delay(5000);
-    actBack.MoveServo(1, 1400);*/
-
-
-    //Act[2].allumerPhare();
-    //delay(12000);
-    //xbee.resetXbee(1);
-
-
-    //actScara.SetMot4QVit(1,255,0);
-    /*std::cout << "arret ?" << std::endl;
-    while(actScara.Rupt(0) != 1) {}
-    std::cout << "ok" << std::endl;*/
-    //getchar();
-    //actScara.SetMot4QVit(1,0,1);
     std::cout << "main" << std::endl;
-    /*while(!hmi.isStopMain()) {
-    	//xbee.PingXbee(1);
-        //actBack.MoveServo(0, 1600);
-        //actScara.SetMot4QPos(0, 115, 0, 200);
-        delay(1000);
-        //std::cout << xbee.GetPingXbee(1) << std::endl;
-        //actBack.MoveServo(0, 800);
-        //actScara.SetMot4QPos(0, 200, 1, 200);
-    	//std::cout << actBack.ColorOne(0) << std::endl;
-    	//std::cout << actBack.ColorOne(1) << std::endl;
-        delay(1000);
-	}*/
+    int Score = 0, ScoreTemp = 0;
+    getchar();
+    std::time_t Time = std::time(0);
+    while(!hmi.isStopMain() || std::time(0) < Time+90) {
+    	ScoreTemp = 0;
+    	int res = ComputeBestNode(xInit, yInit, std::time(0), Elements, Leng, &ScoreTemp, &web);
+    	if(res == -1) {break;} //plus d'action à réaliser
+    	bool test = Do(res, true, Act);
+    	if(test) {Score += ScoreTemp;}
+	}
+
     dspic.stop();
     dspic.setVar8(CODE_VAR_VERBOSE,0);
     dspic.stopThreadReception();
@@ -234,7 +190,7 @@ int main() {
     lidar.stop();
     lidar.stopThreadDetection();
     hmi.stopThreadDetection();
-    for(i_main=0;i_main<LengAct;i_main++) {Act[i_main].stopThreadDetection();}
+    //for(i_main=0;i_main<LengAct;i_main++) {Act[i_main].stopThreadDetection();}
     hmi.stopThreadDetection();
     web.stopThread();
 

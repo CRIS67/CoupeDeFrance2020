@@ -632,21 +632,24 @@ void ReceiveSpi(void) {
       #if NB_SERVO > 0
         case ACT_CMD_SERVO:
           S[TextSpi[0]].writeMicroseconds(TextSpi[1]*256+TextSpi[2]);
+          SendSpi(CMD_ACK,3,0);
           break;
       #endif
       #if NB_MOTEUR > 0
         case ACT_CMD_SET_MOT:
           digitalWrite(Pin_Moteur[TextSpi[0]], TextSpi[1]);
+          SendSpi(CMD_ACK,3,0);
           break;
       #endif
       #if NB_MOTEUR4Q > 0
         case ACT_CMD_SET_MOT4QVit:
           digitalWrite(Pin_Moteur4Q_SENS[TextSpi[0]], TextSpi[1]);
           analogWrite(Pin_Moteur4Q_PWM[TextSpi[0]],TextSpi[2]);
+          SendSpi(CMD_ACK,3,0);
           break;
-        case ACT_CMD_SET_MOT4QPos:
-          PosGo[TextSpi[0]] = TextSpi[3]*256+TextSpi[4]*Length_Moteur[TextSpi[0]]-PosActu[TextSpi[0]];
-          PosActu[TextSpi[0]] = TextSpi[3]*256+TextSpi[4]*Length_Moteur[TextSpi[0]];
+        case ACT_CMD_SET_MOT4QPosNorm:
+          PosGo[TextSpi[0]] = TextSpi[1]*256+TextSpi[2]*Length_Moteur[TextSpi[0]]-PosActu[TextSpi[0]];
+          PosActu[TextSpi[0]] = TextSpi[1]*256+TextSpi[2]*Length_Moteur[TextSpi[0]];
           if(PosGo[TextSpi[0]] > 0) {
             digitalWrite(Pin_Moteur4Q_SENS[TextSpi[0]], 1);
             analogWrite(Pin_Moteur4Q_PWM[TextSpi[0]],Speed_Moteur4Q[TextSpi[0]][1]);
@@ -655,7 +658,12 @@ void ReceiveSpi(void) {
             analogWrite(Pin_Moteur4Q_PWM[TextSpi[0]],Speed_Moteur4Q[TextSpi[0]][0]);
             PosGo[TextSpi[0]] *= -1;
           }
+          SendSpi(CMD_ACK,3,0);
           break;
+        case ACT_CMD_SET_MOT4QPos:
+          digitalWrite(Pin_Moteur4Q_SENS[TextSpi[0]], TextSpi[1]);
+          analogWrite(Pin_Moteur4Q_PWM[TextSpi[0]], TextSpi[2]);
+          PosGo[TextSpi[0]] = TextSpi[3];
       #endif
       #if NB_CAPT_CUR > 0
         case ACT_CMD_CUR:
@@ -696,6 +704,7 @@ void ReceiveSpi(void) {
       #if NB_AX12 > 0
         case ACT_CMD_AX12:
           ax12_pos[TextSpi[0]-1] = TextSpi[1]*256+TextSpi[2];
+          SendSpi(CMD_ACK,3,0);
           break;
       #endif
       #if NB_SCREEN > 0

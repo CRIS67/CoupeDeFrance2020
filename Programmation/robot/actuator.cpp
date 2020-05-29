@@ -121,6 +121,9 @@ void Actuator::DecodMsg(uint8_t buf[]) {
 		case CMD_PING_UART:
 			m_pingXbee = true;
 			break;
+		case CMD_ACK:
+			m_ack = true;
+			break;
 		case MSG_NON_PRIS_EN_CHARGE_UART:
 			DEBUG_ROBOT_PRINTLN("UART receive msg with not concern it !!! ERROR" << buf[1]);
 			break;
@@ -139,10 +142,8 @@ void Actuator::PingXbee(uint8_t id) {
 }
 
 bool Actuator::GetPingXbee() {
-	m_mutex.lock();
 	bool b = m_pingXbee;
 	m_pingXbee = false;
-	m_mutex.unlock();
 	return b;
 }
 
@@ -174,7 +175,7 @@ void* thread_act(void *threadid){
 	pthread_exit(NULL);
 }
 
-void Actuator::MoveServo(int nb_bras, int pos) {
+bool Actuator::MoveServo(int nb_bras, int pos) {
     uint8_t buffer[4];
 	if(nb_bras < 0 || nb_bras > m_nb_servo-1) {
     	DEBUG_ROBOT_PRINTLN("erreur bras = " << nb_bras)
@@ -187,11 +188,13 @@ void Actuator::MoveServo(int nb_bras, int pos) {
 			buffer[2] = (uint8_t)(pos/256);
 			buffer[3] = pos%256;
 			sendSPI(buffer,4);
+			return GetAck();
 		}
 	}
+	return false;
 }
 
-void Actuator::SetMot(int nb_bras, int state) {
+bool Actuator::SetMot(int nb_bras, int state) {
 	uint8_t buffer[3];
 	if(nb_bras < 0 || nb_bras > m_nb_moteur-1) {
     	DEBUG_ROBOT_PRINTLN("erreur nb_bras = " << nb_bras)
@@ -203,11 +206,13 @@ void Actuator::SetMot(int nb_bras, int state) {
 			buffer[1] = nb_bras;
 			buffer[2] = state;
 			sendSPI(buffer,3);
+			return GetAck();
 		}
 	}
+	return false;
 }
 
-void Actuator::SetMot4QVit(int nb_bras, int vit, int sens) {
+bool Actuator::SetMot4QVit(int nb_bras, int vit, int sens) {
 	uint8_t buffer[4];
 	if(nb_bras < 0 || nb_bras > m_nb_moteur4Q-1) {
     	DEBUG_ROBOT_PRINTLN("erreur nb_bras = " << nb_bras)
@@ -223,12 +228,14 @@ void Actuator::SetMot4QVit(int nb_bras, int vit, int sens) {
 				buffer[2] = sens;
 				buffer[3] = vit;
 				sendSPI(buffer,4);
+				return GetAck();
 			}
 		}
 	}
+	return false;
 }
 
-void Actuator::SetMot4QPos(int nb_bras, int vit, int sens, int temps) {
+bool Actuator::SetMot4QPos(int nb_bras, int vit, int sens, int temps) {
 	uint8_t buffer[6];
 	if(nb_bras < 0 || nb_bras > m_nb_moteur4Q-1) {
     	DEBUG_ROBOT_PRINTLN("erreur nb_bras = " << nb_bras)
@@ -249,13 +256,34 @@ void Actuator::SetMot4QPos(int nb_bras, int vit, int sens, int temps) {
 					buffer[4] = (uint8_t)(temps/256);
 					buffer[5] = temps%256;
 					sendSPI(buffer,6);
+					return GetAck();
 				}
 			}
 		}
 	}
+	return false;
 }
 
-void Actuator::SetAx12(int nb_bras, int pos) {
+bool Actuator::SetMot4QPosNorm(int nb_bras, int pos) {
+	uint8_t buffer[6];
+	if(nb_bras < 0 || nb_bras > m_nb_moteur4Q-1) {
+    	DEBUG_ROBOT_PRINTLN("erreur nb_bras = " << nb_bras)
+	} else {
+		if(pos < 0 || pos > 10000) {
+			DEBUG_ROBOT_PRINTLN("erreur pos = " << pos)
+		} else {
+			buffer[0] = ACT_CMD_SET_MOT4QPos;
+			buffer[1] = nb_bras;
+			buffer[2] = (uint8_t)(pos/256);
+			buffer[3] = pos%256;
+			sendSPI(buffer,4);
+			return GetAck();
+		}
+	}
+	return false;
+}
+
+bool Actuator::SetAx12(int nb_bras, int pos) {
 	uint8_t buffer[4];
 	if(nb_bras < 1 || nb_bras > m_nb_ax12) {
     	DEBUG_ROBOT_PRINTLN("erreur nb_bras = " << nb_bras)
@@ -268,8 +296,68 @@ void Actuator::SetAx12(int nb_bras, int pos) {
 			buffer[2] = (uint8_t)(pos/256);
 			buffer[3] = pos%256;
 			sendSPI(buffer,4);
+			return GetAck();
 		}
 	}
+	return false;
+}
+
+bool Actuator::MoveAx12(int nb_bras, int d, int a) {
+	int thetI1, thetI2;
+	if(TestScara(d, a, &thetI1, &thetI2)) {
+        return GoScara(a, thetI1, thetI2);
+    } else {
+    	return false;
+    }
+}
+
+void Actuator::CalculerPosScara(double d, double thet, int* thetI1, int* thetI2) {
+    double thet1, thet2, thet3;
+    thet = thet*PI/180;
+    thet2 = acos((D1*D1+D2*D2-d*d)/(2*D1*D2));
+    thet3 = acos((D1*D1+d*d-D2*D2)/(2*D1*d));
+    thet1 = thet-thet3;
+    thet1 = thet1*180/PI;
+    thet2 = thet2*180/PI;
+    *thetI1 = thet1;
+    *thetI2 = thet2;
+}
+
+uint8_t Actuator::TestScara(int d, int thet, int* thetI1, int* thetI2) {
+    if(d > D1+D2) {
+        std::cout << "erreur d trop grand : " << d << std::endl;
+        return 0;
+    } else {
+        CalculerPosScara(d, thet, *&thetI1, *&thetI2);
+        double tt = thet*PI/180, tt1 = *thetI1*PI/180;
+        if(*thetI1 < 0 || *thetI1 > 180) {
+            std::cout << "erreur : thet1 = " << *thetI1 << std::endl;
+            return 0;
+        } else if(d*cos(tt) > PTxFORB && d*sin(tt) > PTyFORB) {
+            std::cout << "erreur : zone morte, x = " << d*cos(tt) << " y = " << d*sin(tt) << std::endl;
+            return 0;
+        } else if(D1*cos(tt1) > PTxFORB && D1*sin(tt1) > PTyFORB) {
+            std::cout << "erreur : zone morte, x1 = " << D1*cos(tt1) << " y1 = " << D1*sin(tt1) << std::endl;
+            return 0;
+        } else {
+            return 1;
+        }
+    }
+}
+
+bool Actuator::GoScara(int thet, int thet1, int thet2) {
+	bool test = true;
+    if((thet > 45 && Zone == ZONE_1) || (thet < 45 && Zone == ZONE_2)) {
+        Zone = ~Zone;
+        test &= SetAx12(1, 0);
+        delay(50);
+        test &= SetAx12(0, thet1);
+        delay(20);
+    } else {
+        test &= SetAx12(0, thet1);
+    }
+    test &= SetAx12(1, thet2);
+    return test;
 }
 
 void Actuator::GetColor(int nb_bras) {
@@ -281,6 +369,7 @@ void Actuator::GetColor(int nb_bras) {
 		buffer[1] = nb_bras;
 		sendSPI(buffer,2);
 	}
+	delay(1);
 	flush(NB_FLUSH_MIN);
 }
 
@@ -293,6 +382,7 @@ void Actuator::GetCurrent(int nb_bras){
 		buffer[1] = nb_bras;
 		sendSPI(buffer,2);
 	}
+	delay(1);
 	flush(NB_FLUSH_MIN);
 }
 
@@ -305,6 +395,7 @@ void Actuator::GetRupt(int nb_bras) {
 		buffer[1] = nb_bras;
 		sendSPI(buffer,2);
 	}
+	delay(1);
 	flush(NB_FLUSH_MIN);
 }
 
@@ -317,90 +408,78 @@ void Actuator::GetDist(int nb_bras) {
 		buffer[1] = nb_bras;
 		sendSPI(buffer,2);
 	}
+	delay(1);
 	flush(NB_FLUSH_MIN);
 }
 
 int Actuator::Cur(int nb_bras) {
-	m_mutex.lock();
 	int cpt = 0;
 	do{
 		GetCurrent(nb_bras);
-		delay(20);
+		checkMessages();
 		cpt++;
-	}while(m_cur[nb_bras] == ERROR_VALUE && cpt < 10);
+	}while(m_cur[nb_bras] == ERROR_VALUE && cpt < 200);
 	if(cpt > 1) {DEBUG_ROBOT_PRINTLN("plusieur essais " << cpt)}
 	if(m_cur[nb_bras] == ERROR_VALUE) {DEBUG_ROBOT_PRINTLN("ERROR courant")}
 	int b = m_cur[nb_bras];
 	m_cur[nb_bras] = ERROR_VALUE;
-	m_mutex.unlock();
 	return b;
 }
 
 int Actuator::Color(int nb_bras) {
-	m_mutex.lock();
 	int cpt = 0;
 	do{
 		GetColor(nb_bras);
-		delay(20);
+		checkMessages();
 		cpt++;
-	}while(m_color[nb_bras] == ERROR_VALUE && cpt < 10);
+	}while(m_color[nb_bras] == ERROR_VALUE && cpt < 100);
 	if(cpt > 1) {DEBUG_ROBOT_PRINTLN("plusieur essais " << cpt)}
 	if(m_color[nb_bras] == ERROR_VALUE) {DEBUG_ROBOT_PRINTLN("ERROR couleur")}
 	int b = m_color[nb_bras];
 	m_color[nb_bras] = ERROR_VALUE;
-	m_mutex.unlock();
 	return b;
 }
 
 int Actuator::Dist(int nb_bras) {
-	m_mutex.lock();
 	int cpt = 0;
 	do{
 		GetDist(nb_bras);
-		delay(20);
+		checkMessages();
 		cpt++;
 	}while(m_dist[nb_bras] == ERROR_VALUE && cpt < 10);
 	if(cpt > 1) {DEBUG_ROBOT_PRINTLN("plusieur essais " << cpt)}
 	if(m_dist[nb_bras] == ERROR_VALUE) {DEBUG_ROBOT_PRINTLN("ERROR couleur")}
 	int b = m_dist[nb_bras];
 	m_dist[nb_bras] = ERROR_VALUE;
-	m_mutex.unlock();
 	return b;
 }
 
 int Actuator::Rupt(int nb_bras) {
-	m_mutex.lock();
 	int cpt = 0;
-	GetRupt(nb_bras);
-	while(m_rupt[nb_bras] == ERROR_VALUE && cpt < 20) {
-		delay(1);
+	do{
+		GetRupt(nb_bras);
+		checkMessages();
 		cpt++;
-	}
+	}while(m_rupt[nb_bras] == ERROR_VALUE && cpt < 100);
 	if(cpt > 1) {DEBUG_ROBOT_PRINTLN("plusieur essais " << cpt)}
 	if(m_rupt[nb_bras] == ERROR_VALUE) {DEBUG_ROBOT_PRINTLN("ERROR rupteur")}
 	int b = m_rupt[nb_bras];
 	m_rupt[nb_bras] = ERROR_VALUE;
-	m_mutex.unlock();
 	return b;
 }
 
-int Actuator::RuptOne(int nb_bras) {
-	m_mutex.lock();
-	GetRupt(nb_bras);
-	delay(20);
-	int b = m_rupt[nb_bras];
-	m_rupt[nb_bras] = ERROR_VALUE;
-	m_mutex.unlock();
-	return b;
-}
-
-int Actuator::ColorOne(int nb_bras) {
-	m_mutex.lock();
-	GetColor(nb_bras);
-	delay(20);
-	int b = m_color[nb_bras];
-	m_color[nb_bras] = ERROR_VALUE;
-	m_mutex.unlock();
+bool Actuator::GetAck() {
+	int cpt = 0;
+	do{
+		delay(1);
+		flush(NB_FLUSH_MIN);
+		checkMessages();
+		cpt++;
+	}while(m_ack == ERROR_VALUE && cpt < 1000);
+	if(cpt > 1) {DEBUG_ROBOT_PRINTLN("plusieur essais ack " << cpt)}
+	if(m_ack == false) {DEBUG_ROBOT_PRINTLN("ERROR ack")}
+	bool b = m_ack;
+	m_ack = false;
 	return b;
 }
 

@@ -49,10 +49,10 @@ class GameElements {
 };
 
 double GetDistance(double x, double y, double xO, double yO);
-int ComputeBestNode(double x, double y, double t, GameElements Elements[], int leng, int *Score);
+int ComputeBestNode(double x, double y, double t, GameElements Elements[], int leng, int *Score, Web *web);
 int LengGameElement(void);
 void CreateGameElement(GameElements Elements[], Actuator Act[], int lengAct, Web *web);
 //void Do(int i, double *x, double *y, double *t, GameElements Elements[]);
-void Do(int i, bool file, Actuator Act[]);
+bool Do(int i, bool file, Actuator Act[]);
 
 #endif // GAMEELEMENTS_H

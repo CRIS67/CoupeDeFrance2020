@@ -8,6 +8,7 @@
 #include <iostream>
 #include <pthread.h>
 #include <string.h>
+#include <cmath>
 
 #include "SPI.hpp"
 #include "robot.hpp"
@@ -30,6 +31,15 @@
 #define LIM_BLUE_MAX  6
 #define LIM_WHITE_MAX 7
 
+#define D1  80
+#define D2  60
+#define PI  3.14159265358979
+#define PTxFORB  100
+#define PTyFORB  100
+
+#define ZONE_1 1
+#define ZONE_2 0
+
 #define ERROR_VALUE		1025
 
 void* thread_act(void *threadid);
@@ -44,21 +54,24 @@ class Actuator : public Robot {
 		void DecodMsg(uint8_t buf[]);
 		bool startThreadDetection();
 
-		void MoveServo(int nb_bras, int pos);
-		void SetMot(int nb_bras, int state);
-		void SetAx12(int nb_bras, int pos);
+		bool MoveServo(int nb_bras, int pos);
+		bool SetMot(int nb_bras, int state);
+		bool SetAx12(int nb_bras, int pos);
+		bool MoveAx12(int nb_bras, int d, int a);
+		void CalculerPosScara(double d, double thet, int* thetI1, int* thetI2);
+		uint8_t TestScara(int d, int thet, int* thetI1, int* thetI2);
+		bool GoScara(int thet, int thet1, int thet2);
 		void GetColor(int nb_bras);
 		void GetCurrent(int nb_bras);
 		void GetRupt(int nb_bras);
 		void GetDist(int nb_bras);
 		int Cur(int nb_bras);
 		int Color(int nb_bras);
-		int ColorOne(int nb_bras);
 		int Dist(int nb_bras);
 		int Rupt(int nb_bras);
-		int RuptOne(int nb_bras);
-		void SetMot4QVit(int nb_bras, int vit, int sens);
-		void SetMot4QPos(int nb_bras, int vit, int sens, int temps);
+		bool SetMot4QVit(int nb_bras, int vit, int sens);
+		bool SetMot4QPos(int nb_bras, int vit, int sens, int temps);
+		bool SetMot4QPosNorm(int nb_bras, int pos);
 		void setSeuilColor(int seuil, int valeur);
 		void resetCptColor();
 		void UartSend(unsigned char Send, unsigned char id_uart, unsigned char msg);
@@ -67,7 +80,10 @@ class Actuator : public Robot {
 		bool GetPingXbee();
 		void PingXbee(uint8_t id);
 		void resetXbee(uint8_t id);
+		bool GetAck();
 	protected:
+		uint8_t Zone = ZONE_1;
+		bool m_ack = false;
 		int m_nb_servo;
         int m_nb_moteur4Q;
         int m_nb_moteur;

@@ -12,7 +12,7 @@ double GetDistance(double x, double y, double xO, double yO) {
     std::cout << "Temps : " << *t << ", action " << Elements[i].GetNom()<< std::endl;
 }*/
 
-void Do(int i, bool file, Actuator Act[]) {
+bool Do(int i, bool file, Actuator Act[]) {
     if(file) {
         //D* Star
         std::cout << "lancement en fichier" << std::endl;
@@ -70,26 +70,31 @@ void Do(int i, bool file, Actuator Act[]) {
             		p++;
             		token.erase(0, pos2+1);
             	}
+                bool tt;
             	switch(type[0]) {
             		case 'S':
-            			Act[card].MoveServo(id,val);
+            			tt = Act[card].MoveServo(id,val);
             			break;
             		case 'D':
-            			Act[card].SetMot(id,val);
+            			tt = Act[card].SetMot(id,val);
             			break;
             		case 'M':
-            			Act[card].SetMot4QPos(id,150,1,val);
+            			tt = Act[card].SetMot4QPos(id,150,1,val);
             			break;
             		case 'F':
             			Act[2].allumerPhare();
+                        tt = true;
             			break;
             		default:
             			std::cout << "erreur action enregistrée non prise en charge !!!" << std::endl;
+                        tt = false;
             			break;
             	}
             	std::cout << std::endl;
             	line.erase(0, pos+1);
+                if(tt == false) {return false;}
             }
+            return true; //Action réussi
         }
     } else {
         std::cout << "lancement en code" << std::endl;

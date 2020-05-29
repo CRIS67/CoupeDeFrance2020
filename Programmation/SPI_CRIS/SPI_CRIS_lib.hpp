@@ -85,6 +85,8 @@ void SendSpi(uint8_t buf, uint8_t leng, uint8_t num);
 #define PHARE_STATE                     46
 #define CMD_PING_UART                   47
 #define MSG_NON_PRIS_EN_CHARGE_UART     48
+#define CMD_ACK                         49
+#define ACT_CMD_SET_MOT4QPosNorm        50
 #define LIDAR_RET_DATA_AVAILABLE        100
 #define LIDAR_RET_DETECTED_POINTS       101
 #define LIDAR_RET_RAW_POINT             102
