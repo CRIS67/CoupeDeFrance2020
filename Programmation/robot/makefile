@@ -1,5 +1,5 @@
-CDF: web.o dspic.o SPI.o mapGeneration.o GameElements.o robot.o lidar.o actuator.o hmi.o dStarLite.o trajectoryHandle.o LK.o main.o
-	g++ -O3 -o cdf web.o dspic.o SPI.o robot.o lidar.o actuator.o hmi.o mapGeneration.o GameElements.o dStarLite.o trajectoryHandle.o LK.o main.o -Wall -lwiringPi -pthread 
+CDF: web.o dspic.o SPI.o mapGeneration.o GameElements.o robot.o vision.o lidar.o actuator.o hmi.o dStarLite.o trajectoryHandle.o LK.o main.o
+	g++ -O3 -o cdf web.o dspic.o SPI.o robot.o vision.o lidar.o actuator.o hmi.o mapGeneration.o GameElements.o dStarLite.o trajectoryHandle.o LK.o main.o -Wall -lwiringPi -pthread -I/usr/local/include/ -lraspicam -lraspicam_cv `pkg-config --cflags  opencv` `pkg-config --cflags --libs opencv`
 
 web.o: web.cpp
 	g++ -O3 -o web.o -c web.cpp -Wall -lwiringPi -pthread 
@@ -9,7 +9,10 @@ dspic.o: dspic.cpp
 
 SPI.o: SPI.cpp 
 	g++ -O3 -o SPI.o -c SPI.cpp -Wall -lwiringPi -pthread 
-	
+
+vision.o: vision.cpp
+	g++ -o vision.o -c vision.cpp -Wall -lwiringPi -g -pthread -I/usr/local/include/ -lraspicam -lraspicam_cv -lmmal -lmmal_core -lmmal_util -lopencv_contrib `pkg-config --cflags  opencv` `pkg-config --cflags --libs opencv`
+
 robot.o: robot.cpp 
 	g++ -O3 -o robot.o -c robot.cpp -Wall -lwiringPi -pthread
 
@@ -37,5 +40,5 @@ trajectoryHandle.o : trajectoryHandle.cpp
 LK.o: LK.cpp
 	g++ -I /home/pi/boost_1_68_0/ -O3 -o LK.o -c LK.cpp -Wall -lwiringPi -pthread
 
-main.o: main.cpp web.hpp dspic.hpp SPI.hpp robot.hpp actuator.hpp hmi.hpp lidar.hpp mapGeneration.hpp GameElements.hpp dStarLite.hpp trajectoryHandle.hpp LK.h
-	g++ -I /home/pi/boost_1_68_0/ -O3 -o main.o -c main.cpp -Wall -lwiringPi -pthread
+main.o: main.cpp web.hpp dspic.hpp SPI.hpp robot.hpp actuator.hpp hmi.hpp lidar.hpp vision.hpp mapGeneration.hpp GameElements.hpp dStarLite.hpp trajectoryHandle.hpp LK.h
+	g++ -I /home/pi/boost_1_68_0/ -O3 -o main.o -c main.cpp -Wall -lwiringPi -pthread `pkg-config --cflags  opencv` `pkg-config --cflags --libs opencv`

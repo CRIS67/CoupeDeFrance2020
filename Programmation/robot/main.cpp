@@ -176,7 +176,7 @@ int main() {
     std::time_t Time = std::time(0);
     while(!hmi.isStopMain() || std::time(0) < Time+90) {
     	ScoreTemp = 0;
-    	int res = ComputeBestNode(xInit, yInit, std::time(0), Elements, Leng, &ScoreTemp, &web);
+    	int res = ComputeBestNode(xInit, yInit, (int)(std::time(0)-Time), Elements, Leng, &ScoreTemp, &web);
     	if(res == -1) {break;} //plus d'action à réaliser
     	bool test = Do(res, true, Act);
     	if(test) {Score += ScoreTemp;}
